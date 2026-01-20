@@ -65,6 +65,34 @@
             letter-spacing: 0.5px;
         }
 
+        .navbar-phone {
+            display: flex;
+            align-items: center;
+            margin-left: auto;
+            margin-right: 30px;
+        }
+
+        .navbar-phone a {
+            background: transparent;
+            color: var(--accent-gold);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            display: inline-block;
+            padding: 8px 18px;
+            border: 2px solid var(--accent-gold);
+            border-radius: 2px;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+        }
+
+        .navbar-phone a:hover {
+            background: rgba(184, 165, 115, 0.1);
+            box-shadow: 0 0 20px rgba(184, 165, 115, 0.3);
+            transform: translateY(-1px);
+        }
+
         .navbar-menu {
             display: flex;
             gap: 25px;
@@ -1684,10 +1712,41 @@
             font-weight: 600;
         }
 
+        /* ===== TABLET OPTIMIZATION ===== */
+        @media (max-width: 1024px) and (min-width: 769px) {
+            .navbar-phone a {
+                font-size: 0.8rem;
+                padding: 7px 14px;
+            }
+
+            .navbar-phone {
+                margin-right: 20px;
+            }
+
+            .navbar-menu {
+                gap: 15px;
+            }
+
+            .navbar-menu a {
+                font-size: 0.85rem;
+            }
+        }
+
         /* ===== MOBILE OPTIMIZATION ===== */
         @media (max-width: 768px) {
             .hamburger {
                 display: flex;
+            }
+
+            .navbar-phone {
+                margin-right: 12px;
+                margin-left: auto;
+            }
+
+            .navbar-phone a {
+                font-size: 0.7rem;
+                padding: 6px 10px;
+                letter-spacing: 0.5px;
             }
 
             .navbar-menu {
@@ -1918,6 +1977,9 @@
         <div class="navbar-container">
             <div class="navbar-brand">
                 <h2>LV Trade Show Rentals</h2>
+            </div>
+            <div class="navbar-phone" id="navbar-phone">
+                <a href="tel:+17029004983">Call Us</a>
             </div>
             <button class="hamburger" id="hamburger">
                 <span></span>
@@ -2678,3 +2740,4 @@
     </script>
 </body>
 </html>
+
