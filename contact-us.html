@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us | LV Trade Show Rentals</title>
+    <meta name="description" content="Contact LV Trade Show Rentals for a custom trade show booth quote in Las Vegas. Call 702-483-8279 or request a quote online.">
+    <meta property="og:title" content="Contact Us | LV Trade Show Rentals">
+    <meta property="og:description" content="Request a quote for your next Las Vegas trade show exhibit.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="assets/world2-logo.png">
+    <link rel="icon" type="image/png" href="assets/world2-logo.png">
+    <link rel="stylesheet" href="assets/site.css">
+    <style>
+        /* ============================================================
+           CONTACT PAGE — page-specific styles (con- prefix only).
+           Composes with the shared site system; never restyles a
+           shared class definition.
+           ============================================================ */
+
+        /* ---------- Hero atmospherics ---------- */
+        .con-hero { min-height: 68vh; }
+        .con-hero-fx {
+            position: absolute; inset: 0; z-index: 1;
+            pointer-events: none; overflow: hidden;
+        }
+        .con-orb { position: absolute; border-radius: 50%; will-change: transform; }
+        .con-hero-fx .con-orb { filter: blur(60px); }
+        .con-orb-teal {
+            width: 420px; height: 420px; top: -110px; right: -50px; opacity: 0.6;
+            background: radial-gradient(circle, rgba(45, 156, 202, 0.55), transparent 68%);
+        }
+        .con-orb-gold {
+            width: 340px; height: 340px; bottom: -140px; left: -40px; opacity: 0.5;
+            background: radial-gradient(circle, rgba(184, 165, 115, 0.45), transparent 68%);
+        }
+
+        .con-hero-chips { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+        .con-chip {
+            display: inline-flex; align-items: center; gap: 10px;
+            padding: 10px 16px; border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            background: rgba(12, 17, 25, 0.42);
+            -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+            font-size: 0.9rem; font-weight: 600; color: #eef2f6;
+            transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        a.con-chip:hover {
+            border-color: var(--accent-teal); transform: translateY(-2px);
+            box-shadow: 0 10px 26px rgba(45, 156, 202, 0.25);
+        }
+        .con-chip-ic { font-size: 1rem; line-height: 1; }
+
+        /* ---------- Main contact section ---------- */
+        .con-contact { position: relative; overflow: hidden; }
+        .con-contact::before {
+            content: ''; position: absolute; top: -130px; left: -120px;
+            width: 440px; height: 440px; pointer-events: none;
+            background: radial-gradient(circle, rgba(45, 156, 202, 0.14), transparent 68%);
+        }
+        .con-contact::after {
+            content: ''; position: absolute; bottom: -170px; right: -150px;
+            width: 480px; height: 480px; pointer-events: none;
+            background: radial-gradient(circle, rgba(184, 165, 115, 0.10), transparent 68%);
+        }
+        .con-orb-drift {
+            top: 16%; right: 5%; width: 300px; height: 300px; z-index: 0;
+            filter: blur(34px); pointer-events: none;
+            background: radial-gradient(circle, rgba(45, 156, 202, 0.12), transparent 70%);
+        }
+        .con-contact .container { position: relative; z-index: 1; }
+
+        .con-grid {
+            display: grid; grid-template-columns: 1.12fr 0.88fr;
+            gap: 44px; align-items: start;
+        }
+
+        /* ---------- Form column ---------- */
+        .con-form-head { margin-bottom: 22px; }
+        .con-form-head h3 {
+            font-size: clamp(1.5rem, 3.5vw, 2.1rem); color: #fff;
+            line-height: 1.18; margin-bottom: 10px; letter-spacing: -0.4px;
+        }
+        .con-form-head p { color: var(--text-secondary); font-size: 1.02rem; }
+        .con-reply {
+            display: inline-flex; align-items: center; gap: 9px; margin-top: 16px;
+            font-size: 0.85rem; font-weight: 600; color: var(--accent-teal);
+        }
+        .con-reply .con-dot {
+            width: 8px; height: 8px; border-radius: 50%; background: var(--success);
+            box-shadow: 0 0 0 4px rgba(74, 157, 111, 0.18);
+        }
+
+        /* Bespoke focus/filled feedback (label reacts to its field) */
+        .con-form .field label { transition: color 0.25s ease; }
+        .con-form .field:focus-within label,
+        .con-form .field.con-filled label { color: var(--accent-teal); }
+        .con-submit { width: 100%; margin: 8px 0 0; }
+
+        /* ---------- Right column: info + map ---------- */
+        .con-aside { display: flex; flex-direction: column; gap: 26px; }
+
+        .con-info {
+            position: relative; overflow: hidden; border-radius: 10px;
+            padding: 32px 30px;
+            background: linear-gradient(150deg, var(--surface) 0%, #1b2536 100%);
+            border: 1px solid var(--border-subtle);
+            box-shadow: var(--shadow-lg);
+        }
+        .con-info h3 { font-size: 1.3rem; color: #fff; margin-bottom: 6px; }
+        .con-info-sub { color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 8px; }
+        .con-info .info-list li:last-child { border-bottom: none; padding-bottom: 0; }
+        .con-info .info-list h4 { letter-spacing: 0.3px; }
+        .con-info .info-note { font-size: 0.85rem; line-height: 1.6; color: #8b94a3 !important; margin-top: 4px; }
+
+        /* ---------- CSS-drawn stylized map ---------- */
+        .con-map {
+            position: relative; overflow: hidden;
+            height: clamp(300px, 44vw, 380px); border-radius: 10px;
+            border: 1px solid var(--border-subtle);
+            background: radial-gradient(130% 130% at 32% 18%, #16233a 0%, #0c1119 72%);
+            box-shadow: var(--shadow-lg);
+        }
+        .con-map-streets {
+            position: absolute; inset: -2px; transform: translateZ(0);
+            background-image:
+                linear-gradient(rgba(45, 156, 202, 0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(45, 156, 202, 0.08) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+        .con-road { position: absolute; }
+        .con-road::after { content: ''; position: absolute; }
+        .con-road-strip {
+            top: -12%; left: 24%; width: 58px; height: 130%;
+            transform: rotate(20deg) translateZ(6px);
+            background: linear-gradient(90deg, rgba(184, 165, 115, 0.04), rgba(184, 165, 115, 0.20), rgba(184, 165, 115, 0.04));
+        }
+        .con-road-strip::after {
+            left: 50%; top: 0; width: 2px; height: 100%; margin-left: -1px;
+            background: repeating-linear-gradient(180deg, rgba(212, 192, 138, 0.6) 0 10px, transparent 10px 22px);
+        }
+        .con-road-v {
+            top: 0; left: 55%; width: 30px; height: 100%; transform: translateZ(6px);
+            background: linear-gradient(90deg, rgba(45, 156, 202, 0.04), rgba(45, 156, 202, 0.16), rgba(45, 156, 202, 0.04));
+        }
+        .con-road-v::after {
+            left: 50%; top: 0; width: 2px; height: 100%; margin-left: -1px;
+            background: repeating-linear-gradient(180deg, rgba(120, 200, 235, 0.5) 0 10px, transparent 10px 22px);
+        }
+        .con-road-h {
+            top: 46%; left: 0; width: 100%; height: 28px; transform: translateZ(6px);
+            background: linear-gradient(180deg, rgba(45, 156, 202, 0.04), rgba(45, 156, 202, 0.14), rgba(45, 156, 202, 0.04));
+        }
+        .con-road-h::after {
+            top: 50%; left: 0; height: 2px; width: 100%; margin-top: -1px;
+            background: repeating-linear-gradient(90deg, rgba(120, 200, 235, 0.5) 0 10px, transparent 10px 22px);
+        }
+        .con-block {
+            position: absolute; border-radius: 4px;
+            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .con-block-a { left: 13%; top: 18%; width: 82px; height: 56px; transform: translateZ(8px); }
+        .con-block-b { left: 72%; top: 64%; width: 74px; height: 66px; transform: translateZ(8px); }
+        .con-block-lvcc {
+            left: 55%; top: 46%; width: 152px; height: 106px;
+            transform: translate(-50%, -50%) translateZ(16px);
+            background: rgba(45, 156, 202, 0.12); border: 1px solid rgba(45, 156, 202, 0.4);
+            box-shadow: 0 0 40px rgba(45, 156, 202, 0.25), inset 0 0 20px rgba(45, 156, 202, 0.10);
+        }
+        .con-maptag {
+            position: absolute; font-size: 0.62rem; letter-spacing: 1px; text-transform: uppercase;
+            color: rgba(240, 239, 244, 0.62); background: rgba(12, 17, 25, 0.55);
+            padding: 3px 8px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.08);
+            transform: translateZ(30px); white-space: nowrap;
+        }
+        .con-maptag-strip { top: 15%; left: 17%; }
+        .con-maptag-paradise { top: 71%; left: 50%; }
+        .con-map-compass {
+            position: absolute; top: 12px; right: 12px; width: 26px; height: 26px;
+            border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.18);
+            color: rgba(240, 239, 244, 0.7); font-size: 0.6rem; font-weight: 700;
+            display: grid; place-items: center; letter-spacing: 0.5px; transform: translateZ(30px);
+        }
+        .con-map-vignette {
+            position: absolute; inset: 0; pointer-events: none;
+            background:
+                radial-gradient(58% 58% at 55% 46%, rgba(45, 156, 202, 0.18), transparent 60%),
+                radial-gradient(120% 100% at 50% 122%, rgba(0, 0, 0, 0.55), transparent 60%);
+        }
+        .con-pinwrap {
+            position: absolute; left: 55%; top: 47%;
+            transform: translate(-50%, -100%) translateZ(55px);
+            display: flex; flex-direction: column; align-items: center; gap: 9px; z-index: 5;
+        }
+        .con-pin-label {
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.3px; text-align: center;
+            color: #eaf6fc; background: rgba(12, 17, 25, 0.82);
+            border: 1px solid rgba(45, 156, 202, 0.5); padding: 6px 12px; border-radius: 8px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5); max-width: 208px; line-height: 1.3;
+            -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+        }
+        .con-pin-mark { position: relative; width: 26px; height: 26px; }
+        .con-pin {
+            position: absolute; left: 50%; top: 0; width: 24px; height: 24px; margin-left: -12px;
+            background: linear-gradient(135deg, #5cc4ee, #2d9cca);
+            border-radius: 50% 50% 50% 0; transform: rotate(45deg);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.55), 0 0 18px rgba(45, 156, 202, 0.8);
+        }
+        .con-pin::after {
+            content: ''; position: absolute; left: 50%; top: 50%; width: 9px; height: 9px;
+            margin: -4.5px 0 0 -4.5px; background: #0c1119; border-radius: 50%; transform: rotate(-45deg);
+        }
+        .con-ping {
+            position: absolute; left: 50%; top: 12px; width: 24px; height: 24px; margin: -12px 0 0 -12px;
+            border-radius: 50%; background: rgba(45, 156, 202, 0.5); animation: con-ping 2.4s ease-out infinite;
+        }
+        @keyframes con-ping {
+            0% { transform: scale(0.5); opacity: 0.85; }
+            100% { transform: scale(2.8); opacity: 0; }
+        }
+
+        /* ---------- Trust strip + marquee ---------- */
+        .con-trust {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 54px;
+        }
+        .con-trust-item {
+            background: linear-gradient(135deg, var(--surface-2) 0%, #2a3442 100%);
+            border: 1px solid var(--border-subtle); border-radius: 6px; padding: 30px 28px;
+            transition: transform 0.35s var(--ease), border-color 0.35s ease, box-shadow 0.35s ease;
+        }
+        .con-trust-item:hover {
+            transform: translateY(-6px); border-color: var(--accent-teal); box-shadow: var(--shadow-teal);
+        }
+        .con-trust-ic {
+            width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center;
+            font-size: 1.5rem; margin-bottom: 18px;
+            background: rgba(45, 156, 202, 0.12); border: 1px solid rgba(45, 156, 202, 0.3);
+        }
+        .con-trust-item h3 { font-size: 1.15rem; color: #fff; margin-bottom: 8px; }
+        .con-trust-item p { color: var(--text-secondary); font-size: 0.96rem; line-height: 1.7; }
+        .con-marquee-head {
+            text-align: center; text-transform: uppercase; letter-spacing: 2px;
+            font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin: 0 0 26px;
+        }
+
+        /* ---------- Slim closing call band ---------- */
+        .con-slim { padding-top: 72px; padding-bottom: 72px; }
+
+        /* ---------- Responsive ---------- */
+        @media (max-width: 960px) {
+            .con-grid { grid-template-columns: 1fr; gap: 34px; }
+        }
+        @media (max-width: 820px) {
+            .con-trust { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 520px) {
+            .con-chip { font-size: 0.82rem; padding: 9px 13px; }
+            .con-pin-label { max-width: 168px; font-size: 0.66rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-overlay" id="menu-overlay"></div>
+    <header class="navbar" id="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand"><a href="index.html"><h2>LV Trade Show Rentals</h2></a></div>
+            <div class="navbar-phone"><a href="tel:+17024838279">Call Us</a></div>
+            <button class="hamburger" id="hamburger" aria-label="Open menu"><span></span><span></span><span></span></button>
+            <nav class="navbar-menu" id="navbar-menu">
+                <a href="index.html">HOME</a>
+                <a href="trade-show-labor.html">TRADE SHOW LABOR</a>
+                <a href="gallery.html">GALLERY</a>
+                <a href="about-us.html">ABOUT US</a>
+                <a href="what-we-do.html">WHAT WE DO</a>
+                <a href="contact-us.html">CONTACT US</a>
+                <a href="i-d-labor-request.html">I &amp; D LABOR REQUEST</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ===== PAGE HERO ===== -->
+    <section class="page-hero con-hero">
+        <img class="page-hero-media" src="assets/booth-cta-bg.jpg" alt="Custom trade show booth on the exhibition floor in Las Vegas">
+        <div class="page-hero-overlay"></div>
+        <div class="con-hero-fx" aria-hidden="true">
+            <div class="con-orb con-orb-teal" data-parallax="0.16"></div>
+            <div class="con-orb con-orb-gold" data-parallax="0.09"></div>
+        </div>
+        <div class="page-hero-inner">
+            <nav class="breadcrumb" aria-label="Breadcrumb">
+                <a href="index.html">Home</a><span>/</span>Contact Us
+            </nav>
+            <span class="eyebrow">Contact</span>
+            <h1>Let's Build Something Unforgettable</h1>
+            <p class="lead">Tell us about your show, your space, and your vision — our Las Vegas team will map out the booth, the build, and the crew that make it happen. Flawlessly, and on time.</p>
+            <div class="con-hero-chips">
+                <a class="con-chip" href="tel:+17024838279"><span class="con-chip-ic">📞</span> 702-483-8279</a>
+                <a class="con-chip" href="mailto:hello@lvtradeshowrental.com"><span class="con-chip-ic">✉️</span> hello@lvtradeshowrental.com</a>
+                <span class="con-chip"><span class="con-chip-ic">🕒</span> On-site show support 24/7</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FORM + INFO/MAP ===== -->
+    <section class="section con-contact">
+        <div class="con-orb con-orb-drift" data-parallax="0.08" aria-hidden="true"></div>
+        <div class="container">
+            <div class="con-grid">
+
+                <!-- LEFT: quote form -->
+                <div class="con-formcol" data-reveal="left">
+                    <div class="con-form-head">
+                        <span class="eyebrow">Request a Quote</span>
+                        <h3>Tell us about your project</h3>
+                        <p>Share a few details and we'll come back with concepts, timeline, and pricing tailored to your show.</p>
+                        <span class="con-reply"><span class="con-dot"></span> Average reply in under one business day</span>
+                    </div>
+
+                    <div class="form-wrap">
+                        <!--
+                          OWNER TODO: Replace YOUR_FORM_ID in the form action below with your
+                          Formspree endpoint (e.g. action="https://formspree.io/f/abcdwxyz").
+                          Until it's replaced, the form falls back to a normal browser submit.
+                        -->
+                        <form data-ajax="true" method="POST" action="https://formspree.io/f/YOUR_FORM_ID" class="con-form" aria-label="Trade show booth quote request">
+                            <div class="form-grid">
+                                <div class="field">
+                                    <label for="con-name">Full Name <span class="req">*</span></label>
+                                    <input type="text" id="con-name" name="name" autocomplete="name" required placeholder="Jane Doe">
+                                </div>
+                                <div class="field">
+                                    <label for="con-company">Company</label>
+                                    <input type="text" id="con-company" name="company" autocomplete="organization" placeholder="Company, Inc.">
+                                </div>
+                                <div class="field">
+                                    <label for="con-email">Email <span class="req">*</span></label>
+                                    <input type="email" id="con-email" name="email" autocomplete="email" required placeholder="you@company.com">
+                                </div>
+                                <div class="field">
+                                    <label for="con-phone">Phone</label>
+                                    <input type="tel" id="con-phone" name="phone" autocomplete="tel" placeholder="(702) 000-0000">
+                                </div>
+                                <div class="field">
+                                    <label for="con-event">Show / Event</label>
+                                    <input type="text" id="con-event" name="event" placeholder="e.g., CES 2026">
+                                </div>
+                                <div class="field">
+                                    <label for="con-booth">Booth Size</label>
+                                    <select id="con-booth" name="booth_size">
+                                        <option value="">Select…</option>
+                                        <option value="10x10">10×10</option>
+                                        <option value="10x20">10×20</option>
+                                        <option value="20x20">20×20</option>
+                                        <option value="20x30">20×30</option>
+                                        <option value="island-custom">Island / Custom</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label for="con-interest">Interested In</label>
+                                    <select id="con-interest" name="interested_in">
+                                        <option value="">Select…</option>
+                                        <option value="custom-booth">Custom Booth</option>
+                                        <option value="booth-rental">Booth Rental</option>
+                                        <option value="id-labor">I&amp;D Labor</option>
+                                        <option value="graphics">Graphics</option>
+                                        <option value="lighting-av">Lighting &amp; AV</option>
+                                        <option value="not-sure">Not sure yet</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label for="con-budget">Budget <span style="color:var(--text-secondary);font-weight:500;">(optional)</span></label>
+                                    <select id="con-budget" name="budget">
+                                        <option value="">Select…</option>
+                                        <option value="under-25k">Under $25k</option>
+                                        <option value="25k-50k">$25k–$50k</option>
+                                        <option value="50k-100k">$50k–$100k</option>
+                                        <option value="100k-plus">$100k+</option>
+                                    </select>
+                                </div>
+                                <div class="field full">
+                                    <label for="con-message">Message <span class="req">*</span></label>
+                                    <textarea id="con-message" name="message" required placeholder="Tell us about your booth goals, deadlines, and any must-haves…"></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Honeypot (spam trap) — leave empty -->
+                            <input class="hp" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
+                            <input type="hidden" name="_subject" value="New quote request — LV Trade Show Rentals">
+
+                            <button type="submit" class="cta-button con-submit">Request My Quote</button>
+                            <p class="form-note">Prefer to talk? Call <a href="tel:+17024838279">702-483-8279</a>.</p>
+                        </form>
+
+                        <div class="form-success">Thanks — we'll be in touch within one business day.</div>
+                    </div>
+                </div>
+
+                <!-- RIGHT: info card + CSS map -->
+                <aside class="con-aside" data-reveal="right">
+
+                    <div class="con-info tilt" data-tilt-max="6">
+                        <div class="tilt-glare"></div>
+                        <div class="tilt-inner">
+                            <h3>Reach Us Directly</h3>
+                            <p class="con-info-sub">One point of contact, from first sketch to final teardown.</p>
+                            <ul class="info-list">
+                                <li>
+                                    <span class="info-ic">📞</span>
+                                    <div>
+                                        <h4>Phone</h4>
+                                        <a href="tel:+17024838279">702-483-8279</a>
+                                    </div>
+                                </li>
+                                <li>
+                                    <span class="info-ic">✉️</span>
+                                    <div>
+                                        <h4>Email</h4>
+                                        <a href="mailto:hello@lvtradeshowrental.com">hello@lvtradeshowrental.com</a>
+                                    </div>
+                                </li>
+                                <li>
+                                    <span class="info-ic">📍</span>
+                                    <div>
+                                        <h4>Location</h4>
+                                        <p>Las Vegas, Nevada</p>
+                                        <p class="info-note">Serving LVCC, Mandalay Bay, Venetian Expo, Caesars Forum &amp; all major convention centers.</p>
+                                    </div>
+                                </li>
+                                <li>
+                                    <span class="info-ic">🕒</span>
+                                    <div>
+                                        <h4>Hours</h4>
+                                        <p>Mon–Fri, 8am–6pm</p>
+                                        <p class="info-note">On-site show support 24/7 during move-in &amp; move-out.</p>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Pure-CSS stylized map (no external map / iframe) -->
+                    <div class="con-map tilt" data-tilt-max="5" role="img" aria-label="Stylized map of the Las Vegas Convention Center district">
+                        <div class="con-map-streets"></div>
+                        <span class="con-road con-road-strip"></span>
+                        <span class="con-road con-road-v"></span>
+                        <span class="con-road con-road-h"></span>
+                        <span class="con-block con-block-a"></span>
+                        <span class="con-block con-block-b"></span>
+                        <span class="con-block con-block-lvcc"></span>
+                        <span class="con-maptag con-maptag-strip">The Strip</span>
+                        <span class="con-maptag con-maptag-paradise">Paradise Rd</span>
+                        <span class="con-map-compass">N</span>
+                        <div class="con-map-vignette"></div>
+                        <div class="con-pinwrap">
+                            <span class="con-pin-label">Las Vegas Convention Center District</span>
+                            <span class="con-pin-mark"><span class="con-ping"></span><span class="con-pin"></span></span>
+                        </div>
+                        <div class="tilt-glare"></div>
+                    </div>
+
+                </aside>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== TRUST STRIP + SHOW LOGOS ===== -->
+    <section class="section alt con-proof">
+        <div class="container">
+            <div class="section-head" data-reveal>
+                <span class="eyebrow">Trusted On The Show Floor</span>
+                <h2>Corporate exhibitors count on us</h2>
+                <p>Two decades installing for the industry's biggest stages — delivered on budget, and on time, every show.</p>
+            </div>
+
+            <div class="con-trust reveal-group">
+                <div class="con-trust-item">
+                    <div class="con-trust-ic">🛡️</div>
+                    <h3>Fully Insured &amp; Bonded</h3>
+                    <p>Certificates of insurance issued fast for any Las Vegas venue or show management requirement.</p>
+                </div>
+                <div class="con-trust-item">
+                    <div class="con-trust-ic">🏆</div>
+                    <h3>20+ Years On the Floor</h3>
+                    <p>Seasoned crews who know CES, SEMA, MAGIC, NAB &amp; CONEXPO — and the halls they run in.</p>
+                </div>
+                <div class="con-trust-item">
+                    <div class="con-trust-ic">⏱️</div>
+                    <h3>100% On-Time Record</h3>
+                    <p>Meticulous logistics and I&amp;D labor at $129/hr mean your booth is show-ready before doors open.</p>
+                </div>
+            </div>
+
+            <p class="con-marquee-head">Built for the biggest shows in Las Vegas</p>
+            <div class="event-logos" data-reveal>
+                <div class="event-logos-track">
+                    <div class="logo-item"><img src="assets/ces-logo.png" alt="CES — Consumer Electronics Show" class="event-logo"></div>
+                    <div class="logo-item"><img src="assets/sema-logo.png" alt="SEMA — Specialty Equipment Market Association" class="event-logo"></div>
+                    <div class="logo-item"><img src="assets/magic-logo.png" alt="MAGIC Fashion Trade Show" class="event-logo"></div>
+                    <div class="logo-item"><img src="assets/nab-logo.png" alt="NAB — National Association of Broadcasters" class="event-logo"></div>
+                    <div class="logo-item"><img src="assets/CONEXPO.png" alt="CONEXPO — Construction Equipment Exposition" class="event-logo"></div>
+                    <!-- Duplicate set for seamless infinite scroll -->
+                    <div class="logo-item"><img src="assets/ces-logo.png" alt="CES — Consumer Electronics Show" class="event-logo"></div>
+                    <div class="logo-item"><img src="assets/sema-logo.png" alt="SEMA — Specialty Equipment Market Association" class="event-logo"></div>
+                    <div class="logo-item"><img src="assets/magic-logo.png" alt="MAGIC Fashion Trade Show" class="event-logo"></div>
+                    <div class="logo-item"><img src="assets/nab-logo.png" alt="NAB — National Association of Broadcasters" class="event-logo"></div>
+                    <div class="logo-item"><img src="assets/CONEXPO.png" alt="CONEXPO — Construction Equipment Exposition" class="event-logo"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== SLIM CLOSING CALL BAND ===== -->
+    <section class="cta-band con-slim">
+        <div class="cta-bg" style="background-image: url('assets/final-cta-bg.jpg');"></div>
+        <div class="cta-ov"></div>
+        <div class="container">
+            <span class="eyebrow gold">Let's Talk</span>
+            <h2>Prefer to talk it through now?</h2>
+            <p>Skip the form — get a real booth specialist on the line and start shaping your exhibit today.</p>
+            <div class="cta-group">
+                <a href="tel:+17024838279" class="cta-button">Call 702-483-8279</a>
+                <a href="mailto:hello@lvtradeshowrental.com" class="cta-button secondary">Email Our Team</a>
+            </div>
+            <div class="urgency-text">Limited build slots for the 2026–2027 trade show season.</div>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="site-footer">
+        <div class="container footer-grid">
+            <div class="footer-col">
+                <h3>LV Trade Show Rentals</h3>
+                <p>Full-service trade show exhibit house — custom design, fabrication, installation &amp; I&amp;D labor across Las Vegas.</p>
+                <a href="tel:+17024838279" class="phone-link">702-483-8279</a>
+                <p class="footer-loc">📍 Las Vegas, Nevada</p>
+            </div>
+            <div class="footer-col">
+                <h4>Explore</h4>
+                <a href="index.html">Home</a>
+                <a href="gallery.html">Gallery</a>
+                <a href="about-us.html">About Us</a>
+                <a href="what-we-do.html">What We Do</a>
+            </div>
+            <div class="footer-col">
+                <h4>Services</h4>
+                <a href="index.html">Custom Booth Rentals</a>
+                <a href="what-we-do.html">I&amp;D Labor</a>
+                <a href="contact-us.html">Contact Us</a>
+                <a href="i-d-labor-request.html">Labor Request</a>
+            </div>
+            <div class="footer-col cta">
+                <h4>Start a project</h4>
+                <a href="contact-us.html" class="cta-button">Request a Quote</a>
+            </div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2026 LV Trade Show Rentals. All rights reserved.</p></div>
+    </footer>
+
+    <script>
+        /* Contact page enhancement: mark filled fields so labels keep their
+           accent state after blur (pairs with :focus-within in the page CSS).
+           Purely visual, no motion — safe under prefers-reduced-motion. */
+        (function () {
+            var fields = document.querySelectorAll('.con-form .field input, .con-form .field select, .con-form .field textarea');
+            fields.forEach(function (el) {
+                var field = el.closest('.field');
+                if (!field) return;
+                function sync() {
+                    field.classList.toggle('con-filled', !!(el.value && el.value.trim()));
+                }
+                el.addEventListener('input', sync);
+                el.addEventListener('change', sync);
+                el.addEventListener('blur', sync);
+                sync();
+            });
+        })();
+    </script>
+    <script src="assets/site.js" defer></script>
+</body>
+</html>
