@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Trade Show Booth Rentals Las Vegas | Full-Service Exhibit House</title>
+    <meta name="description" content="Custom trade show booth rentals in Las Vegas. Full-service exhibit house - design, fabrication, installation & dismantle. From simple 10x10s to fully custom builds.">
+    <link rel="icon" type="image/png" href="assets/world2-logo.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-dark: #0f1419;
+            --primary-bg: #1a2332;
+            --accent-teal: #2d9cca;
+            --accent-teal-bright: #48b6e4;
+            --accent-gold: #b8a573;
+            --accent-gold-bright: #d4c08a;
+            --text-primary: #f0eff4;
+            --text-secondary: #a8acb1;
+            --border-subtle: #2a3442;
+            --success: #4a9d6f;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            overflow-x: clip;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: var(--primary-dark);
+            color: var(--text-primary);
+            line-height: 1.7;
+            /* `clip` where supported: unlike `hidden` it does NOT turn <body> into
+               a scroll container, which would break the sticky video pin below. */
+            overflow-x: hidden;
+            overflow-x: clip;
+        }
+
+        /* ===== NAVIGATION HEADER ===== */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: transparent;
+            border-bottom: none;
+            z-index: 1000;
+            padding: 0;
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+        .navbar-brand h2 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+            letter-spacing: 0.5px;
+        }
+
+        .navbar-phone {
+            display: flex;
+            align-items: center;
+            margin-left: auto;
+            margin-right: 30px;
+        }
+
+        .navbar-phone a {
+            background: transparent;
+            color: var(--accent-gold);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            display: inline-block;
+            padding: 8px 18px;
+            border: 2px solid var(--accent-gold);
+            border-radius: 2px;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+        }
+
+        .navbar-phone a:hover {
+            background: rgba(184, 165, 115, 0.1);
+            box-shadow: 0 0 20px rgba(184, 165, 115, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .navbar-menu {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .navbar-menu a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .navbar-menu a:hover {
+            color: var(--accent-teal);
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            gap: 6px;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 2.5px;
+            background: var(--text-primary);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(10px, 10px);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -7px);
+        }
+
+        /* Mobile menu overlay */
+        .menu-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .menu-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+        /* ===== HERO SECTION ===== */
+        .hero {
+            position: relative;
+            height: 100vh;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: var(--primary-dark);
+        }
+
+        .hero-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(15, 20, 25, 0.8) 0%, rgba(26, 35, 50, 0.7) 100%);
+            z-index: 2;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 3;
+            text-align: center;
+            max-width: 1000px;
+            padding: 120px 20px 40px 20px;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 8vw, 4.5rem);
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            letter-spacing: 0px;
+            color: #ffffff;
+            text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .hero p {
+            font-size: clamp(1.1rem, 3vw, 1.5rem);
+            margin-bottom: 30px;
+            color: rgba(255, 255, 255, 0.95);
+            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .hero-tagline {
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            margin-top: 20px;
+            color: var(--accent-gold);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 16px 48px;
+            background: var(--accent-teal);
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1rem;
+            border: none;
+            border-radius: 2px;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 24px rgba(45, 156, 202, 0.25);
+            margin: 10px;
+        }
+
+        .cta-button:hover {
+            background: #249ab8;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 36px rgba(45, 156, 202, 0.35);
+        }
+
+        .cta-button:active {
+            transform: translateY(0);
+        }
+
+        .cta-button.secondary {
+            background: transparent;
+            border: 2px solid var(--accent-gold);
+            color: var(--accent-gold);
+            box-shadow: none;
+        }
+
+        .cta-button.secondary:hover {
+            background: rgba(184, 165, 115, 0.08);
+            box-shadow: 0 0 20px rgba(184, 165, 115, 0.3);
+        }
+
+        /* ===== LOGO SHOWCASE SECTION ===== */
+        .logo-showcase-section {
+            background: var(--primary-bg);
+            padding: 40px 20px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .logo-showcase-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .logo-showcase-content h3 {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            font-weight: 600;
+        }
+
+        .event-logos {
+            overflow: hidden;
+            position: relative;
+            width: 100%;
+            padding: 30px 0;
+            background: #ffffff;
+            border-radius: 8px;
+            margin: 0 auto;
+            max-width: 90%;
+            border: 1px solid #e0e0e0;
+        }
+
+        .event-logos::before,
+        .event-logos::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            width: 100px;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .event-logos::before {
+            left: 0;
+            background: linear-gradient(to right, #ffffff 0%, transparent 100%);
+        }
+
+        .event-logos::after {
+            right: 0;
+            background: linear-gradient(to left, #ffffff 0%, transparent 100%);
+        }
+
+        .event-logos-track {
+            display: flex;
+            align-items: center;
+            gap: 60px;
+            animation: scroll-logos 35s linear infinite;
+            width: max-content;
+        }
+
+        .logo-item {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px 20px;
+        }
+
+        .event-logo {
+            height: 60px;
+            width: auto;
+            max-width: 150px;
+            object-fit: contain;
+        }
+
+        @keyframes scroll-logos {
+            from {
+                transform: translateX(0);
+            }
+            to {
+                transform: translateX(-50%);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .event-logos {
+                max-width: 95%;
+                padding: 20px 0;
+            }
+
+            .logo-item {
+                padding: 10px 15px;
+            }
+
+            .event-logo {
+                height: 45px;
+                max-width: 120px;
+            }
+
+            .event-logos-track {
+                gap: 40px;
+                animation-duration: 25s;
+            }
+
+            .event-logos::before,
+            .event-logos::after {
+                width: 50px;
+            }
+        }
+
+        /* ===== INTRO SECTION ===== */
+        .intro-section {
+            background: #ffffff;
+            padding: 80px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Decorative elements */
+        .intro-section::before {
+            content: '';
+            position: absolute;
+            top: -150px;
+            right: -100px;
+            width: 600px;
+            height: 600px;
+            background: repeating-linear-gradient(
+                45deg,
+                rgba(45, 156, 202, 0.18),
+                rgba(45, 156, 202, 0.18) 20px,
+                transparent 20px,
+                transparent 40px
+            );
+            clip-path: polygon(30% 0%, 100% 0%, 100% 70%, 0% 100%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .intro-section::after {
+            content: '';
+            position: absolute;
+            bottom: -180px;
+            left: -120px;
+            width: 550px;
+            height: 550px;
+            background: radial-gradient(circle at 50% 50%, rgba(26, 95, 122, 0.2) 0%, rgba(26, 95, 122, 0.08) 40%, transparent 70%);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            pointer-events: none;
+            z-index: 0;
+            transform: rotate(15deg);
+        }
+
+        .intro-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .intro-headline {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #1a5f7a;
+            margin-bottom: 25px;
+            line-height: 1.3;
+            text-align: center;
+        }
+
+        .intro-text {
+            font-size: 1.15rem;
+            line-height: 1.8;
+            color: #2a3442;
+            margin: 0 auto;
+            max-width: 900px;
+            text-align: center;
+        }
+
+        .intro-text strong {
+            color: #1a5f7a;
+            font-weight: 600;
+        }
+
+        /* ===== CAPABILITY SPECTRUM SECTION ===== */
+        .capability-section {
+            background: var(--primary-bg);
+            padding: 80px 20px;
+        }
+
+        .capability-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .capability-section h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .capability-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .capability-card {
+            background: var(--primary-dark);
+            border: 1px solid var(--border-subtle);
+            border-radius: 4px;
+            overflow: hidden;
+            /* Deliberately NOT `all`: opacity is driven per-frame by the scroll
+               fade, and a transition on it would lag a frame behind the scroll. */
+            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+            position: relative;
+        }
+
+        .capability-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-teal);
+            box-shadow: 0 10px 30px rgba(45, 156, 202, 0.2);
+        }
+
+        .capability-image {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .capability-card-content {
+            padding: 30px;
+        }
+
+        .capability-card h3 {
+            font-size: 1.5rem;
+            color: var(--accent-teal);
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .capability-card p {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            font-size: 1rem;
+        }
+
+        .capability-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            /* The image below is given opacity < 1 over the video, which puts it
+               in the same paint group as this badge — without a z-index the
+               later-in-DOM image would cover it. */
+            z-index: 2;
+            background: rgba(45, 156, 202, 0.9);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        /* ===== PROCESS SECTION ===== */
+        .process-section {
+            background: #ffffff;
+            padding: 80px 20px;
+        }
+
+        .process-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .process-section h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #1a5f7a;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .process-subtitle {
+            text-align: center;
+            color: #5a6c7d;
+            font-size: 1.1rem;
+            margin-bottom: 60px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .timeline {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-top: 50px;
+        }
+
+        .timeline-step {
+            padding: 35px 30px;
+            background: #f8f9fa;
+            border-left: 4px solid var(--accent-teal);
+            border-radius: 4px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-left-color 0.3s ease, background 0.3s ease;
+        }
+
+        .timeline-step:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(45, 156, 202, 0.15);
+            border-left-color: #1a5f7a;
+        }
+
+        .timeline-step h3 {
+            font-size: 1.5rem;
+            color: #1a5f7a;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .timeline-step p {
+            color: #4a5568;
+            line-height: 1.8;
+            font-size: 1.05rem;
+        }
+
+        .timeline-callout {
+            background: #fff3cd;
+            border-left: 4px solid var(--accent-gold);
+            padding: 20px 25px;
+            margin-top: 40px;
+            border-radius: 4px;
+        }
+
+        .timeline-callout strong {
+            color: #856404;
+            font-size: 1.1rem;
+        }
+
+        .timeline-callout p {
+            color: #856404;
+            margin-top: 8px;
+        }
+
+        /* ===== SERVICES GRID SECTION ===== */
+        .services-grid-section {
+            background: var(--primary-dark);
+            padding: 80px 20px;
+        }
+
+        .services-grid-section h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .services-color-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .service-color-card {
+            position: relative;
+            height: 320px;
+            border-radius: 4px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+
+        /* The photo lives on its own layer rather than on the element, so it can
+           be dialled down independently over the video without touching the
+           tint above it or the copy above that. Set per card with --card-img. */
+        .service-color-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: var(--card-img);
+            background-size: cover;
+            background-position: center;
+            transition: opacity 0.4s ease;
+            z-index: 0;
+        }
+
+        .service-color-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(15, 20, 25, 0.85) 0%, rgba(26, 35, 50, 0.75) 100%);
+            transition: background 0.4s ease;
+            z-index: 1;
+        }
+
+        .service-color-card:hover::before {
+            background: linear-gradient(135deg, rgba(45, 156, 202, 0.85) 0%, rgba(26, 95, 122, 0.75) 100%);
+        }
+
+        .service-color-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(45, 156, 202, 0.3);
+        }
+
+        .service-color-card-content {
+            position: relative;
+            z-index: 2;
+            padding: 30px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .service-color-card h3 {
+            font-size: 1.6rem;
+            color: #ffffff;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .service-color-card p {
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.7;
+            font-size: 1rem;
+        }
+
+        /* ============================================================
+           SCROLL-SCRUBBED VIDEO STAGE
+           Spans three sections: the capability spectrum, the process
+           timeline, and the services grid. The clip never plays on its
+           own — assets/scroll-video.js binds its playhead to scroll, so
+           down runs it forward and up runs it backward.
+
+           Layout: .sv-pin is a sticky, viewport-tall backdrop at the top
+           of .sv-track; .sv-content is pulled back over it with a
+           negative margin and rides above on z-index. The track's height
+           is therefore just the height of the three sections, which is
+           what paces the clip.
+
+           Every visual override here is scoped to .sv:not(.sv-off). The
+           script adds .sv-off if the video cannot load, and the page
+           falls straight back to its original opaque sections.
+           ============================================================ */
+        .sv {
+            position: relative;
+        }
+
+        .sv-track {
+            position: relative;
+        }
+
+        .sv-pin {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow: hidden;
+            z-index: 0;
+            /* The video is faded in on .is-ready, so its own `poster` never gets
+               a chance to paint. Showing it here instead means the stage holds a
+               still of the booth while the clip loads rather than flat black.
+               Same URL as the poster attribute, so it costs no extra request. */
+            background: var(--primary-dark) url('assets/booth-scroll-poster.jpg') center / cover no-repeat;
+        }
+
+        .sv-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 0.7s ease;
+            /* Own compositor layer, so a seek repaints the video and nothing
+               else on the page. */
+            transform: translateZ(0);
+        }
+
+        .sv.is-ready .sv-video {
+            opacity: 1;
+        }
+
+        /* Darkens the footage enough to keep copy legible, and feathers the top
+           and bottom edges so the stage melts into the sections either side. */
+        .sv-veil {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background:
+                linear-gradient(180deg,
+                    rgba(15, 20, 25, 0.92) 0%,
+                    rgba(15, 20, 25, 0.40) 16%,
+                    rgba(15, 20, 25, 0.40) 84%,
+                    rgba(15, 20, 25, 0.92) 100%),
+                linear-gradient(90deg,
+                    rgba(15, 20, 25, 0.45) 0%,
+                    rgba(15, 20, 25, 0.10) 50%,
+                    rgba(15, 20, 25, 0.45) 100%);
+        }
+
+        .sv-bar {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.08);
+            z-index: 2;
+        }
+
+        .sv-bar-fill {
+            height: 100%;
+            background: var(--accent-gold);
+            transform: scaleX(0);
+            transform-origin: 0 50%;
+        }
+
+        .sv-content {
+            position: relative;
+            z-index: 1;
+            margin-top: -100vh;
+        }
+
+        /* --- Sections over the video --- */
+        .sv:not(.sv-off) .capability-section,
+        .sv:not(.sv-off) .process-section,
+        .sv:not(.sv-off) .services-grid-section {
+            background: transparent;
+            /* A screen apiece, so each group of cards gets its own beat and the
+               clip has room to run rather than racing past in one flick. */
+            min-height: 115vh;
+            display: grid;
+            align-content: center;
+            padding: 130px 20px;
+        }
+
+        /* These wrappers centre themselves with `margin: 0 auto`. As grid items
+           an auto margin suppresses the default stretch and they would shrink to
+           fit-content, so give them a definite width to centre within. */
+        .sv:not(.sv-off) .capability-content,
+        .sv:not(.sv-off) .process-content,
+        .sv:not(.sv-off) .services-color-grid {
+            width: 100%;
+        }
+
+        /* --- Capability cards ---
+           Deliberately NO backdrop-filter anywhere over the clip: frosted glass
+           makes the compositor re-blur a live video texture behind every panel
+           on every frame, and the texture changes on every seek. Behind the
+           scrim a plain translucent panel is all but indistinguishable. */
+        .sv:not(.sv-off) .capability-card {
+            background: rgba(15, 20, 25, 0.55);
+            border-color: rgba(255, 255, 255, 0.14);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+        }
+
+        .sv:not(.sv-off) .capability-card:hover {
+            background: rgba(15, 20, 25, 0.68);
+        }
+
+        .sv:not(.sv-off) .capability-image {
+            opacity: 0.86;
+        }
+
+        .sv:not(.sv-off) .capability-card p {
+            color: rgba(240, 239, 244, 0.82);
+        }
+
+        /* --- Process timeline (light-on-white by default, inverted here) --- */
+        .sv:not(.sv-off) .process-section h2 {
+            color: var(--text-primary);
+        }
+
+        .sv:not(.sv-off) .process-subtitle {
+            color: rgba(240, 239, 244, 0.75);
+        }
+
+        .sv:not(.sv-off) .timeline-step {
+            background: rgba(15, 20, 25, 0.55);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.42);
+        }
+
+        .sv:not(.sv-off) .timeline-step:hover {
+            background: rgba(15, 20, 25, 0.68);
+            border-left-color: var(--accent-gold);
+        }
+
+        .sv:not(.sv-off) .timeline-step h3 {
+            color: var(--accent-teal-bright);
+        }
+
+        .sv:not(.sv-off) .timeline-step p {
+            color: rgba(240, 239, 244, 0.8);
+        }
+
+        .sv:not(.sv-off) .timeline-callout {
+            background: rgba(45, 38, 20, 0.55);
+        }
+
+        .sv:not(.sv-off) .timeline-callout > strong,
+        .sv:not(.sv-off) .timeline-callout p strong {
+            color: var(--accent-gold-bright);
+        }
+
+        .sv:not(.sv-off) .timeline-callout p {
+            color: rgba(240, 239, 244, 0.85);
+        }
+
+        /* --- Service cards --- */
+        .sv:not(.sv-off) .service-color-card {
+            background: rgba(15, 20, 25, 0.30);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+        }
+
+        .sv:not(.sv-off) .service-color-card::after {
+            opacity: 0.34;
+        }
+
+        .sv:not(.sv-off) .service-color-card:hover::after {
+            opacity: 0.6;
+        }
+
+        /* Enough tint to hold white copy over the brighter shop photos, still
+           light enough to read as glass with the clip moving behind it. */
+        .sv:not(.sv-off) .service-color-card::before {
+            background: linear-gradient(135deg, rgba(15, 20, 25, 0.62) 0%, rgba(26, 35, 50, 0.50) 100%);
+        }
+
+        .sv:not(.sv-off) .service-color-card:hover::before {
+            background: linear-gradient(135deg, rgba(45, 156, 202, 0.62) 0%, rgba(26, 95, 122, 0.50) 100%);
+        }
+
+        /* --- Fallback: no video, page reverts to its own backgrounds --- */
+        .sv.sv-off .sv-pin {
+            display: none;
+        }
+
+        .sv.sv-off .sv-content {
+            margin-top: 0;
+        }
+
+        /* ===== STATS SECTION ===== */
+        .stats-new {
+            background: var(--primary-bg);
+            padding: 80px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+
+        .stat-box {
+            text-align: center;
+            padding: 30px;
+            background: var(--primary-dark);
+            border-radius: 4px;
+            border: 1px solid var(--border-subtle);
+            transition: all 0.3s ease;
+        }
+
+        .stat-box:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-teal);
+            box-shadow: 0 10px 30px rgba(45, 156, 202, 0.2);
+        }
+
+        .stat-num {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: var(--accent-teal);
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        /* ===== FINAL CTA SECTION ===== */
+        .final-cta {
+            position: relative;
+            padding: 100px 20px;
+            overflow: hidden;
+            color: white;
+            text-align: center;
+        }
+
+        .final-cta-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            z-index: 1;
+        }
+
+        .final-cta-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(15, 20, 25, 0.9) 0%, rgba(26, 35, 50, 0.85) 100%);
+            z-index: 2;
+        }
+
+        .final-cta .container {
+            position: relative;
+            z-index: 3;
+        }
+
+        .final-cta h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #ffffff;
+        }
+
+        .section-subtitle {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 40px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-group {
+            margin: 40px 0;
+        }
+
+        .urgency-text {
+            margin-top: 30px;
+            color: var(--accent-gold);
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        /* ===== FOOTER =====
+           Mirrors the .site-footer block in assets/site.css so the home page
+           matches gallery / about-us / what-we-do / contact-us / labor request. */
+        .site-footer {
+            background: var(--primary-dark);
+            border-top: 1px solid var(--border-subtle);
+            padding: 60px 20px 26px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1.2fr;
+            gap: 40px;
+        }
+
+        .footer-col h3 {
+            color: #fff;
+            font-size: 1.2rem;
+            margin-bottom: 14px;
+        }
+
+        .footer-col h4 {
+            color: var(--accent-teal);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 16px;
+        }
+
+        .footer-col p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 12px;
+            line-height: 1.7;
+        }
+
+        .footer-col a {
+            display: block;
+            color: var(--text-secondary);
+            text-decoration: none;
+            margin: 9px 0;
+            font-size: 0.95rem;
+            transition: color 0.25s ease;
+        }
+
+        .footer-col a:hover {
+            color: var(--accent-teal);
+        }
+
+        .footer-col .phone-link {
+            color: var(--accent-gold);
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 8px 0;
+        }
+
+        .footer-col .phone-link:hover {
+            color: var(--accent-gold-bright);
+        }
+
+        .footer-col.cta .cta-button {
+            margin: 6px 0 0;
+        }
+
+        .footer-loc {
+            color: var(--accent-teal) !important;
+            font-weight: 600;
+        }
+
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 44px auto 0;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-subtle);
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* ===== RESPONSIVE DESIGN ===== */
+        @media (max-width: 768px) {
+            .navbar-menu {
+                position: fixed;
+                top: 0;
+                right: -280px;
+                width: 280px;
+                height: 100vh;
+                background: var(--accent-teal);
+                backdrop-filter: blur(10px);
+                flex-direction: column;
+                gap: 0;
+                align-items: stretch;
+                overflow-y: auto;
+                transition: right 0.3s ease;
+                border-left: 1px solid rgba(255, 255, 255, 0.1);
+                padding-top: 80px;
+                z-index: 1000;
+            }
+
+            .navbar-menu.active {
+                right: 0;
+                box-shadow: -5px 0 20px rgba(0, 0, 0, 0.3);
+            }
+
+            .navbar-menu a {
+                padding: 18px 25px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                color: #ffffff;
+                font-weight: 600;
+            }
+
+            .navbar-phone {
+                margin-right: 15px;
+            }
+
+            .hamburger {
+                display: flex;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .capability-grid,
+            .services-color-grid,
+            .timeline {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-row {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 30px;
+            }
+
+            /* Stacked cards already make these sections far taller than a
+               screen, so the min-height would only add dead space. */
+            .sv:not(.sv-off) .capability-section,
+            .sv:not(.sv-off) .process-section,
+            .sv:not(.sv-off) .services-grid-section {
+                min-height: 0;
+                padding: 80px 20px;
+            }
+
+            /* Copy sits over a much larger slice of moving footage once the
+               grids collapse to one column, so lean the panels more opaque. */
+            .sv:not(.sv-off) .capability-card,
+            .sv:not(.sv-off) .timeline-step {
+                background: rgba(15, 20, 25, 0.72);
+            }
+
+            .sv:not(.sv-off) .service-color-card {
+                background: rgba(15, 20, 25, 0.45);
+            }
+
+            .sv:not(.sv-off) .service-color-card::after {
+                opacity: 0.5;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .intro-headline,
+            .capability-section h2,
+            .process-section h2,
+            .services-grid-section h2,
+            .final-cta h2 {
+                font-size: 1.8rem;
+            }
+
+            .cta-button {
+                padding: 14px 32px;
+                font-size: 0.9rem;
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Reduced motion: the scrub still tracks scroll (it is a position, not
+           an animation) but the card fades are switched off entirely. */
+        @media (prefers-reduced-motion: reduce) {
+            .sv [data-sv-fade] {
+                opacity: 1 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile menu overlay -->
+    <div class="menu-overlay" id="menu-overlay"></div>
+
+    <!-- ===== NAVIGATION HEADER ===== -->
+    <header class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <h2>LV Trade Show Rentals</h2>
+            </div>
+            <div class="navbar-phone" id="navbar-phone">
+                <a href="tel:+17024829025">Call Us</a>
+            </div>
+            <button class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <nav class="navbar-menu" id="navbar-menu">
+                <a href="https://lvtradeshowrental.com/">HOME</a>
+                <a href="https://lvtradeshowrental.com/gallery">GALLERY</a>
+                <a href="https://lvtradeshowrental.com/about-us">ABOUT US</a>
+                <a href="https://lvtradeshowrental.com/what-we-do">WHAT WE DO</a>
+                <a href="https://lvtradeshowrental.com/contact-us">CONTACT US</a>
+                <a href="https://lvtradeshowrental.com/i-d-labor-request">I & D LABOR REQUEST</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ===== HERO SECTION ===== -->
+    <section class="hero">
+        <video class="hero-video" autoplay muted loop playsinline>
+            <source src="assets/tradeshow-rental.mp4" type="video/mp4">
+            Your browser does not support HTML5 video.
+        </video>
+        <div class="hero-overlay"></div>
+
+        <div class="hero-content">
+            <h1>Custom Trade Show Booths That Turn Heads</h1>
+            <p>From concept to installation—fully custom exhibits built for your vision</p>
+
+            <div style="margin: 50px 0;">
+                <a href="https://lvtradeshowrental.com/contact-us" class="cta-button">Start Your Build</a>
+            </div>
+
+            <div class="hero-tagline">
+                100% Turnkey • Design • Fabrication • Installation
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== LOGO SHOWCASE SECTION ===== -->
+    <section class="logo-showcase-section">
+        <div class="logo-showcase-content">
+            <h3>We Build For The Biggest Shows</h3>
+            <div class="event-logos">
+                <div class="event-logos-track">
+                    <div class="logo-item">
+                        <img src="assets/ces-logo.png" alt="CES - Consumer Electronics Show" class="event-logo">
+                    </div>
+                    <div class="logo-item">
+                        <img src="assets/sema-logo.png" alt="SEMA - Specialty Equipment Market Association" class="event-logo">
+                    </div>
+                    <div class="logo-item">
+                        <img src="assets/magic-logo.png" alt="MAGIC Fashion Trade Show" class="event-logo">
+                    </div>
+                    <div class="logo-item">
+                        <img src="assets/nab-logo.png" alt="NAB - National Association of Broadcasters" class="event-logo">
+                    </div>
+                    <div class="logo-item">
+                        <img src="assets/CONEXPO.png" alt="CONEXPO - Construction Equipment Exposition" class="event-logo">
+                    </div>
+                    <!-- Duplicate set for seamless infinite scroll -->
+                    <div class="logo-item">
+                        <img src="assets/ces-logo.png" alt="CES - Consumer Electronics Show" class="event-logo">
+                    </div>
+                    <div class="logo-item">
+                        <img src="assets/sema-logo.png" alt="SEMA - Specialty Equipment Market Association" class="event-logo">
+                    </div>
+                    <div class="logo-item">
+                        <img src="assets/magic-logo.png" alt="MAGIC Fashion Trade Show" class="event-logo">
+                    </div>
+                    <div class="logo-item">
+                        <img src="assets/nab-logo.png" alt="NAB - National Association of Broadcasters" class="event-logo">
+                    </div>
+                    <div class="logo-item">
+                        <img src="assets/CONEXPO.png" alt="CONEXPO - Construction Equipment Exposition" class="event-logo">
+                    </div>
+                    <!-- Third duplicate set for smooth buffer -->
+                    <div class="logo-item">
+                        <img src="assets/ces-logo.png" alt="CES - Consumer Electronics Show" class="event-logo">
+                    </div>
+                    <div class="logo-item">
+                        <img src="assets/sema-logo.png" alt="SEMA - Specialty Equipment Market Association" class="event-logo">
+                    </div>
+                    <div class="logo-item">
+                        <img src="assets/magic-logo.png" alt="MAGIC Fashion Trade Show" class="event-logo">
+                    </div>
+                    <div class="logo-item">
+                        <img src="assets/nab-logo.png" alt="NAB - National Association of Broadcasters" class="event-logo">
+                    </div>
+                    <div class="logo-item">
+                        <img src="assets/CONEXPO.png" alt="CONEXPO - Construction Equipment Exposition" class="event-logo">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== INTRO SECTION ===== -->
+    <section class="intro-section">
+        <div class="intro-content">
+            <h2 class="intro-headline">Whatever You Can Imagine, We Can Build</h2>
+            <p class="intro-text">
+                We're not just a rental company. <strong>We're a full-service exhibit house</strong> that takes your vision from sketch to showroom floor. Whether you need a simple 10×10 or a jaw-dropping custom island booth, we handle <strong>design, fabrication, installation, and dismantle</strong>. Your booth becomes our obsession—delivered flawlessly, on time, every time.
+            </p>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         SCROLL-SCRUBBED VIDEO STAGE
+         The clip runs as a backdrop across the next three sections —
+         it starts scrubbing when "From Simple Rentals to Fully Custom
+         Builds" reaches the top of the viewport and finishes at the end
+         of "Full-Service Exhibit Solutions". Scroll down plays it
+         forward, scroll up plays it back. See assets/scroll-video.js.
+         ============================================================ -->
+    <div class="sv" data-scroll-video>
+      <div class="sv-track">
+
+        <div class="sv-pin">
+            <video class="sv-video"
+                   src="assets/booth-scroll.mp4"
+                   poster="assets/booth-scroll-poster.jpg"
+                   preload="auto"
+                   muted
+                   playsinline
+                   webkit-playsinline
+                   disablepictureinpicture></video>
+            <div class="sv-veil"></div>
+            <div class="sv-bar"><div class="sv-bar-fill"></div></div>
+        </div>
+
+        <div class="sv-content">
+
+    <!-- ===== CAPABILITY SPECTRUM SECTION ===== -->
+    <section class="capability-section">
+        <div class="capability-content">
+            <h2 data-sv-fade>From Simple Rentals to Fully Custom Builds</h2>
+
+            <div class="capability-grid">
+                <div class="capability-card" data-sv-fade>
+                    <span class="capability-badge">Quick Setup</span>
+                    <img src="assets/booth-simple-rental.jpg" alt="Simple booth rental" class="capability-image">
+                    <div class="capability-card-content">
+                        <h3>Simple Rentals</h3>
+                        <p>Standard booths ready to go. Perfect for quick turnarounds with professional polish. Clean, modern designs that make your brand shine.</p>
+                    </div>
+                </div>
+
+                <div class="capability-card" data-sv-fade>
+                    <span class="capability-badge">Flexible</span>
+                    <img src="assets/booth-semi-custom.jpg" alt="Semi-custom booth" class="capability-image">
+                    <div class="capability-card-content">
+                        <h3>Semi-Custom</h3>
+                        <p>Modify existing structures to match your brand. Custom graphics, lighting upgrades, and layout adjustments. The sweet spot between budget and customization.</p>
+                    </div>
+                </div>
+
+                <div class="capability-card" data-sv-fade>
+                    <span class="capability-badge">Unlimited</span>
+                    <img src="assets/booth-fully-custom.jpg" alt="Fully custom booth build" class="capability-image">
+                    <div class="capability-card-content">
+                        <h3>Fully Custom</h3>
+                        <p>100% bespoke fabrication. Multi-story displays, interactive elements, integrated AV—whatever you dream, we engineer and build. No limits.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== PROCESS SECTION ===== -->
+    <section class="process-section">
+        <div class="process-content">
+            <h2 data-sv-fade>How It Works</h2>
+            <p class="process-subtitle" data-sv-fade>A streamlined process that turns your vision into reality, on schedule and on budget.</p>
+
+            <div class="timeline">
+                <div class="timeline-step" data-sv-fade>
+                    <h3>Consult & Design</h3>
+                    <p>We listen to your goals, sketch initial concepts, and refine until it's perfect. Our designers bring your brand story to life in 3D renderings.</p>
+                </div>
+
+                <div class="timeline-step" data-sv-fade>
+                    <h3>Fabrication</h3>
+                    <p>Custom builds come to life in our Las Vegas shop. Precision carpentry, graphics production, and quality checks at every stage.</p>
+                </div>
+
+                <div class="timeline-step" data-sv-fade>
+                    <h3>Installation</h3>
+                    <p>Professional setup on-site. Our expert crews handle everything—structural build, graphics, lighting, AV integration, and final staging.</p>
+                </div>
+
+                <div class="timeline-step" data-sv-fade>
+                    <h3>Dismantle & Storage</h3>
+                    <p>We handle teardown and can store your booth for future events. Asset protection and logistics, all taken care of.</p>
+                </div>
+            </div>
+
+            <div class="timeline-callout" data-sv-fade>
+                <strong>Plan Ahead:</strong>
+                <p>We recommend at least <strong>8 weeks lead time</strong> for major custom builds to ensure we meet your installation deadline with zero compromises.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== SERVICES GRID SECTION ===== -->
+    <section class="services-grid-section">
+        <h2 data-sv-fade>Full-Service Exhibit Solutions</h2>
+
+        <div class="services-color-grid">
+            <div class="service-color-card" data-sv-fade style="--card-img: url('assets/service-custom-fab.jpg');">
+                <div class="service-color-card-content">
+                    <h3>Custom Fabrication</h3>
+                    <p>In-house carpentry, metalwork, and structural builds. From traditional wood frames to modern aluminum systems—built to spec, built to last.</p>
+                </div>
+            </div>
+
+            <div class="service-color-card" data-sv-fade style="--card-img: url('assets/service-graphic-design.jpg');">
+                <div class="service-color-card-content">
+                    <h3>Graphic Design & Production</h3>
+                    <p>Our design team creates stunning visuals that stop traffic. High-resolution printing, fabric tension graphics, backlit displays, and more.</p>
+                </div>
+            </div>
+
+            <div class="service-color-card" data-sv-fade style="--card-img: url('assets/service-installation.jpg');">
+                <div class="service-color-card-content">
+                    <h3>Professional Installation</h3>
+                    <p>Flawless booth setup by experienced crews. We coordinate with union labor, manage logistics, and ensure your booth is show-ready on time.</p>
+                </div>
+            </div>
+
+            <div class="service-color-card" data-sv-fade style="--card-img: url('assets/service-lighting-av.jpg');">
+                <div class="service-color-card-content">
+                    <h3>Lighting & AV Integration</h3>
+                    <p>Create unforgettable experiences with professional lighting, video walls, interactive kiosks, and sound systems—all seamlessly integrated.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+        </div><!-- /.sv-content -->
+      </div><!-- /.sv-track -->
+    </div><!-- /.sv -->
+
+    <!-- ===== STATS SECTION ===== -->
+    <section class="stats-new">
+        <div class="container">
+            <div class="stats-row">
+                <div class="stat-box" data-count="20">
+                    <div class="stat-num">0</div>
+                    <div class="stat-label">Years in Business</div>
+                </div>
+                <div class="stat-box" data-count="1000">
+                    <div class="stat-num">0</div>
+                    <div class="stat-label">Custom Booths Built</div>
+                </div>
+                <div class="stat-box" data-count="100">
+                    <div class="stat-num">0</div>
+                    <div class="stat-label">Perfect Installation Rate</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FINAL CTA SECTION ===== -->
+    <section class="final-cta">
+        <div class="final-cta-bg" style="background-image: url('assets/booth-cta-bg.jpg');"></div>
+        <div class="final-cta-overlay"></div>
+        <div class="container">
+            <h2>Ready to Build Something Remarkable?</h2>
+            <p class="section-subtitle">Let's bring your trade show vision to life. From initial concept to installation day, we're with you every step of the way.</p>
+
+            <div class="cta-group">
+                <a href="https://lvtradeshowrental.com/contact-us" class="cta-button">Request a Quote</a>
+                <a href="tel:702-482-9025" class="cta-button secondary">Call 702-482-9025</a>
+            </div>
+
+            <div class="urgency-text">Limited build slots available for Q2 2025 trade show season.</div>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="site-footer">
+        <div class="container footer-grid">
+            <div class="footer-col">
+                <h3>LV Trade Show Rentals</h3>
+                <p>Full-service trade show exhibit house — custom design, fabrication, installation &amp; I&amp;D labor across Las Vegas.</p>
+                <a href="tel:+17024838279" class="phone-link">702-483-8279</a>
+                <p class="footer-loc">📍 Las Vegas, Nevada</p>
+            </div>
+            <div class="footer-col">
+                <h4>Explore</h4>
+                <a href="index.html">Home</a>
+                <a href="gallery.html">Gallery</a>
+                <a href="about-us.html">About Us</a>
+                <a href="what-we-do.html">What We Do</a>
+            </div>
+            <div class="footer-col">
+                <h4>Services</h4>
+                <a href="index.html">Custom Booth Rentals</a>
+                <a href="what-we-do.html">I&amp;D Labor</a>
+                <a href="contact-us.html">Contact Us</a>
+                <a href="i-d-labor-request.html">Labor Request</a>
+            </div>
+            <div class="footer-col cta">
+                <h4>Start a project</h4>
+                <a href="contact-us.html" class="cta-button">Request a Quote</a>
+            </div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2026 LV Trade Show Rentals. All rights reserved.</p></div>
+    </footer>
+
+    <script>
+        // Hamburger menu toggle
+        const hamburger = document.getElementById('hamburger');
+        const navbarMenu = document.getElementById('navbar-menu');
+        const menuOverlay = document.getElementById('menu-overlay');
+
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            navbarMenu.classList.toggle('active');
+            menuOverlay.classList.toggle('active');
+        });
+
+        // Close menu when overlay is clicked
+        menuOverlay.addEventListener('click', () => {
+            hamburger.classList.remove('active');
+            navbarMenu.classList.remove('active');
+            menuOverlay.classList.remove('active');
+        });
+
+        // Close menu when a link is clicked
+        navbarMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                navbarMenu.classList.remove('active');
+                menuOverlay.classList.remove('active');
+            });
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+                if (href !== '#' && document.querySelector(href)) {
+                    e.preventDefault();
+                    document.querySelector(href).scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Parallax effect on scroll
+        window.addEventListener('scroll', () => {
+            const hero = document.querySelector('.hero');
+            const scrolled = window.pageYOffset;
+            if (scrolled < window.innerHeight) {
+                const video = hero.querySelector('.hero-video');
+                if (video) {
+                    video.style.transform = `translateY(${scrolled * 0.5}px)`;
+                }
+            }
+        });
+
+        // Count-up animation for stats
+        function animateCount(element, target) {
+            const duration = 2000;
+            const start = 0;
+            const increment = target / (duration / 16);
+            let current = start;
+
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    element.textContent = target + (target === 100 ? '%' : '+');
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.floor(current) + (target === 100 ? '%' : '+');
+                }
+            }, 16);
+        }
+
+        // Trigger count-up when stats section is visible
+        const statsObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !entry.target.classList.contains('counted')) {
+                    entry.target.classList.add('counted');
+                    const target = parseInt(entry.target.dataset.count);
+                    const numElement = entry.target.querySelector('.stat-num');
+                    animateCount(numElement, target);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        document.querySelectorAll('.stat-box').forEach(box => statsObserver.observe(box));
+
+        /* ---------------------------------------------------------------
+           Scroll-linked card fades over the video stage.
+
+           A card's opacity is a function of where its centre sits in the
+           viewport, recomputed every frame rather than latched by an
+           IntersectionObserver threshold. That is what makes it work in
+           both directions: reversing mid-fade just walks the same curve
+           back, so there is nothing to snap or replay. Cards are solid
+           through the middle of the screen and dissolve towards either
+           edge, which opens the footage up instead of leaving panels
+           parked over it the whole way down.
+
+           Only opacity is written here — the cards' hover lift owns
+           `transform`, and driving both from script would fight it.
+           --------------------------------------------------------------- */
+        (function () {
+            const stage = document.querySelector('.sv');
+            if (!stage) return;
+
+            const items = Array.prototype.slice.call(stage.querySelectorAll('[data-sv-fade]'));
+            if (!items.length) return;
+
+            if (window.matchMedia &&
+                window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+            /* Where the card's centre sits, as a fraction of viewport height:
+               1 is the bottom edge of the screen, 0 is the top. */
+            const IN_START = 1.00;   // begins to appear as it clears the bottom edge
+            const IN_FULL  = 0.75;   // fully solid once it is 75% up the viewport
+            const OUT_FULL = 0.28;   // stays solid until here on the way out
+            const OUT_END  = 0.03;   // gone by the time it leaves the top
+
+            const values = new Array(items.length);
+            let running = false;
+            let raf = 0;
+
+            /* Smoothstep, so neither end of a ramp has a visible corner where
+               the fade starts or stops. */
+            function ease(t) { return t * t * (3 - 2 * t); }
+
+            function frame() {
+                if (!running) return;
+                raf = window.requestAnimationFrame(frame);
+
+                const vh = window.innerHeight || 1;
+
+                // Read every position first, write afterwards — never interleave.
+                for (let i = 0; i < items.length; i++) {
+                    const r = items[i].getBoundingClientRect();
+                    const c = (r.top + r.bottom) / 2 / vh;
+                    let o;
+                    if (c >= IN_START) o = 0;
+                    else if (c > IN_FULL) o = (IN_START - c) / (IN_START - IN_FULL);
+                    else if (c > OUT_FULL) o = 1;
+                    else if (c > OUT_END) o = (c - OUT_END) / (OUT_FULL - OUT_END);
+                    else o = 0;
+                    values[i] = ease(o).toFixed(3);
+                }
+                for (let i = 0; i < items.length; i++) {
+                    items[i].style.opacity = values[i];
+                }
+            }
+
+            function start() {
+                if (running) return;
+                running = true;
+                raf = window.requestAnimationFrame(frame);
+            }
+
+            function stop() {
+                running = false;
+                if (raf) window.cancelAnimationFrame(raf);
+            }
+
+            /* Only burn frames while the stage is actually on screen. */
+            let onScreen = true;
+            if ('IntersectionObserver' in window) {
+                onScreen = false;
+                new IntersectionObserver(function (entries) {
+                    onScreen = entries[entries.length - 1].isIntersecting;
+                    if (onScreen && !document.hidden) start(); else stop();
+                }, { rootMargin: '20% 0px' }).observe(stage);
+            } else {
+                start();
+            }
+
+            document.addEventListener('visibilitychange', function () {
+                if (document.hidden || !onScreen) stop(); else start();
+            });
+        })();
+
+        // Track CTA clicks
+        document.querySelectorAll('.cta-button').forEach(button => {
+            button.addEventListener('click', function() {
+                console.log('CTA clicked:', this.textContent);
+                // Add analytics tracking here
+            });
+        });
+    </script>
+
+    <!-- Binds the booth clip's playhead to scroll across the three sections above. -->
+    <script src="assets/scroll-video.js" defer></script>
+</body>
+</html>
