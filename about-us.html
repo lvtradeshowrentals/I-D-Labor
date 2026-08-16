@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us | LV Trade Show Rentals</title>
+    <meta name="description" content="Las Vegas' full-service trade show exhibit house — 20+ years designing, fabricating and installing custom booths on time, every time.">
+    <meta property="og:title" content="About Us | LV Trade Show Rentals">
+    <meta property="og:description" content="Craftsmanship, reliability and turnkey trade show execution in Las Vegas.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="assets/world2-logo.png">
+    <link rel="icon" type="image/png" href="assets/world2-logo.png">
+    <link rel="stylesheet" href="assets/site.css">
+    <style>
+        /* ===================================================================
+           ABOUT US — page-specific styles (abt- prefix; no shared overrides)
+           =================================================================== */
+
+        /* ---- Cinematic interior hero ---- */
+        .abt-hero { min-height: 82vh; }
+        .abt-hero .page-hero-overlay {
+            background:
+                radial-gradient(120% 90% at 80% 0%, rgba(45, 156, 202, 0.16) 0%, transparent 55%),
+                linear-gradient(135deg, rgba(15, 20, 25, 0.92) 0%, rgba(26, 35, 50, 0.78) 55%, rgba(15, 20, 25, 0.7) 100%);
+        }
+        .abt-hero h1 { max-width: 15ch; }
+        .abt-hero-badges { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 34px; }
+        .abt-hero-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 10px 18px; border-radius: 40px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+            font-size: 0.92rem; font-weight: 600; color: #fff; letter-spacing: 0.3px;
+        }
+        .abt-hero-badge b { color: var(--accent-teal); font-weight: 800; }
+        .abt-hero-badge.gold b { color: var(--accent-gold); }
+
+        /* ---- Ambient depth glow (decorative, sits behind content) ---- */
+        .abt-amb { position: relative; }
+        .abt-amb::before { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+        .abt-amb.g1::before { background: radial-gradient(640px 420px at 12% 18%, rgba(45, 156, 202, 0.10), transparent 68%); }
+        .abt-amb.g2::before { background: radial-gradient(600px 420px at 88% 12%, rgba(184, 165, 115, 0.09), transparent 68%); }
+        .abt-amb > .container { position: relative; z-index: 1; }
+
+        /* ---- Brand-story feature rows: parallax image + floating chip ---- */
+        .feature-row .feature-media.abt-fmedia {
+            position: relative; overflow: hidden; border-radius: 8px;
+            box-shadow: var(--shadow-lg); min-height: 480px;
+        }
+        .feature-row .feature-media.abt-fmedia img {
+            position: absolute; top: -18%; left: 0;
+            width: 100%; height: 136%; object-fit: cover;
+            will-change: transform;
+        }
+        .feature-row .feature-media.abt-fmedia::after {
+            content: ''; position: absolute; inset: 0; border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            box-shadow: inset 0 0 90px rgba(0, 0, 0, 0.4);
+            pointer-events: none; z-index: 3;
+        }
+        .abt-fchip {
+            position: absolute; z-index: 4; left: 22px; bottom: 22px;
+            display: flex; align-items: center; gap: 14px;
+            padding: 14px 20px; border-radius: 10px;
+            background: rgba(15, 20, 25, 0.72);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+            box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55);
+        }
+        .abt-fchip .abt-fchip-num { font-size: 1.9rem; font-weight: 900; color: var(--accent-teal); line-height: 1; }
+        .abt-fchip.gold .abt-fchip-num { color: var(--accent-gold); }
+        .abt-fchip .abt-fchip-lbl {
+            font-size: 0.74rem; color: var(--text-secondary);
+            text-transform: uppercase; letter-spacing: 1px; font-weight: 700; line-height: 1.25;
+        }
+
+        .abt-kicker {
+            display: block; color: var(--accent-gold); font-weight: 700;
+            font-size: 0.78rem; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 14px;
+        }
+        .abt-check { list-style: none; margin-top: 24px; }
+        .abt-check li { position: relative; padding: 8px 0 8px 30px; color: var(--text-primary); }
+        .abt-check li::before { content: '✓'; position: absolute; left: 0; top: 8px; color: var(--accent-teal); font-weight: 800; }
+
+        /* ---- Stats band ---- */
+        .abt-stats .stats-row { text-align: center; }
+        .abt-dollar::before { content: '$'; }
+
+        /* ===================================================================
+           WHAT WE STAND FOR — scroll-scrubbed stage
+           ===================================================================
+           The block is a scroll-driven stage, not a grid of cards. Three
+           layers, all paced by the same scroll:
+
+             1. BACKDROP — assets/about-us-scroll.mp4 pinned behind everything,
+                its playhead bound to scroll by assets/scroll-video.js. Down
+                runs it forward, up runs it backward, stopping holds a frame.
+             2. BLUEPRINT — a drafting grid over the footage whose opacity is
+                driven by --p (0 at the top of the block, 1 at the bottom), so
+                the drawing dissolves as the booth in the clip comes to life.
+             3. TYPE — a sticky two-column layout: a persistent heading and
+                live index on the left, one principle at a time on the right,
+                swapped as --p crosses each quarter.
+
+           Everything the video touches is scoped to .sv:not(.sv-off). The
+           script adds .sv-off if the clip is missing or fails, and the stage
+           falls back to its own painted backdrop with no other change.
+           =================================================================== */
+
+        /* ---- Layer 1: the pinned, scroll-scrubbed backdrop ---- */
+        .sv { position: relative; --p: 0; }
+        .sv-track { position: relative; }
+        .sv-pin {
+            position: sticky; top: 0; height: 100vh; overflow: hidden; z-index: 0;
+            --mx: 50%; --my: 40%;
+            /* Stands on its own before the clip is dropped in — and after
+               .sv-off, if it never loads. */
+            background:
+                radial-gradient(70% 55% at 22% 18%, rgba(45, 156, 202, 0.16), transparent 70%),
+                radial-gradient(60% 60% at 88% 92%, rgba(184, 165, 115, 0.13), transparent 72%),
+                linear-gradient(160deg, #131c26 0%, #0f1419 55%, #0c1116 100%);
+        }
+        .sv-video {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; opacity: 0; transition: opacity 0.8s ease;
+            transform: translateZ(0); /* own compositor layer: a seek repaints only the video */
+        }
+        .sv.is-ready .sv-video { opacity: 1; }
+
+        /* Slight overall darkening, weighted to the left so the copy column
+           always has something to sit on, and feathered top and bottom so the
+           stage melts into the sections either side. */
+        .sv-veil {
+            position: absolute; inset: 0; pointer-events: none; z-index: 1;
+            background:
+                linear-gradient(180deg, rgba(15, 20, 25, 0.94) 0%, rgba(15, 20, 25, 0.44) 14%,
+                                        rgba(15, 20, 25, 0.44) 86%, rgba(15, 20, 25, 0.94) 100%),
+                linear-gradient(90deg, rgba(15, 20, 25, 0.76) 0%, rgba(15, 20, 25, 0.28) 58%,
+                                       rgba(15, 20, 25, 0.58) 100%);
+        }
+
+        /* ---- Layer 2: the drafting grid that dissolves as you scroll ---- */
+        .sv-grid {
+            position: absolute; inset: -1px; pointer-events: none; z-index: 2;
+            opacity: calc(0.55 - var(--p, 0) * 0.55);
+            background-image:
+                linear-gradient(rgba(45, 156, 202, 0.30) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(45, 156, 202, 0.30) 1px, transparent 1px),
+                linear-gradient(rgba(45, 156, 202, 0.13) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(45, 156, 202, 0.13) 1px, transparent 1px);
+            background-size: 160px 160px, 160px 160px, 32px 32px, 32px 32px;
+            -webkit-mask-image: radial-gradient(115% 90% at 50% 45%, #000 25%, transparent 82%);
+            mask-image: radial-gradient(115% 90% at 50% 45%, #000 25%, transparent 82%);
+        }
+
+        /* Work light that follows the cursor across the footage. */
+        .sv-light {
+            position: absolute; inset: 0; pointer-events: none; z-index: 3;
+            mix-blend-mode: screen;
+            background: radial-gradient(460px 460px at var(--mx) var(--my),
+                        rgba(93, 190, 232, 0.16), rgba(45, 156, 202, 0.05) 42%, transparent 72%);
+        }
+
+        /* Static film grain — an inline SVG turbulence, so no extra request and
+           no per-frame repaint of a full-screen layer. */
+        .sv-grain {
+            position: absolute; inset: 0; pointer-events: none; z-index: 4;
+            opacity: 0.055; mix-blend-mode: overlay;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");
+        }
+
+        .sv-bar {
+            position: absolute; left: 0; right: 0; bottom: 0; height: 2px; z-index: 5;
+            background: rgba(255, 255, 255, 0.07);
+        }
+        .sv-bar-fill {
+            height: 100%; background: linear-gradient(90deg, var(--accent-teal), var(--accent-gold));
+            transform: scaleX(0); transform-origin: 0 50%;
+        }
+
+        /* Pulled back over the pin; rides above it on z-index. */
+        .sv-content { position: relative; z-index: 1; margin-top: -100vh; }
+
+        /* ---- Layer 3: the type stage ---- */
+        /* Track height paces both the clip and the principle swaps: four
+           panels over (460vh - 100vh of pinning) ≈ 90vh of scroll apiece. */
+        .std-track { height: 460vh; }
+        .std-stick {
+            position: sticky; top: 0; height: 100vh;
+            display: grid; align-content: center;
+            padding: 86px 20px 58px; box-sizing: border-box;
+        }
+        .std-grid {
+            max-width: var(--maxw); width: 100%; margin: 0 auto;
+            display: grid; grid-template-columns: minmax(280px, 0.82fr) 1.18fr;
+            gap: 20px 76px; align-items: center;
+        }
+
+        /* Left: heading + live index, held against a hairline progress rail */
+        .std-left { position: relative; padding-left: 30px; }
+        .std-rail {
+            position: absolute; left: 0; top: 4px; bottom: 4px; width: 1px;
+            background: rgba(255, 255, 255, 0.13);
+        }
+        .std-rail-fill {
+            position: absolute; inset: 0; transform: scaleY(0); transform-origin: 50% 0;
+            background: linear-gradient(to bottom, var(--accent-teal), var(--accent-gold));
+            box-shadow: 0 0 12px rgba(45, 156, 202, 0.55);
+        }
+        .std-left h2 { color: #fff; font-size: clamp(1.9rem, 3.2vw, 2.7rem); letter-spacing: -0.5px; }
+        .std-lede {
+            color: var(--text-secondary); font-size: 1.02rem; margin-top: 16px; max-width: 42ch;
+        }
+
+        .std-idx { list-style: none; margin-top: 40px; }
+        .std-step {
+            display: flex; align-items: center; gap: 14px; padding: 11px 0;
+            opacity: 0.34; transition: opacity 0.5s var(--ease);
+        }
+        .std-step.is-on { opacity: 1; }
+        .std-step .std-step-n {
+            font-size: 0.7rem; font-weight: 700; letter-spacing: 2px;
+            color: var(--accent-gold); font-variant-numeric: tabular-nums;
+        }
+        .std-step .std-step-ln {
+            width: 0; height: 1px; background: var(--accent-gold);
+            transition: width 0.6s var(--ease);
+        }
+        .std-step.is-on .std-step-ln { width: 40px; }
+        .std-step .std-step-t {
+            font-size: 1.02rem; font-weight: 700; color: #fff;
+            letter-spacing: 0.3px; transition: letter-spacing 0.6s var(--ease);
+        }
+        .std-step.is-on .std-step-t { letter-spacing: 1.4px; }
+
+        /* Right: one principle at a time, cross-faded through blur */
+        .std-panels { position: relative; min-height: 460px; }
+        .std-panel {
+            position: absolute; inset: 0; display: flex; flex-direction: column;
+            justify-content: center; pointer-events: none;
+            opacity: 0; transform: translateY(28px); filter: blur(9px);
+            transition: opacity 0.55s var(--ease), transform 0.85s var(--ease), filter 0.7s var(--ease);
+        }
+        .std-panel.is-on { opacity: 1; transform: none; filter: none; pointer-events: auto; }
+        /* Children stagger in behind the panel itself. */
+        .std-panel > * {
+            position: relative; z-index: 1;
+            opacity: 0; transform: translateY(20px);
+            transition: opacity 0.7s var(--ease), transform 0.8s var(--ease);
+            transition-delay: calc(var(--i, 0) * 85ms);
+        }
+        .std-panel.is-on > * { opacity: 1; transform: none; }
+
+        /* Oversized outlined numeral, sitting behind the copy.
+           Declared after `.std-panel > *` so its own position/z-index win. */
+        .std-num {
+            position: absolute; top: -14px; right: -8px; z-index: 0;
+            font-size: clamp(8rem, 17vw, 15rem); font-weight: 900; line-height: 0.74;
+            color: transparent; -webkit-text-stroke: 1px rgba(255, 255, 255, 0.13);
+            letter-spacing: -0.04em; pointer-events: none; user-select: none;
+        }
+
+        .std-tag {
+            display: inline-flex; align-items: center; gap: 12px; align-self: flex-start;
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 3.2px;
+            text-transform: uppercase; color: var(--accent-teal); margin-bottom: 22px;
+        }
+        .std-tag::before {
+            content: ''; width: 26px; height: 1px; background: var(--accent-teal);
+        }
+
+        /* Line-masked headline: each line rides up out of its own clip box. */
+        .std-title { font-size: clamp(1.8rem, 3.6vw, 3rem); font-weight: 800; line-height: 1.12; color: #fff; letter-spacing: -0.6px; }
+        .std-title .std-ln { display: block; overflow: hidden; padding-bottom: 0.1em; margin-bottom: -0.1em; }
+        .std-title .std-ln i {
+            display: block; font-style: normal;
+            transform: translateY(112%);
+            transition: transform 0.95s var(--ease);
+        }
+        .std-panel.is-on .std-title .std-ln i { transform: none; }
+        .std-title .std-ln:nth-child(2) i { transition-delay: 0.09s; }
+        .std-title .std-ln:nth-child(3) i { transition-delay: 0.18s; }
+        .std-title em { font-style: normal; color: var(--accent-gold); }
+
+        .std-body {
+            color: var(--text-secondary); font-size: 1.08rem; line-height: 1.85;
+            max-width: 52ch; margin-top: 24px;
+        }
+
+        /* Proof row — hairlines that draw left-to-right as the panel lands */
+        .std-proof {
+            list-style: none; margin-top: 40px;
+            display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 30px;
+        }
+        .std-proof li { position: relative; padding-top: 18px; }
+        .std-proof li::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 1px;
+            background: linear-gradient(90deg, var(--accent-teal), rgba(45, 156, 202, 0.12));
+            transform: scaleX(0); transform-origin: 0 50%;
+            transition: transform 0.9s var(--ease);
+        }
+        .std-panel.is-on .std-proof li::before { transform: scaleX(1); }
+        .std-proof li:nth-child(2)::before { transition-delay: 0.1s; }
+        .std-proof li:nth-child(3)::before { transition-delay: 0.2s; }
+        .std-proof b {
+            display: block; font-size: 1.5rem; font-weight: 800; color: #fff;
+            line-height: 1.1; margin-bottom: 6px; font-variant-numeric: tabular-nums;
+        }
+        .std-proof span {
+            font-size: 0.68rem; font-weight: 700; letter-spacing: 1.5px;
+            text-transform: uppercase; color: var(--text-secondary); line-height: 1.4; display: block;
+        }
+
+        /* A single light pass across the panel each time it becomes active. */
+        .std-sweep {
+            position: absolute; top: 0; left: 0; right: 0; height: 1px;
+            overflow: hidden; opacity: 0; z-index: 2;
+        }
+        .std-panel.is-on .std-sweep { animation: stdSweep 1.25s var(--ease) 0.15s both; }
+        .std-sweep::after {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(90deg, transparent, var(--accent-gold), transparent);
+        }
+        @keyframes stdSweep {
+            0%   { opacity: 0; transform: translateX(-100%); }
+            22%  { opacity: 1; }
+            100% { opacity: 0; transform: translateX(100%); }
+        }
+
+        /* ---- Capability tag on media cards ---- */
+        .abt-cap-tag {
+            display: inline-block; font-size: 0.72rem; letter-spacing: 1.6px;
+            text-transform: uppercase; color: var(--accent-gold); font-weight: 700; margin-bottom: 10px;
+        }
+
+        /* ---- Milestone timeline ---- */
+        .abt-timeline { position: relative; max-width: 880px; margin: 62px auto 0; }
+        .abt-timeline::before {
+            content: ''; position: absolute; top: 6px; bottom: 6px; left: 50%;
+            width: 2px; transform: translateX(-50%);
+            background: linear-gradient(to bottom, transparent, var(--accent-teal) 12%, var(--accent-gold) 88%, transparent);
+        }
+        .abt-mile { position: relative; width: 50%; box-sizing: border-box; padding: 6px 48px 34px; }
+        .abt-mile.left { left: 0; text-align: right; }
+        .abt-mile.right { left: 50%; text-align: left; }
+        .abt-dot {
+            position: absolute; top: 10px; width: 16px; height: 16px; border-radius: 50%;
+            background: var(--primary-dark); border: 3px solid var(--accent-teal);
+            box-shadow: 0 0 0 5px rgba(45, 156, 202, 0.15); z-index: 2;
+        }
+        .abt-mile.left .abt-dot { right: -8px; }
+        .abt-mile.right .abt-dot { left: -8px; }
+        .abt-year { font-size: 1.5rem; font-weight: 900; color: var(--accent-teal); line-height: 1; margin-bottom: 8px; }
+        .abt-mile h3 { color: #fff; font-size: 1.12rem; margin-bottom: 6px; }
+        .abt-mile p { color: var(--text-secondary); font-size: 0.96rem; }
+
+        /* ---- Team monogram avatars ---- */
+        .abt-team { position: relative; text-align: center; }
+        .abt-avatar {
+            width: 96px; height: 96px; border-radius: 50%; margin: 0 auto 22px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; font-weight: 800; color: #fff; letter-spacing: 1px;
+            border: 2px solid rgba(255, 255, 255, 0.14);
+            box-shadow: inset 0 2px 12px rgba(255, 255, 255, 0.22), 0 14px 34px rgba(0, 0, 0, 0.45);
+        }
+        .abt-team:nth-of-type(1) .abt-avatar { background: linear-gradient(135deg, #2d9cca, #1a5f7a); }
+        .abt-team:nth-of-type(2) .abt-avatar { background: linear-gradient(135deg, #b8a573, #8a7a4f); }
+        .abt-team:nth-of-type(3) .abt-avatar { background: linear-gradient(135deg, #2d9cca, #b8a573); }
+        .abt-team:nth-of-type(4) .abt-avatar { background: linear-gradient(135deg, #48b6e4, #2d9cca); }
+        .abt-team h3 { color: #fff; font-size: 1.2rem; margin-bottom: 4px; }
+        .abt-role {
+            color: var(--accent-teal); font-weight: 700; font-size: 0.82rem;
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px;
+        }
+        .abt-team p { color: var(--text-secondary); font-size: 0.95rem; }
+
+        /* ---- Credibility trust heading above marquee ---- */
+        .abt-trust-head { text-align: center; margin: 64px 0 26px; }
+        .abt-trust-head span {
+            font-size: 0.85rem; text-transform: uppercase; letter-spacing: 3px;
+            color: var(--text-secondary); font-weight: 700;
+        }
+
+        /* ---- Responsive ---- */
+        @media (max-width: 768px) {
+            .abt-hero { min-height: 68vh; }
+            .feature-row .feature-media.abt-fmedia { min-height: 300px; }
+            .feature-row .feature-media.abt-fmedia img { top: -14%; height: 128%; }
+            .abt-fchip { left: 14px; bottom: 14px; padding: 12px 16px; gap: 10px; }
+            .abt-fchip .abt-fchip-num { font-size: 1.5rem; }
+
+            .abt-timeline::before { left: 7px; }
+            .abt-mile, .abt-mile.left, .abt-mile.right { width: 100%; left: 0; text-align: left; padding: 6px 0 28px 34px; }
+            .abt-mile.left .abt-dot, .abt-mile.right .abt-dot { left: -1px; right: auto; }
+        }
+
+        /* ---- Stand-for stage: unpin below 900px ----
+           The clip stays as a sticky backdrop, but the principles stop
+           swapping in place and become a single scrolling column — the
+           script switches to per-panel reveals to match (see "flow" mode). */
+        @media (max-width: 900px) {
+            .std-track { height: auto; }
+            .std-stick { position: static; height: auto; display: block; padding: 108px 20px 92px; }
+            .std-grid { grid-template-columns: 1fr; gap: 12px; }
+            .std-left { padding-left: 0; }
+            .std-rail, .std-idx { display: none; }
+            .std-panels { position: static; min-height: 0; display: grid; gap: 78px; margin-top: 54px; }
+            .std-panel { position: static; display: block; }
+            .std-num { font-size: clamp(6rem, 26vw, 11rem); top: -20px; right: 0; }
+            .std-proof { grid-template-columns: 1fr 1fr; gap: 26px 24px; }
+            .std-proof li:nth-child(3) { grid-column: 1 / -1; }
+            .sv-veil {
+                background:
+                    linear-gradient(180deg, rgba(15, 20, 25, 0.94) 0%, rgba(15, 20, 25, 0.62) 16%,
+                                            rgba(15, 20, 25, 0.62) 84%, rgba(15, 20, 25, 0.94) 100%);
+            }
+        }
+
+        /* ---- Reduced motion safety for custom layers ----
+           The scrub itself is a scroll POSITION, not an animation, so it is
+           left alone; the entrance choreography is switched off. */
+        @media (prefers-reduced-motion: reduce) {
+            .feature-row .feature-media.abt-fmedia img { transform: none !important; }
+            .std-panel,
+            .std-panel > * { opacity: 1 !important; transform: none !important; filter: none !important; transition: none !important; }
+            .std-title .std-ln i { transform: none !important; transition: none !important; }
+            .std-proof li::before { transform: scaleX(1) !important; transition: none !important; }
+            .std-panel.is-on .std-sweep { animation: none !important; }
+            .sv-grain { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-overlay" id="menu-overlay"></div>
+    <header class="navbar" id="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand"><a href="index.html"><h2>LV Trade Show Rentals</h2></a></div>
+            <div class="navbar-phone"><a href="tel:+17024838279">Call Us</a></div>
+            <button class="hamburger" id="hamburger" aria-label="Open menu"><span></span><span></span><span></span></button>
+            <nav class="navbar-menu" id="navbar-menu">
+                <a href="index.html">HOME</a>
+                <a href="trade-show-labor.html">TRADE SHOW LABOR</a>
+                <a href="gallery.html">GALLERY</a>
+                <a href="about-us.html">ABOUT US</a>
+                <a href="what-we-do.html">WHAT WE DO</a>
+                <a href="contact-us.html">CONTACT US</a>
+                <a href="i-d-labor-request.html">I &amp; D LABOR REQUEST</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ============================ HERO ============================ -->
+    <section class="page-hero abt-hero">
+        <img class="page-hero-media" src="assets/service-custom-fab.jpg" alt="Fabricators building a custom trade show exhibit in the LV Trade Show Rentals shop">
+        <div class="page-hero-overlay"></div>
+        <div class="page-hero-inner">
+            <div class="breadcrumb"><a href="index.html">Home</a><span>&rsaquo;</span>About Us</div>
+            <span class="eyebrow" data-reveal>About Us</span>
+            <h1 data-reveal>Las Vegas' Exhibit House</h1>
+            <p class="lead" data-reveal>For over two decades we've designed, fabricated and installed award-worthy trade show exhibits &mdash; delivered on time, on budget and on brand, show after show.</p>
+            <div class="abt-hero-badges" data-reveal>
+                <span class="abt-hero-badge"><b>20+</b> Years</span>
+                <span class="abt-hero-badge"><b>1,000+</b> Builds</span>
+                <span class="abt-hero-badge"><b>100%</b> On-Time</span>
+                <span class="abt-hero-badge gold"><b>$2M</b> Insured</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ======================= BRAND STORY ========================= -->
+    <section class="section abt-amb g1">
+        <div class="container">
+            <div class="section-head" data-reveal>
+                <span class="eyebrow">Our Story</span>
+                <h2>Two decades on the Las Vegas show floor</h2>
+                <p>We're a single-source exhibit house: strategy, design, fabrication, graphics, lighting, AV, freight and I&amp;D labor &mdash; all under one roof, all accountable to one deadline.</p>
+            </div>
+
+            <!-- Row 1 — Origin -->
+            <div class="feature-row" data-reveal>
+                <div class="feature-media abt-fmedia">
+                    <img src="assets/service-installation.jpg" alt="LV Trade Show Rentals crew installing a booth on a Las Vegas show floor" data-parallax="0.1" loading="lazy" decoding="async">
+                    <div class="abt-fchip">
+                        <span class="abt-fchip-num">2004</span>
+                        <span class="abt-fchip-lbl">Established<br>in Las Vegas</span>
+                    </div>
+                </div>
+                <div class="feature-body abt-fbody">
+                    <span class="abt-kicker">Our Origin</span>
+                    <h2>Built by people who live on the show floor</h2>
+                    <p>LV Trade Show Rentals started in 2004 as a small install-and-dismantle crew at the Las Vegas Convention Center. Two decades later we're a full-service exhibit house &mdash; but that hands-on, get-it-done DNA hasn't changed.</p>
+                    <ul class="abt-check">
+                        <li>20+ years exhibiting across Las Vegas venues</li>
+                        <li>1,000+ booths designed, built and delivered</li>
+                        <li>Trusted at CES, SEMA, MAGIC, NAB &amp; CONEXPO</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Row 2 — Craftsmanship -->
+            <div class="feature-row reverse" data-reveal>
+                <div class="feature-media abt-fmedia">
+                    <img src="assets/service-custom-fab.jpg" alt="Custom fabrication in progress inside the LV Trade Show Rentals shop" data-parallax="0.1" loading="lazy" decoding="async">
+                    <div class="abt-fchip gold">
+                        <span class="abt-fchip-num">40k</span>
+                        <span class="abt-fchip-lbl">Sq Ft<br>Fabrication Shop</span>
+                    </div>
+                </div>
+                <div class="feature-body abt-fbody">
+                    <span class="abt-kicker">In-House Craft</span>
+                    <h2>Designed, engineered and built under one roof</h2>
+                    <p>From the first rendering to the final finish, your exhibit is created by our own designers, fabricators and finishers in our Las Vegas shop. Owning the process means tighter tolerances, faster changes and a booth that photographs beautifully under show lighting.</p>
+                    <ul class="abt-check">
+                        <li>40,000 sq ft fabrication facility</li>
+                        <li>CNC, metal, wood, paint &amp; finish in-house</li>
+                        <li>Reusable, road-ready structural engineering</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Row 3 — Execution -->
+            <div class="feature-row" data-reveal>
+                <div class="feature-media abt-fmedia">
+                    <img src="assets/booth-fully-custom.jpg" alt="Finished fully-custom trade show booth delivered by LV Trade Show Rentals" data-parallax="0.1" loading="lazy" decoding="async">
+                    <div class="abt-fchip">
+                        <span class="abt-fchip-num">100%</span>
+                        <span class="abt-fchip-lbl">On-Time<br>Install Record</span>
+                    </div>
+                </div>
+                <div class="feature-body abt-fbody">
+                    <span class="abt-kicker">Flawless Execution</span>
+                    <h2>Obsessed with on-time, on-brand delivery</h2>
+                    <p>Show floors run on immovable deadlines. We plan backwards from your install window, pre-build and pre-light in the shop, and put seasoned supervisors on-site so your booth is show-ready before the doors open &mdash; every single time.</p>
+                    <ul class="abt-check">
+                        <li>100% on-time installation record</li>
+                        <li>A dedicated project director on every account</li>
+                        <li>$2M liability insured, certificates on request</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================= STATS BAND ======================== -->
+    <section class="section alt abt-stats">
+        <div class="container">
+            <div class="section-head" data-reveal>
+                <span class="eyebrow gold">By The Numbers</span>
+                <h2>Two decades, measured in results</h2>
+            </div>
+            <div class="stats-row reveal-group">
+                <div class="stat-box" data-count="20" data-suffix="+">
+                    <div class="stat-num">0</div>
+                    <div class="stat-label">Years in Business</div>
+                </div>
+                <div class="stat-box" data-count="1000" data-suffix="+">
+                    <div class="stat-num">0</div>
+                    <div class="stat-label">Booths Delivered</div>
+                </div>
+                <div class="stat-box" data-count="100" data-suffix="%">
+                    <div class="stat-num">0</div>
+                    <div class="stat-label">On-Time Rate</div>
+                </div>
+                <div class="stat-box" data-count="2" data-suffix="M">
+                    <div class="stat-num abt-dollar">0</div>
+                    <div class="stat-label">Liability Insured</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== WHAT WE STAND FOR ======================
+         Scroll-scrubbed stage. assets/scroll-video.js binds the clip's
+         playhead to scroll: down runs it forward, up runs it backward,
+         stopping holds a frame — no autoplay, no loop.
+
+         data-scroll-start="50": the scrub begins the moment this block's
+         top edge reaches the middle of the viewport, so the clip is
+         already running as the stage rises into view.
+         ============================================================= -->
+    <div class="sv abt-stand" id="stand" data-scroll-video data-scroll-start="50">
+      <div class="sv-track">
+
+        <div class="sv-pin">
+            <video class="sv-video"
+                   src="assets/about-us-scroll.mp4"
+                   preload="auto"
+                   muted
+                   playsinline
+                   webkit-playsinline
+                   disablepictureinpicture
+                   aria-hidden="true"></video>
+            <div class="sv-veil"></div>
+            <div class="sv-grid"></div>
+            <div class="sv-light"></div>
+            <div class="sv-grain"></div>
+            <div class="sv-bar"><div class="sv-bar-fill"></div></div>
+        </div>
+
+        <div class="sv-content">
+          <section class="std-track" aria-labelledby="stand-h">
+            <div class="std-stick">
+              <div class="std-grid">
+
+                <!-- Left: persistent heading + live index -->
+                <div class="std-left">
+                    <div class="std-rail"><div class="std-rail-fill"></div></div>
+                    <span class="eyebrow gold">What We Stand For</span>
+                    <h2 id="stand-h">Four standards behind every build</h2>
+                    <p class="std-lede">Not a mission statement &mdash; the four things a client can actually hold us to, on every show, every year.</p>
+                    <ol class="std-idx">
+                        <li class="std-step is-on"><span class="std-step-n">01</span><span class="std-step-ln"></span><span class="std-step-t">Craftsmanship</span></li>
+                        <li class="std-step"><span class="std-step-n">02</span><span class="std-step-ln"></span><span class="std-step-t">Reliability</span></li>
+                        <li class="std-step"><span class="std-step-n">03</span><span class="std-step-ln"></span><span class="std-step-t">Partnership</span></li>
+                        <li class="std-step"><span class="std-step-n">04</span><span class="std-step-ln"></span><span class="std-step-t">Turnkey</span></li>
+                    </ol>
+                </div>
+
+                <!-- Right: one principle at a time -->
+                <div class="std-panels">
+
+                    <article class="std-panel is-on">
+                        <span class="std-sweep" aria-hidden="true"></span>
+                        <span class="std-num" aria-hidden="true">01</span>
+                        <span class="std-tag" style="--i:1">Craftsmanship</span>
+                        <h3 class="std-title" style="--i:2">
+                            <span class="std-ln"><i>Built by the same hands</i></span>
+                            <span class="std-ln"><i>that <em>drew</em> it.</i></span>
+                        </h3>
+                        <p class="std-body" style="--i:3">Your exhibit is engineered, cut, welded, finished and fully test-built in our own Las Vegas shop by fabricators who have been doing this for two decades. Nothing gets handed to a stranger and hoped for &mdash; which is why it photographs clean under show lighting and survives years on the road.</p>
+                        <ul class="std-proof" style="--i:4">
+                            <li><b>40,000</b><span>Sq Ft Shop</span></li>
+                            <li><b>100%</b><span>Built In-House</span></li>
+                            <li><b>20+</b><span>Years On The Floor</span></li>
+                        </ul>
+                    </article>
+
+                    <article class="std-panel">
+                        <span class="std-sweep" aria-hidden="true"></span>
+                        <span class="std-num" aria-hidden="true">02</span>
+                        <span class="std-tag" style="--i:1">Reliability</span>
+                        <h3 class="std-title" style="--i:2">
+                            <span class="std-ln"><i>The show floor does not</i></span>
+                            <span class="std-ln"><i><em>move</em> its deadline.</i></span>
+                        </h3>
+                        <p class="std-body" style="--i:3">So we plan backwards from your install window, pre-build and pre-light the booth in the shop, and put a seasoned supervisor on the dock. Nothing about your exhibit should be discovered at 2 a.m. the night before doors open &mdash; and in twenty years, it hasn't been.</p>
+                        <ul class="std-proof" style="--i:4">
+                            <li><b>100%</b><span>On-Time Installs</span></li>
+                            <li><b>1,000+</b><span>Booths Delivered</span></li>
+                            <li><b>24/7</b><span>Show-Week Support</span></li>
+                        </ul>
+                    </article>
+
+                    <article class="std-panel">
+                        <span class="std-sweep" aria-hidden="true"></span>
+                        <span class="std-num" aria-hidden="true">03</span>
+                        <span class="std-tag" style="--i:1">Partnership</span>
+                        <h3 class="std-title" style="--i:2">
+                            <span class="std-ln"><i>One number to call.</i></span>
+                            <span class="std-ln"><i>One <em>name</em> on it.</i></span>
+                        </h3>
+                        <p class="std-body" style="--i:3">A dedicated project director owns your account from the kickoff drawing through dismantle &mdash; the same person for renderings, change orders, freight and the 6 a.m. floor call. No account hand-offs, no ticket queue, no finding out who is responsible after something has already gone wrong.</p>
+                        <ul class="std-proof" style="--i:4">
+                            <li><b>1</b><span>Point Of Contact</span></li>
+                            <li><b>$2M</b><span>Liability Insured</span></li>
+                            <li><b>0</b><span>Hand-Offs</span></li>
+                        </ul>
+                    </article>
+
+                    <article class="std-panel">
+                        <span class="std-sweep" aria-hidden="true"></span>
+                        <span class="std-num" aria-hidden="true">04</span>
+                        <span class="std-tag" style="--i:1">Turnkey</span>
+                        <h3 class="std-title" style="--i:2">
+                            <span class="std-ln"><i>You approve the rendering.</i></span>
+                            <span class="std-ln"><i>We do <em>the rest</em>.</i></span>
+                        </h3>
+                        <p class="std-body" style="--i:3">Design, fabrication, graphics, lighting, AV, freight, I&amp;D labor and climate-controlled storage all live under one roof. Quality and schedule get controlled at every stage instead of negotiated between vendors &mdash; and you get one invoice at the end of it.</p>
+                        <ul class="std-proof" style="--i:4">
+                            <li><b>8</b><span>Services In-House</span></li>
+                            <li><b>1</b><span>Roof</span></li>
+                            <li><b>0</b><span>Middlemen</span></li>
+                        </ul>
+                    </article>
+
+                </div>
+
+              </div>
+            </div>
+          </section>
+        </div><!-- /.sv-content -->
+
+      </div><!-- /.sv-track -->
+    </div><!-- /.sv -->
+
+
+    <!-- ==================== SHOP & CAPABILITIES ==================== -->
+    <section class="section alt">
+        <div class="container">
+            <div class="section-head" data-reveal>
+                <span class="eyebrow gold">Our Shop &amp; Capabilities</span>
+                <h2>A full production house, not a middleman</h2>
+                <p>Because design, build, graphics and storage all live in one facility, we control quality and speed at every stage &mdash; no hand-offs, no finger-pointing.</p>
+            </div>
+            <div class="grid cols-3 reveal-group">
+                <div class="media-card">
+                    <div class="media">
+                        <span class="badge-pill">In-House</span>
+                        <img src="assets/service-custom-fab.jpg" alt="In-house custom fabrication shop" loading="lazy" decoding="async">
+                    </div>
+                    <div class="media-body">
+                        <span class="abt-cap-tag">Fabrication</span>
+                        <h3>In-House Fabrication</h3>
+                        <p>A 40,000 sq ft shop with CNC routing, metal and wood fabrication, paint and a full finish department &mdash; from tabletop displays to double-deck structures.</p>
+                    </div>
+                </div>
+                <div class="media-card">
+                    <div class="media">
+                        <span class="badge-pill">Color-Matched</span>
+                        <img src="assets/service-graphic-design.jpg" alt="Large-format graphics production for trade show exhibits" loading="lazy" decoding="async">
+                    </div>
+                    <div class="media-body">
+                        <span class="abt-cap-tag">Graphics</span>
+                        <h3>Graphics Production</h3>
+                        <p>Large-format printing, direct-print, fabric dye-sublimation and dimensional signage &mdash; color-matched to your brand standards and produced in-house for speed.</p>
+                    </div>
+                </div>
+                <div class="media-card">
+                    <div class="media">
+                        <span class="badge-pill">Climate-Controlled</span>
+                        <img src="assets/service-coordination.jpg" alt="Secure exhibit storage and show logistics coordination" loading="lazy" decoding="async">
+                    </div>
+                    <div class="media-body">
+                        <span class="abt-cap-tag">Logistics</span>
+                        <h3>Secure Storage &amp; Logistics</h3>
+                        <p>Climate-controlled asset storage, refurbishment between shows, and coordinated freight so your exhibit arrives on the dock ready to install.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== TRUSTED BY =========================== -->
+    <section class="section abt-amb g2">
+        <div class="container">
+            <div class="abt-trust-head" data-reveal>
+                <span>Trusted by exhibitors at</span>
+            </div>
+            <div class="event-logos">
+                <div class="event-logos-track">
+                    <div class="logo-item"><img src="assets/ces-logo.png" alt="CES - Consumer Electronics Show" class="event-logo" loading="lazy"></div>
+                    <div class="logo-item"><img src="assets/sema-logo.png" alt="SEMA - Specialty Equipment Market Association" class="event-logo" loading="lazy"></div>
+                    <div class="logo-item"><img src="assets/magic-logo.png" alt="MAGIC Fashion Trade Show" class="event-logo" loading="lazy"></div>
+                    <div class="logo-item"><img src="assets/nab-logo.png" alt="NAB - National Association of Broadcasters" class="event-logo" loading="lazy"></div>
+                    <div class="logo-item"><img src="assets/CONEXPO.png" alt="CONEXPO - Construction Equipment Exposition" class="event-logo" loading="lazy"></div>
+                    <!-- Duplicate set for seamless infinite scroll -->
+                    <div class="logo-item"><img src="assets/ces-logo.png" alt="CES - Consumer Electronics Show" class="event-logo" loading="lazy"></div>
+                    <div class="logo-item"><img src="assets/sema-logo.png" alt="SEMA - Specialty Equipment Market Association" class="event-logo" loading="lazy"></div>
+                    <div class="logo-item"><img src="assets/magic-logo.png" alt="MAGIC Fashion Trade Show" class="event-logo" loading="lazy"></div>
+                    <div class="logo-item"><img src="assets/nab-logo.png" alt="NAB - National Association of Broadcasters" class="event-logo" loading="lazy"></div>
+                    <div class="logo-item"><img src="assets/CONEXPO.png" alt="CONEXPO - Construction Equipment Exposition" class="event-logo" loading="lazy"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- =========================== CTA BAND ======================== -->
+    <section class="cta-band">
+        <div class="cta-bg" style="background-image:url('assets/final-cta-bg.jpg')"></div>
+        <div class="cta-ov"></div>
+        <div class="container">
+            <h2>Let's build something worth stopping for</h2>
+            <p>Tell us your show, your space and your deadline. We'll handle design, fabrication and install &mdash; start to finish.</p>
+            <div class="cta-group">
+                <a class="cta-button" href="contact-us.html">Request a Quote</a>
+                <a class="cta-button secondary" href="tel:+17024838279">Call 702-483-8279</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================ FOOTER ========================= -->
+    <footer class="site-footer">
+        <div class="container footer-grid">
+            <div class="footer-col">
+                <h3>LV Trade Show Rentals</h3>
+                <p>Full-service trade show exhibit house — custom design, fabrication, installation &amp; I&amp;D labor across Las Vegas.</p>
+                <a href="tel:+17024838279" class="phone-link">702-483-8279</a>
+                <p class="footer-loc">📍 Las Vegas, Nevada</p>
+            </div>
+            <div class="footer-col">
+                <h4>Explore</h4>
+                <a href="index.html">Home</a>
+                <a href="gallery.html">Gallery</a>
+                <a href="about-us.html">About Us</a>
+                <a href="what-we-do.html">What We Do</a>
+            </div>
+            <div class="footer-col">
+                <h4>Services</h4>
+                <a href="index.html">Custom Booth Rentals</a>
+                <a href="what-we-do.html">I&amp;D Labor</a>
+                <a href="contact-us.html">Contact Us</a>
+                <a href="i-d-labor-request.html">Labor Request</a>
+            </div>
+            <div class="footer-col cta">
+                <h4>Start a project</h4>
+                <a href="contact-us.html" class="cta-button">Request a Quote</a>
+            </div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2026 LV Trade Show Rentals. All rights reserved.</p></div>
+    </footer>
+
+    <script src="assets/site.js" defer></script>
+    <!-- Binds the stand-for clip's playhead to scroll. Shared with index.html. -->
+    <script src="assets/scroll-video.js" defer></script>
+
+    <!-- ============================================================
+         WHAT WE STAND FOR — stage controller
+
+         Two modes, chosen by viewport and motion preference:
+
+           "pin"  — the stage is stuck to the viewport and the four
+                    principles swap in place. A rAF loop reads one number,
+                    the block's scroll progress, and publishes it as --p
+                    (the drafting grid fades on it), as the rail fill, and
+                    as the active index.
+           "flow" — below 900px, or under reduced motion, nothing is
+                    pinned; the panels are a normal column and reveal
+                    individually as they come into view.
+
+         The loop only runs while the stage is on screen, and reads
+         layout inside rAF rather than on the scroll event, so it never
+         forces a synchronous reflow mid-scroll.
+         ============================================================ -->
+    <script>
+    (function () {
+        'use strict';
+
+        var stage = document.getElementById('stand');
+        if (!stage) return;
+
+        var track  = stage.querySelector('.std-track');
+        var pin    = stage.querySelector('.sv-pin');
+        var fill   = stage.querySelector('.std-rail-fill');
+        var panels = Array.prototype.slice.call(stage.querySelectorAll('.std-panel'));
+        var steps  = Array.prototype.slice.call(stage.querySelectorAll('.std-step'));
+        if (!track || !panels.length) return;
+
+        var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+
+        /* ---- Active principle ---- */
+        var active = 0;
+        function setActive(i) {
+            if (i === active) return;
+            active = i;
+            for (var n = 0; n < panels.length; n++) panels[n].classList.toggle('is-on', n === i);
+            for (var s = 0; s < steps.length;  s++) steps[s].classList.toggle('is-on', s === i);
+        }
+
+        /* ---- "pin" mode: one rAF loop, one number ---- */
+        var running = false, raf = 0;
+
+        function frame() {
+            if (!running) return;
+            raf = window.requestAnimationFrame(frame);
+
+            /* Distance the sticky holder is stuck for: the track's height
+               less the one viewport it occupies while stuck. */
+            var span = Math.max(1, track.offsetHeight - window.innerHeight);
+            var p = clamp01(-track.getBoundingClientRect().top / span);
+
+            stage.style.setProperty('--p', p.toFixed(4));
+            if (fill) fill.style.transform = 'scaleY(' + p.toFixed(4) + ')';
+
+            /* A short lead-in and tail, so the first principle is readable
+               before it starts advancing and the last one holds rather than
+               flashing past as the stage releases. */
+            var q = clamp01((p - 0.05) / 0.86);
+            setActive(Math.min(panels.length - 1, Math.floor(q * panels.length)));
+        }
+
+        function run(on) {
+            if (on === running) return;
+            running = on;
+            if (on) raf = window.requestAnimationFrame(frame);
+            else if (raf) window.cancelAnimationFrame(raf);
+        }
+
+        /* ---- Mode switching ---- */
+        var mode = '', stageIO = null, panelIO = null;
+
+        function teardown() {
+            run(false);
+            if (stageIO) { stageIO.disconnect(); stageIO = null; }
+            if (panelIO) { panelIO.disconnect(); panelIO = null; }
+        }
+
+        function setup() {
+            var want = (reduce || !window.matchMedia('(min-width: 901px)').matches ||
+                        !('IntersectionObserver' in window)) ? 'flow' : 'pin';
+            if (want === mode) return;
+            teardown();
+            mode = want;
+
+            if (mode === 'pin') {
+                panels.forEach(function (el, n) { el.classList.toggle('is-on', n === 0); });
+                active = 0;
+                stageIO = new IntersectionObserver(function (entries) {
+                    run(entries[0].isIntersecting);
+                }, { rootMargin: '20% 0px' });
+                stageIO.observe(track);
+                return;
+            }
+
+            /* flow: every panel is in the document flow, so each reveals on
+               its own. --p is parked at 1 so the drafting grid is not left
+               sitting at full strength over the copy. */
+            stage.style.setProperty('--p', '1');
+            if (fill) fill.style.transform = 'scaleY(1)';
+            steps.forEach(function (el) { el.classList.add('is-on'); });
+
+            if (reduce || !('IntersectionObserver' in window)) {
+                panels.forEach(function (el) { el.classList.add('is-on'); });
+                return;
+            }
+            panelIO = new IntersectionObserver(function (entries) {
+                entries.forEach(function (en) {
+                    /* `top < 0` catches panels the visitor has already passed —
+                       a restored scroll position or an anchor jump skips over
+                       them without ever reporting them as intersecting, and
+                       they would otherwise stay invisible above the fold. */
+                    if (en.isIntersecting || en.boundingClientRect.top < 0) {
+                        en.target.classList.add('is-on');
+                        panelIO.unobserve(en.target);
+                    }
+                });
+            }, { threshold: 0.3, rootMargin: '0px 0px -10% 0px' });
+            panels.forEach(function (el) { panelIO.observe(el); });
+        }
+
+        var resizeTimer = 0;
+        window.addEventListener('resize', function () {
+            window.clearTimeout(resizeTimer);
+            resizeTimer = window.setTimeout(setup, 150);
+        }, { passive: true });
+
+        /* ---- Work light tracking the cursor across the footage ---- */
+        if (pin && !reduce && window.matchMedia('(pointer: fine)').matches) {
+            stage.addEventListener('pointermove', function (e) {
+                var r = pin.getBoundingClientRect();
+                pin.style.setProperty('--mx', (((e.clientX - r.left) / r.width) * 100).toFixed(1) + '%');
+                pin.style.setProperty('--my', (((e.clientY - r.top) / r.height) * 100).toFixed(1) + '%');
+            }, { passive: true });
+        }
+
+        setup();
+    })();
+    </script>
+</body>
+</html>
