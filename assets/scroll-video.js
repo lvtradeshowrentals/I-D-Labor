@@ -35,7 +35,12 @@
  *
  * Markup contract (see index.html):
  *   <section class="sv" data-scroll-video>
- *     <div class="sv-track"><div class="sv-pin"> <video class="sv-video">
+ *     <div class="sv-track"><div class="sv-pin"> <video class="sv-video"
+ *
+ * The clip's URL goes in data-src, NOT src, with preload="none" — the script
+ * promotes it to a real src once the block is within ~1.5 screens. Leaving it
+ * in src still works and simply loads it immediately, which costs the visitor a
+ * multi-megabyte download during first paint for a stage they have not reached.
  *
  * The scope's height is whatever the sections inside it come to, so the clip is
  * paced by the content it plays behind. Tune the pace with those sections'
@@ -84,13 +89,19 @@
     this.ready = false;
     this.running = false;
     this.visible = false;
+    this.requested = false;
     this.lastT = 0;
 
+    /* Listeners first, fetch second: requestLoad() below is what actually starts
+       the download, and it must never race ahead of the handlers watching for it. */
+    this.watchMedia();
     this.bind();
-    this.load();
   }
 
-  ScrollVideo.prototype.load = function () {
+  /**
+   * Wire up the media events. This does NOT start a download — see requestLoad.
+   */
+  ScrollVideo.prototype.watchMedia = function () {
     var self = this;
     var v = this.video;
 
@@ -120,17 +131,95 @@
 
     v.addEventListener('error', function () { self.fail('video failed to load'); });
 
-    /* If nothing has loaded at all after a generous wait, fall back to the
-       poster rather than leaving a blank pinned block in the page. */
-    window.setTimeout(function () {
-      if (!self.ready && (!v.readyState || v.readyState < 2)) self.fail('video did not load');
-    }, 20000);
-
-    if (v.readyState >= 1) {
-      self.duration = v.duration || 0;
-      if (self.duration > 0) { self.sizeTrack(); self.measure(); prime(); }
+    /* A clip left inline in the markup (no data-src) is already downloading, so
+       it is past the point requestLoad would take it to. */
+    if (v.getAttribute('src')) {
+      this.requested = true;
+      this.armTimeout();
+      if (v.readyState >= 1) {
+        this.duration = v.duration || 0;
+        if (this.duration > 0) { this.sizeTrack(); this.measure(); prime(); }
+      }
+      if (v.readyState >= 3) this.markReady();
     }
-    if (v.readyState >= 3) self.markReady();
+  };
+
+  /**
+   * Start fetching the clip.
+   *
+   * The markup holds the URL in data-src and preload="none", so nothing is
+   * requested until this runs — a scroll stage sits several screens down the
+   * page, and a multi-megabyte clip downloading during first paint competes
+   * with the content the visitor is actually looking at. bind() calls this when
+   * the block is within ~1.5 screens, which on any real scroll speed is a long
+   * time before the first frame is needed, so the stage is still fully buffered
+   * by the time it pins. The file itself is untouched: same bytes, later.
+   */
+  ScrollVideo.prototype.requestLoad = function () {
+    if (this.requested) return;
+    this.requested = true;
+
+    var v = this.video;
+    var src = v.getAttribute('data-src');
+    if (src && !v.getAttribute('src')) v.setAttribute('src', src);
+    v.preload = 'auto';
+    try { v.load(); } catch (e) { /* older engines fetch off the src alone */ }
+    this.armTimeout();
+  };
+
+  /**
+   * If nothing has loaded at all after a generous wait, fall back to the poster
+   * rather than leaving a blank pinned block in the page. Armed when the fetch
+   * starts, not at construction — otherwise a deferred clip would be written off
+   * before it was ever asked for.
+   *
+   * The deadline judges PROGRESS rather than elapsed time. Since the fetch now
+   * begins a screen or so before the stage is needed instead of at page load,
+   * there is less slack in front of it, and a fixed stopwatch would write off a
+   * clip on a slow connection that was still arriving perfectly well. Two things
+   * therefore buy more time: bytes actually landing, and a backgrounded tab —
+   * browsers suspend media loading outright when the tab is hidden, so a stalled
+   * counter there says nothing about whether the clip is reachable.
+   */
+  ScrollVideo.prototype.armTimeout = function () {
+    var self = this;
+    var v = this.video;
+    var STEP = 20000;
+    var STALL_LIMIT = 3;   // consecutive checks with no new bytes before giving up
+    var stalled = 0;
+    var lastEnd = -1;
+
+    function bufferedEnd() {
+      try { return v.buffered && v.buffered.length ? v.buffered.end(v.buffered.length - 1) : 0; }
+      catch (e) { return 0; }
+    }
+
+    function check() {
+      if (self.ready) return;
+
+      /* Hidden tab: the browser has parked the download. Do not judge it, and do
+         not let the clock run while it is parked. */
+      if (document.hidden) { window.setTimeout(check, STEP); return; }
+
+      /* Give up on a STALL, not on a stopwatch. A wall-clock deadline punishes a
+         slow connection for being slow — these clips are multi-megabyte, and a
+         visitor on hotel wifi can legitimately still be downloading well past any
+         fixed cutoff. What actually means "this is never going to arrive" is the
+         buffer not growing between checks. */
+      var end = bufferedEnd();
+      var grew = end > lastEnd;
+      lastEnd = end;
+
+      var loading = v.networkState === 2 /* NETWORK_LOADING */;
+      if (grew || (loading && v.readyState > 0)) { stalled = 0; }
+      else { stalled++; }
+
+      if (stalled < STALL_LIMIT) { window.setTimeout(check, STEP); return; }
+
+      if (!v.readyState || v.readyState < 2) self.fail('video stalled while loading');
+    }
+
+    window.setTimeout(check, STEP);
   };
 
   ScrollVideo.prototype.markReady = function () {
@@ -156,8 +245,11 @@
     if (poster) this.pin.style.backgroundImage = 'url("' + poster + '")';
     this.stop();
     if (window.console && console.warn) {
+      var url = this.video
+        ? (this.video.getAttribute('src') || this.video.getAttribute('data-src') || 'unknown')
+        : 'unknown';
       console.warn('[scroll-video] ' + why + ' — falling back to the poster. ' +
-        'Expected a clip at assets/booth-scroll.mp4');
+        'Expected a clip at ' + url);
     }
   };
 
@@ -302,6 +394,25 @@
     }, { passive: true });
 
     window.addEventListener('load', function () { self.measure(); });
+
+    /* Fetch the clip once the block is within ~1.5 screens of the viewport, so
+       the download is well underway before the stage pins but is not competing
+       with first paint. One-shot: disconnect as soon as it has fired. */
+    if ('IntersectionObserver' in window) {
+      var pio = new IntersectionObserver(function (entries) {
+        for (var i = 0; i < entries.length; i++) {
+          if (entries[i].isIntersecting) {
+            self.requestLoad();
+            pio.disconnect();
+            return;
+          }
+        }
+      }, { rootMargin: '150% 0px' });
+      pio.observe(this.track);
+    } else {
+      /* No observer to tell us when to start, so behave as before. */
+      this.requestLoad();
+    }
 
     /* Only burn frames while the block is on screen — and only decode while it
        is, which also stops the video holding a decoder open down the page. */

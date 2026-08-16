@@ -345,10 +345,6 @@
             gap: 8px;
         }
 
-        .badge-icon {
-            font-size: 1.5rem;
-        }
-
         .typing-badge {
             min-height: 30px;
             display: flex;
@@ -662,12 +658,6 @@
             opacity: 0.6;
         }
 
-        /* ===== CONTAINER & GENERAL ===== */
-
-        section.alternate {
-            background: var(--primary-bg);
-        }
-
         h2 {
             font-size: clamp(2rem, 5vw, 3rem);
             font-weight: 800;
@@ -685,218 +675,7 @@
             margin-right: auto;
         }
 
-        /* ===== PRICING SECTION ===== */
-        .pricing-section {
-            background: var(--primary-bg);
-        }
-
-        .pricing-card {
-            background: linear-gradient(135deg, #252d3d 0%, #2a3442 100%);
-            border: 1px solid var(--border-subtle);
-            border-radius: 2px;
-            padding: 50px;
-            text-align: center;
-            max-width: 500px;
-            margin: 0 auto;
-            transition: all 0.3s ease;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-        }
-
-        .pricing-card:hover {
-            border-color: var(--accent-teal);
-            box-shadow: 0 20px 60px rgba(45, 156, 202, 0.15);
-            transform: translateY(-5px);
-        }
-
-        .price-display {
-            font-size: 3.5rem;
-            font-weight: 900;
-            color: var(--accent-teal);
-            margin: 30px 0;
-            letter-spacing: -2px;
-        }
-
-        .price-label {
-            font-size: 1.1rem;
-            color: var(--text-secondary);
-            margin-bottom: 30px;
-        }
-
-        .discount-badge {
-            display: inline-block;
-            background: rgba(184, 165, 115, 0.12);
-            border: 1px solid var(--accent-gold);
-            color: var(--accent-gold);
-            padding: 10px 20px;
-            border-radius: 2px;
-            margin: 20px 0;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        .pricing-features {
-            text-align: left;
-            margin: 30px 0;
-            line-height: 2;
-        }
-
-        .pricing-features li {
-            list-style: none;
-            padding-left: 30px;
-            position: relative;
-            color: var(--text-primary);
-        }
-
-        .pricing-features li:before {
-            content: "✓";
-            position: absolute;
-            left: 0;
-            color: var(--success);
-            font-weight: bold;
-        }
-
-        /* ===== PROBLEM/SOLUTION SECTION ===== */
-        .problem-solution {
-            background: var(--primary-dark);
-        }
-
-        .grid-2 {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 40px;
-            margin-top: 50px;
-        }
-
-        .solution-card {
-            background: rgba(45, 156, 202, 0.06);
-            border-left: 3px solid var(--accent-teal);
-            padding: 30px;
-            border-radius: 2px;
-            transition: all 0.3s ease;
-        }
-
-        .solution-card:hover {
-            background: rgba(45, 156, 202, 0.1);
-            transform: translateX(5px);
-        }
-
-        .solution-card h3 {
-            font-size: 1.4rem;
-            margin-bottom: 15px;
-            color: #ffffff;
-        }
-
-        .solution-card p {
-            color: var(--text-secondary);
-            line-height: 1.8;
-        }
-
-        /* ===== TRADE SHOWS SECTION ===== */
-        .trade-shows {
-            background: var(--primary-bg);
-        }
-
-        .show-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 30px;
-            margin-top: 50px;
-        }
-
-        .show-card {
-            background: var(--primary-dark);
-            border: 1px solid var(--border-subtle);
-            padding: 40px;
-            text-align: center;
-            border-radius: 2px;
-            transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 250px;
-        }
-
-        .show-card:hover {
-            border-color: var(--accent-teal);
-            background: rgba(45, 156, 202, 0.04);
-            transform: translateY(-5px);
-        }
-
-        .show-card .show-name {
-            font-size: 1.6rem;
-            font-weight: 700;
-            margin-bottom: 15px;
-            color: var(--accent-teal);
-        }
-
-        .show-card p {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-        }
-
-        /* ===== SERVICES SECTION ===== */
-        .services {
-            background: var(--primary-dark);
-        }
-
-        .service-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
-            margin-top: 50px;
-        }
-
-        .service-card {
-            background: linear-gradient(135deg, #252d3d 0%, #2a3442 100%);
-            border: 1px solid var(--border-subtle);
-            padding: 40px 30px;
-            border-radius: 2px;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        .service-card:hover {
-            border-color: var(--accent-teal);
-            box-shadow: 0 10px 30px rgba(45, 156, 202, 0.15);
-            transform: translateY(-8px);
-        }
-
-        .service-card h3 {
-            font-size: 1.3rem;
-            margin-bottom: 15px;
-            font-weight: 700;
-            color: #ffffff;
-        }
-
-        .service-card p {
-            color: var(--text-secondary);
-            line-height: 1.8;
-        }
-
         /* ===== STATS SECTION ===== */
-        .stats {
-            background: var(--primary-bg);
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 40px;
-            margin-top: 50px;
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 3rem;
-            font-weight: 900;
-            color: var(--accent-teal);
-            margin-bottom: 10px;
-        }
-
         .stat-label {
             font-size: 1.1rem;
             color: var(--text-secondary);
@@ -965,57 +744,89 @@
             margin-top: 30px;
         }
 
-        /* ===== FOOTER ===== */
-        footer {
+        /* ===== FOOTER =====
+           Mirrors the shared four-column footer the five kit pages get from
+           assets/site.css (.site-footer / .footer-grid / .footer-col). This page
+           does not load site.css, so the rules are duplicated here on purpose —
+           keep the two in step if either is edited. */
+        .site-footer {
             background: var(--primary-dark);
             border-top: 1px solid var(--border-subtle);
-            padding: 40px 20px;
-            text-align: center;
+            padding: 60px 20px 26px;
         }
 
-        .footer-content {
+        .footer-grid {
             max-width: 1200px;
             margin: 0 auto;
+            /* The kit pages put .container on this element, which is where their
+               20px side padding comes from. Matched here so the four columns
+               compute to identical widths on both. */
+            padding: 0 20px;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: 2fr 1fr 1fr 1.2fr;
             gap: 40px;
-            margin-bottom: 40px;
         }
 
-        .footer-section h3 {
-            font-size: 1.1rem;
-            margin-bottom: 15px;
+        .footer-col h3 {
+            color: #fff;
+            font-size: 1.2rem;
+            margin-bottom: 14px;
+        }
+
+        .footer-col h4 {
             color: var(--accent-teal);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 16px;
         }
 
-        .footer-section a {
+        .footer-col p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 12px;
+            line-height: 1.7;
+        }
+
+        .footer-col a {
             display: block;
             color: var(--text-secondary);
             text-decoration: none;
-            margin: 8px 0;
-            transition: color 0.3s ease;
+            margin: 9px 0;
+            font-size: 0.95rem;
+            transition: color 0.25s ease;
         }
 
-        .footer-section a:hover {
+        .footer-col a:hover {
             color: var(--accent-teal);
         }
 
-        .phone-link {
-            font-size: 1.5rem;
-            font-weight: 700;
+        .footer-col .phone-link {
             color: var(--accent-gold);
-            text-decoration: none;
-            transition: color 0.3s ease;
-            margin: 10px 0;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 8px 0;
         }
 
-        .phone-link:hover {
+        .footer-col .phone-link:hover {
             color: var(--accent-teal);
+        }
+
+        .footer-col.cta .cta-button {
+            margin: 6px 0 0;
+        }
+
+        .footer-loc {
+            color: var(--accent-teal) !important;
+            font-weight: 600;
         }
 
         .footer-bottom {
+            max-width: 1200px;
+            margin: 44px auto 0;
+            padding-top: 24px;
             border-top: 1px solid var(--border-subtle);
-            padding-top: 30px;
+            text-align: center;
             color: var(--text-secondary);
             font-size: 0.9rem;
         }
@@ -1485,16 +1296,6 @@
             font-weight: 700;
         }
 
-        .pricing-example {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            margin-bottom: 30px;
-            padding: 15px;
-            background: rgba(45, 156, 202, 0.05);
-            border-left: 3px solid var(--accent-teal);
-            border-radius: 2px;
-        }
-
         /* Testimonial Carousel */
         .pricing-testimonial-carousel {
             max-width: 900px;
@@ -1571,173 +1372,6 @@
             .testimonial-quote-simple {
                 font-size: 1rem;
             }
-        }
-
-
-        /* ===== VALUE PROPOSITION SECTION ===== */
-        .value-props {
-            background: var(--primary-bg);
-        }
-
-        .value-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 50px;
-            margin-top: 50px;
-        }
-
-        .value-card {
-            padding: 40px;
-            background: rgba(45, 156, 202, 0.04);
-            border: 1px solid var(--border-subtle);
-            border-radius: 2px;
-            transition: all 0.3s ease;
-        }
-
-        .value-card:hover {
-            background: rgba(45, 156, 202, 0.08);
-            border-color: var(--accent-teal);
-            transform: translateY(-3px);
-        }
-
-        .value-card h3 {
-            font-size: 1.4rem;
-            font-weight: 700;
-            margin-bottom: 20px;
-            color: var(--accent-teal);
-        }
-
-        .value-card p {
-            color: var(--text-secondary);
-            margin-bottom: 25px;
-            line-height: 1.8;
-        }
-
-        .feature-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        .feature-list li {
-            padding: 10px 0;
-            padding-left: 25px;
-            position: relative;
-            color: var(--text-primary);
-            font-size: 0.95rem;
-        }
-
-        .feature-list li:before {
-            content: "•";
-            position: absolute;
-            left: 0;
-            color: var(--accent-teal);
-            font-weight: bold;
-            font-size: 1.3rem;
-        }
-
-        /* ===== PROCESS SECTION ===== */
-        .process {
-            background: var(--primary-dark);
-        }
-
-        .process-timeline {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 40px;
-            margin-top: 50px;
-        }
-
-        .process-step {
-            padding: 30px;
-            background: var(--primary-bg);
-            border: 1px solid var(--border-subtle);
-            border-radius: 2px;
-            position: relative;
-            transition: all 0.3s ease;
-        }
-
-        .process-step:hover {
-            border-color: var(--accent-teal);
-            background: rgba(45, 156, 202, 0.04);
-            transform: translateY(-2px);
-        }
-
-        .step-number {
-            display: inline-block;
-            width: 45px;
-            height: 45px;
-            background: var(--accent-teal);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 900;
-            font-size: 1.3rem;
-            margin-bottom: 20px;
-        }
-
-        .process-step h3 {
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin-bottom: 15px;
-            color: #ffffff;
-        }
-
-        .process-step p {
-            color: var(--text-secondary);
-            line-height: 1.8;
-        }
-
-        /* ===== TESTIMONIALS SECTION ===== */
-        .testimonials {
-            background: var(--primary-bg);
-        }
-
-        .testimonials-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 40px;
-            margin-top: 50px;
-        }
-
-        .testimonial-card {
-            padding: 35px;
-            background: var(--primary-dark);
-            border: 1px solid var(--border-subtle);
-            border-radius: 2px;
-            border-left: 3px solid var(--accent-teal);
-            transition: all 0.3s ease;
-        }
-
-        .testimonial-card:hover {
-            background: rgba(45, 156, 202, 0.03);
-            transform: translateY(-2px);
-        }
-
-        .testimonial-text p {
-            color: var(--text-secondary);
-            font-size: 1rem;
-            line-height: 1.8;
-            font-style: italic;
-            margin-bottom: 25px;
-        }
-
-        .testimonial-author {
-            border-top: 1px solid var(--border-subtle);
-            padding-top: 20px;
-        }
-
-        .author-name {
-            font-weight: 700;
-            color: var(--text-primary);
-            font-size: 1rem;
-        }
-
-        .author-title {
-            color: var(--accent-teal);
-            font-size: 0.9rem;
-            font-weight: 600;
         }
 
         /* ===== TABLET OPTIMIZATION ===== */
@@ -1842,25 +1476,10 @@
                 gap: 15px;
             }
 
-            .pricing-card {
-                padding: 30px;
-            }
-
-            .price-display {
-                font-size: 2.5rem;
-            }
-
-            .grid-2,
-            .show-grid,
-            .service-grid,
-            .stats-grid,
-            .value-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .service-card,
-            .show-card {
-                min-height: auto;
+            /* Same two-up collapse the kit pages get from assets/site.css. */
+            .footer-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 30px;
             }
 
             .cta-group {
@@ -1873,18 +1492,6 @@
                 width: 100%;
                 max-width: 400px;
                 margin: 10px 0;
-            }
-
-            .value-card {
-                padding: 30px;
-            }
-
-            .process-timeline {
-                grid-template-columns: 1fr;
-            }
-
-            .testimonials-grid {
-                grid-template-columns: 1fr;
             }
 
             .intro-section {
@@ -1924,60 +1531,14 @@
             }
         }
 
-        /* ===== ANIMATIONS ===== */
-        @keyframes slideInLeft {
-            from {
-                opacity: 0;
-                transform: translateX(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        @keyframes slideInRight {
-            from {
-                opacity: 0;
-                transform: translateX(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .solution-card {
-            animation: slideInLeft 0.6s ease-out forwards;
-        }
-
-        .solution-card:nth-child(2) {
-            animation-delay: 0.1s;
-        }
-
-        .solution-card:nth-child(3) {
-            animation-delay: 0.2s;
-        }
-
-        .portfolio-item,
-        .testimonial-card,
-        .process-step {
-            animation: fadeInUp 0.6s ease-out forwards;
-        }
-
-        .portfolio-item:nth-child(2) {
-            animation-delay: 0.1s;
-        }
-
-        .portfolio-item:nth-child(3) {
-            animation-delay: 0.2s;
-        }
-
-        .portfolio-item:nth-child(4) {
-            animation-delay: 0.3s;
-        }
-
         /* ===== ACCESSIBILITY ===== */
+        /* Single column on phones, matching assets/site.css. */
+        @media (max-width: 480px) {
+            .footer-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
         @media (prefers-reduced-motion: reduce) {
             * {
                 animation: none !important;
@@ -1993,8 +1554,7 @@
             .price-digit {
                 transform: translateY(0) !important;
             }
-        }
-    </style>
+        }</style>
 </head>
 <body>
     <!-- Mobile menu overlay -->
@@ -2028,7 +1588,8 @@
 
     <!-- ===== HERO SECTION ===== -->
     <section class="hero">
-        <video class="hero-video" autoplay muted loop playsinline>
+        <video class="hero-video" autoplay muted loop playsinline
+               poster="assets/labor-hero-poster.jpg" preload="auto">
             <source src="assets/placeholder-booth-video.mp4" type="video/mp4">
             Your browser does not support HTML5 video.
         </video>
@@ -2229,14 +1790,6 @@
             <!-- Testimonial Carousel -->
             <div class="pricing-testimonial-carousel">
                 <div class="testimonial-track">
-                    <!-- <div class="testimonial-slide">
-                        <p class="testimonial-quote-simple">"Working with this crew has been a game-changer for our events. Professional, skilled, and the pricing is transparent — no surprise fees. They've become our go-to for every Las Vegas show."</p>
-                        <p class="testimonial-author-simple"><strong>Steven Schabern</strong> · Event Director, Tech Innovations Corp</p>
-                    </div>
-                    <div class="testimonial-slide">
-                        <p class="testimonial-quote-simple">"After years of dealing with unreliable crews, we finally found a team that shows up on time, every time. Their attention to detail and problem-solving skills saved us during a critical CES setup when our main vendor backed out."</p>
-                        <p class="testimonial-author-simple"><strong>Jennifer Chen</strong> · Trade Show Manager, Global Electronics</p>
-                    </div> -->
                     <div class="testimonial-slide">
                         <p class="testimonial-quote-simple">"Their crew knows how to work. Experienced installers who understand booth structures, follow direction perfectly, and handle everything from power tools to delicate displays. No standing around—just solid, efficient work from start to finish."</p>
                         <p class="testimonial-author-simple"><strong>Dominic, K</strong> · VP of Marketing, AutoTech Solutions</p>
@@ -2256,7 +1809,7 @@
 
             <div class="cta-group">
                 <a href="i-d-labor-request.html" class="cta-button">Book Your Crew</a>
-                <a href="tel:702-483-8279" class="cta-button secondary">Call 702-483-8279</a>
+                <a href="tel:+17024838279" class="cta-button secondary">Call 702-483-8279</a>
             </div>
 
             <div class="urgency-text">Crews booking fast for the upcoming trade show season. Reserve your crew today.</div>
@@ -2264,20 +1817,34 @@
     </section>
 
     <!-- ===== FOOTER ===== -->
-    <footer>
-        <div class="footer-content">
-            <div class="footer-section">
+    <footer class="site-footer">
+        <div class="footer-grid">
+            <div class="footer-col">
                 <h3>LV Trade Show Rentals</h3>
-                <p style="color: var(--text-secondary); margin: 10px 0;">Professional Booth Installation & Labor Services</p>
-                <a href="tel:702-483-8279" class="phone-link">702-483-8279</a>
-                <p style="color: var(--accent-teal); font-size: 1rem; margin-top: 20px; font-weight: 600;">📍 Based in Las Vegas, Nevada</p>
-                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 8px; line-height: 1.6;">Serving all major Las Vegas trade shows and convention centers</p>
+                <p>Full-service trade show exhibit house — custom design, fabrication, installation &amp; I&amp;D labor across Las Vegas.</p>
+                <a href="tel:+17024838279" class="phone-link">702-483-8279</a>
+                <p class="footer-loc">📍 Las Vegas, Nevada</p>
+            </div>
+            <div class="footer-col">
+                <h4>Explore</h4>
+                <a href="index.html">Home</a>
+                <a href="gallery.html">Gallery</a>
+                <a href="about-us.html">About Us</a>
+                <a href="what-we-do.html">What We Do</a>
+            </div>
+            <div class="footer-col">
+                <h4>Services</h4>
+                <a href="index.html">Custom Booth Rentals</a>
+                <a href="what-we-do.html">I&amp;D Labor</a>
+                <a href="contact-us.html">Contact Us</a>
+                <a href="i-d-labor-request.html">Labor Request</a>
+            </div>
+            <div class="footer-col cta">
+                <h4>Start a project</h4>
+                <a href="contact-us.html" class="cta-button">Request a Quote</a>
             </div>
         </div>
-
-        <div class="footer-bottom">
-            <p>&copy; 2026 LV Trade Show Rentals. All rights reserved.</p>
-        </div>
+        <div class="footer-bottom"><p>&copy; 2026 LV Trade Show Rentals. All rights reserved.</p></div>
     </footer>
 
     <script>
@@ -2338,26 +1905,6 @@
                 // Add your analytics tracking here (GTM, GA, etc.)
             });
         });
-
-        // ===== SCROLL-TRIGGERED ANIMATIONS =====
-        const observerOptions = {
-            threshold: 0.15,
-            rootMargin: '0px 0px -10% 0px'
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('revealed');
-                }
-            });
-        }, observerOptions);
-
-        // Observe all elements with data-reveal attribute
-        document.querySelectorAll('[data-reveal]').forEach(el => observer.observe(el));
-
-        // Observe service items
-        document.querySelectorAll('.service-item').forEach(el => observer.observe(el));
 
         // ===== SERVICE CARD FADE-IN ANIMATION =====
         const serviceCardObserver = new IntersectionObserver((entries) => {
@@ -2473,7 +2020,11 @@
             const track = document.querySelector('.testimonial-track');
             const slides = document.querySelectorAll('.testimonial-slide');
 
-            if (!track || slides.length === 0) return;
+            // Nothing to rotate with a single testimonial: starting the timer would
+            // reapply translateX(0%) every 6s forever for no visible effect, and hold
+            // the hover/visibility listeners open. Revives on its own once a second
+            // .testimonial-slide is added back.
+            if (!track || slides.length < 2) return;
 
             let currentIndex = 0;
             const slideCount = slides.length;
@@ -2667,7 +2218,6 @@
 
                     // Reset position seamlessly after TWO complete logo sets (double cycling)
                     // This ensures we show all logos twice before resetting: CES → SEMA → MAGIC → NAB → CONEXPO → CES → SEMA → MAGIC → NAB → CONEXPO (then reset)
-                    const doubleSetWidth = setWidth * 2;
                     if (scrollPosition >= setWidth * 2) {
                         scrollPosition = scrollPosition % setWidth;
                     }

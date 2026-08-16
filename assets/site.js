@@ -159,62 +159,6 @@
             parallax();
         }
 
-        /* ---------- Gallery filter ---------- */
-        var filterBtns = document.querySelectorAll('.filter-btn');
-        var galleryItems = document.querySelectorAll('.gallery-item');
-        if (filterBtns.length && galleryItems.length) {
-            filterBtns.forEach(function (btn) {
-                btn.addEventListener('click', function () {
-                    filterBtns.forEach(function (b) { b.classList.remove('active'); });
-                    btn.classList.add('active');
-                    var cat = btn.getAttribute('data-filter');
-                    galleryItems.forEach(function (item) {
-                        var show = cat === 'all' || (item.getAttribute('data-cat') || '').split(' ').indexOf(cat) !== -1;
-                        item.classList.toggle('is-hidden', !show);
-                    });
-                });
-            });
-        }
-
-        /* ---------- Lightbox ---------- */
-        var lbItems = Array.prototype.slice.call(document.querySelectorAll('[data-full]'));
-        if (lbItems.length) {
-            var lb = document.createElement('div');
-            lb.className = 'lightbox';
-            lb.innerHTML =
-                '<button class="lb-btn lb-close" aria-label="Close">&times;</button>' +
-                '<button class="lb-btn lb-prev" aria-label="Previous">&#8249;</button>' +
-                '<button class="lb-btn lb-next" aria-label="Next">&#8250;</button>' +
-                '<img alt="">' +
-                '<div class="lightbox-cap"></div>';
-            document.body.appendChild(lb);
-            var lbImg = lb.querySelector('img');
-            var lbCap = lb.querySelector('.lightbox-cap');
-            var idx = 0;
-
-            function show(i) {
-                idx = (i + lbItems.length) % lbItems.length;
-                var el = lbItems[idx];
-                lbImg.src = el.getAttribute('data-full');
-                var h = el.querySelector('h4'), s = el.querySelector('.gallery-cap span');
-                lbCap.innerHTML = h ? ('<strong>' + h.textContent + '</strong>' + (s ? ' &nbsp; <span>' + s.textContent + '</span>' : '')) : '';
-            }
-            function open(i) { show(i); lb.classList.add('open'); document.body.style.overflow = 'hidden'; }
-            function close() { lb.classList.remove('open'); document.body.style.overflow = ''; }
-
-            lbItems.forEach(function (el, i) { el.addEventListener('click', function () { open(i); }); });
-            lb.querySelector('.lb-close').addEventListener('click', close);
-            lb.querySelector('.lb-prev').addEventListener('click', function (e) { e.stopPropagation(); show(idx - 1); });
-            lb.querySelector('.lb-next').addEventListener('click', function (e) { e.stopPropagation(); show(idx + 1); });
-            lb.addEventListener('click', function (e) { if (e.target === lb) close(); });
-            document.addEventListener('keydown', function (e) {
-                if (!lb.classList.contains('open')) return;
-                if (e.key === 'Escape') close();
-                else if (e.key === 'ArrowLeft') show(idx - 1);
-                else if (e.key === 'ArrowRight') show(idx + 1);
-            });
-        }
-
         /* ---------- Formspree AJAX submit (progressive enhancement) ---------- */
         document.querySelectorAll('form[data-ajax="true"]').forEach(function (form) {
             form.addEventListener('submit', function (e) {
