@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What We Do | LV Trade Show Rentals</title>
+    <meta name="description" content="Full-service trade show solutions in Las Vegas: custom fabrication, booth rentals, graphics, I&D labor, lighting & AV, storage & logistics.">
+    <meta property="og:title" content="What We Do | LV Trade Show Rentals">
+    <meta property="og:description" content="Everything from design to dismantle — one Las Vegas exhibit house.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="assets/world2-logo.png">
+    <link rel="icon" type="image/png" href="assets/world2-logo.png">
+    <link rel="stylesheet" href="assets/site.css">
+    <style>
+        /* ===== WHAT WE DO — page-specific (wwd-) ===== */
+
+        /* --- Hero embellishments --- */
+        .wwd-hero-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 32px;
+        }
+        .wwd-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            padding: 9px 16px 9px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            background: rgba(15, 20, 25, 0.34);
+            -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px);
+            border-radius: 40px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #eef1f5;
+            letter-spacing: 0.2px;
+        }
+        .wwd-chip::before {
+            content: '';
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--accent-teal);
+            box-shadow: 0 0 10px var(--accent-teal);
+            flex: none;
+        }
+        .wwd-chip b { color: var(--accent-gold); font-weight: 800; }
+
+        .wwd-cue {
+            position: absolute;
+            left: 50%;
+            bottom: 22px;
+            transform: translateX(-50%);
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-secondary);
+            font-size: 0.68rem;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+        }
+        .wwd-cue .ch {
+            width: 16px;
+            height: 16px;
+            border-right: 2px solid var(--accent-teal);
+            border-bottom: 2px solid var(--accent-teal);
+            transform: rotate(45deg);
+            animation: wwdbob 1.8s ease-in-out infinite;
+        }
+        @keyframes wwdbob {
+            0%, 100% { transform: rotate(45deg) translate(0, 0); opacity: 0.45; }
+            50% { transform: rotate(45deg) translate(4px, 4px); opacity: 1; }
+        }
+
+        /* --- Intro band --- */
+        .wwd-intro { text-align: center; }
+        .wwd-intro h2 {
+            font-size: clamp(1.9rem, 4.5vw, 2.85rem);
+            font-weight: 800;
+            line-height: 1.15;
+            margin: 6px 0 22px;
+        }
+        .wwd-intro p {
+            color: var(--text-secondary);
+            font-size: 1.17rem;
+            line-height: 1.9;
+        }
+        .wwd-intro p a {
+            color: var(--accent-teal);
+            font-weight: 600;
+            border-bottom: 1px solid rgba(45, 156, 202, 0.4);
+            transition: color 0.25s ease, border-color 0.25s ease;
+        }
+        .wwd-intro p a:hover { color: var(--accent-teal-bright); border-color: currentColor; }
+
+        /* ===================================================================
+           CAPABILITIES — scroll-scrubbed stage
+           ===================================================================
+           Six disciplines presented as a pinned, scroll-driven sequence
+           rather than a grid of cards. Layers, all paced by one number:
+
+             1. BACKDROP — assets/what-we-do-scroll.mp4 pinned behind
+                everything, its playhead bound to scroll by
+                assets/scroll-video.js. Down runs it forward, up runs it
+                backward, stopping holds a frame.
+             2. BLUEPRINT — a drafting grid whose opacity is driven by --p
+                (0 at the top of the block, 1 at the bottom).
+             3. STAGE — a chapter rail across the top tracking all six, and
+                below it a spread: copy on the left, the discipline's photo
+                on the right as a plate that wipes open, with its numeral
+                bleeding across the gutter.
+
+           Same engine and .sv-* contract as about-us.html; the .cap-*
+           layer is this page's own. Everything the video touches is scoped
+           to .sv:not(.sv-off) — the script adds .sv-off if the clip is
+           missing and the stage falls back to its own painted backdrop.
+           =================================================================== */
+
+        /* ---- Layer 1: the pinned, scroll-scrubbed backdrop ---- */
+        .sv { position: relative; --p: 0; }
+        .sv-track { position: relative; }
+        .sv-pin {
+            position: sticky; top: 0; height: 100vh; overflow: hidden; z-index: 0;
+            --mx: 50%; --my: 40%;
+            /* Stands on its own before the clip is dropped in — and after
+               .sv-off, if it never loads. */
+            background:
+                radial-gradient(70% 55% at 20% 20%, rgba(45, 156, 202, 0.15), transparent 70%),
+                radial-gradient(60% 60% at 90% 88%, rgba(184, 165, 115, 0.12), transparent 72%),
+                linear-gradient(160deg, #131c26 0%, #0f1419 55%, #0c1116 100%);
+        }
+        .sv-video {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; opacity: 0; transition: opacity 0.8s ease;
+            transform: translateZ(0); /* own compositor layer: a seek repaints only the video */
+        }
+        .sv.is-ready .sv-video { opacity: 1; }
+
+        /* Slight overall darkening, weighted to the left so the copy column
+           always has something to sit on, feathered top and bottom. */
+        .sv-veil {
+            position: absolute; inset: 0; pointer-events: none; z-index: 1;
+            background:
+                linear-gradient(180deg, rgba(15, 20, 25, 0.94) 0%, rgba(15, 20, 25, 0.46) 13%,
+                                        rgba(15, 20, 25, 0.46) 87%, rgba(15, 20, 25, 0.94) 100%),
+                linear-gradient(90deg, rgba(15, 20, 25, 0.78) 0%, rgba(15, 20, 25, 0.30) 60%,
+                                       rgba(15, 20, 25, 0.56) 100%);
+        }
+
+        /* ---- Layer 2: the drafting grid that dissolves as you scroll ---- */
+        .sv-grid {
+            position: absolute; inset: -1px; pointer-events: none; z-index: 2;
+            opacity: calc(0.55 - var(--p, 0) * 0.55);
+            background-image:
+                linear-gradient(rgba(45, 156, 202, 0.30) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(45, 156, 202, 0.30) 1px, transparent 1px),
+                linear-gradient(rgba(45, 156, 202, 0.13) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(45, 156, 202, 0.13) 1px, transparent 1px);
+            background-size: 160px 160px, 160px 160px, 32px 32px, 32px 32px;
+            -webkit-mask-image: radial-gradient(115% 90% at 50% 45%, #000 25%, transparent 82%);
+            mask-image: radial-gradient(115% 90% at 50% 45%, #000 25%, transparent 82%);
+        }
+
+        /* Work light that follows the cursor across the footage. */
+        .sv-light {
+            position: absolute; inset: 0; pointer-events: none; z-index: 3;
+            mix-blend-mode: screen;
+            background: radial-gradient(460px 460px at var(--mx) var(--my),
+                        rgba(93, 190, 232, 0.16), rgba(45, 156, 202, 0.05) 42%, transparent 72%);
+        }
+
+        /* Static film grain — inline SVG turbulence, so no extra request and
+           no per-frame repaint of a full-screen layer. */
+        .sv-grain {
+            position: absolute; inset: 0; pointer-events: none; z-index: 4;
+            opacity: 0.055; mix-blend-mode: overlay;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");
+        }
+
+        .sv-bar {
+            position: absolute; left: 0; right: 0; bottom: 0; height: 2px; z-index: 5;
+            background: rgba(255, 255, 255, 0.07);
+        }
+        .sv-bar-fill {
+            height: 100%; background: linear-gradient(90deg, var(--accent-teal), var(--accent-gold));
+            transform: scaleX(0); transform-origin: 0 50%;
+        }
+
+        /* Pulled back over the pin; rides above it on z-index. */
+        .sv-content { position: relative; z-index: 1; margin-top: -100vh; }
+
+        /* ---- Layer 3: the capability stage ---- */
+        /* Track height paces both the clip and the discipline swaps: six
+           panels over (560vh - 100vh of pinning) ≈ 77vh of scroll apiece. */
+        .cap-track { height: 560vh; }
+        .cap-stick {
+            position: sticky; top: 0; height: 100vh;
+            display: grid; align-content: center;
+            padding: 86px 20px 54px; box-sizing: border-box;
+        }
+        .cap-inner { max-width: var(--maxw); width: 100%; margin: 0 auto; }
+
+        /* Persistent heading — small, so the spread below owns the space */
+        .cap-head { margin-bottom: 26px; }
+        .cap-head h2 {
+            color: #fff; font-size: clamp(1.5rem, 2.5vw, 2.05rem);
+            letter-spacing: -0.4px; margin-top: 4px;
+        }
+
+        /* ---- Chapter rail: all six at once, active one lit ---- */
+        .cap-rail {
+            position: relative; list-style: none;
+            display: grid; grid-template-columns: repeat(6, 1fr);
+            border-top: 1px solid rgba(255, 255, 255, 0.13);
+        }
+        /* Continuous progress fill riding on the rail's own hairline. */
+        .cap-rail::after {
+            content: ''; position: absolute; top: -1px; left: 0; width: 100%; height: 1px;
+            background: linear-gradient(90deg, var(--accent-teal), var(--accent-gold));
+            transform: scaleX(var(--p, 0)); transform-origin: 0 50%;
+        }
+        .cap-tick {
+            position: relative; padding: 15px 18px 0 0;
+            opacity: 0.32; transition: opacity 0.45s var(--ease);
+        }
+        .cap-tick.is-on { opacity: 1; }
+        /* The discrete marker, sitting exactly on the hairline. */
+        .cap-tick::before {
+            content: ''; position: absolute; top: -2px; left: 0; right: 18px; height: 2px;
+            background: var(--accent-gold);
+            transform: scaleX(0); transform-origin: 0 50%;
+            transition: transform 0.55s var(--ease);
+        }
+        .cap-tick.is-on::before { transform: scaleX(1); }
+        .cap-tick-n {
+            display: block; font-size: 0.66rem; font-weight: 700; letter-spacing: 2px;
+            color: var(--accent-gold); margin-bottom: 5px; font-variant-numeric: tabular-nums;
+        }
+        .cap-tick-t {
+            display: block; font-size: 0.88rem; font-weight: 700; color: #fff;
+            line-height: 1.3; letter-spacing: 0.2px;
+        }
+
+        /* ---- The spread ---- */
+        .cap-panels { position: relative; margin-top: 40px; min-height: clamp(318px, 46vh, 460px); }
+        .cap-panel {
+            position: absolute; inset: 0;
+            display: grid; grid-template-columns: 1fr 0.9fr; gap: 58px; align-items: stretch;
+            pointer-events: none;
+            opacity: 0; transform: translateY(24px); filter: blur(9px);
+            transition: opacity 0.55s var(--ease), transform 0.85s var(--ease), filter 0.7s var(--ease);
+        }
+        .cap-panel.is-on { opacity: 1; transform: none; filter: none; pointer-events: auto; }
+
+        .cap-copy { align-self: center; }
+        /* Children stagger in behind the panel itself. */
+        .cap-copy > * {
+            opacity: 0; transform: translateY(18px);
+            transition: opacity 0.7s var(--ease), transform 0.8s var(--ease);
+            transition-delay: calc(var(--i, 0) * 85ms);
+        }
+        .cap-panel.is-on .cap-copy > * { opacity: 1; transform: none; }
+
+        .cap-tag {
+            display: inline-flex; align-items: center; gap: 12px;
+            font-size: 0.7rem; font-weight: 700; letter-spacing: 3.2px;
+            text-transform: uppercase; color: var(--accent-teal); margin-bottom: 18px;
+        }
+        .cap-tag::before { content: ''; width: 26px; height: 1px; background: var(--accent-teal); }
+        .cap-panel--gold .cap-tag { color: var(--accent-gold-bright); }
+        .cap-panel--gold .cap-tag::before { background: var(--accent-gold-bright); }
+
+        /* Line-masked headline: each line rides up out of its own clip box. */
+        .cap-title {
+            font-size: clamp(1.6rem, 2.9vw, 2.35rem); font-weight: 800;
+            line-height: 1.14; color: #fff; letter-spacing: -0.5px;
+        }
+        .cap-title .cap-ln { display: block; overflow: hidden; padding-bottom: 0.1em; margin-bottom: -0.1em; }
+        .cap-title .cap-ln i {
+            display: block; font-style: normal;
+            transform: translateY(112%); transition: transform 0.95s var(--ease);
+        }
+        .cap-panel.is-on .cap-title .cap-ln i { transform: none; }
+        .cap-title .cap-ln:nth-child(2) i { transition-delay: 0.09s; }
+        .cap-title em { font-style: normal; color: var(--accent-gold); }
+
+        .cap-body {
+            color: var(--text-secondary); font-size: 1.02rem; line-height: 1.8;
+            max-width: 50ch; margin-top: 18px;
+        }
+
+        /* Spec strip — hairline-separated, no boxes */
+        .cap-spec {
+            list-style: none; display: flex; flex-wrap: wrap; align-items: center;
+            gap: 9px 24px; margin-top: 24px;
+        }
+        .cap-spec li {
+            position: relative; font-size: 0.68rem; font-weight: 700;
+            letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-secondary);
+        }
+        .cap-spec li + li::before {
+            content: ''; position: absolute; left: -13px; top: 50%; margin-top: -6px;
+            width: 1px; height: 12px; background: rgba(255, 255, 255, 0.22);
+        }
+
+        .cap-go {
+            display: inline-flex; align-items: center; gap: 9px; margin-top: 26px;
+            font-size: 0.8rem; font-weight: 700; letter-spacing: 0.8px;
+            text-transform: uppercase; color: var(--accent-teal);
+            border-bottom: 1px solid rgba(45, 156, 202, 0.35); padding-bottom: 5px;
+            transition: color 0.3s ease, border-color 0.3s ease;
+        }
+        .cap-go .ar { transition: transform 0.3s var(--ease); }
+        .cap-go:hover { color: var(--accent-teal-bright); border-color: var(--accent-teal-bright); }
+        .cap-go:hover .ar { transform: translateX(6px); }
+        .cap-panel--gold .cap-go { color: var(--accent-gold-bright); border-color: rgba(184, 165, 115, 0.4); }
+        .cap-panel--gold .cap-go:hover { color: #e6d5a4; border-color: #e6d5a4; }
+
+        /* ---- The photo plate ---- */
+        .cap-plate { position: relative; display: block; align-self: center; height: 100%; }
+        /* Wipes open left-to-right rather than fading, so it reads as being
+           printed onto the stage. The frame is a separate element from the
+           link so the numeral can bleed outside the clip. */
+        .cap-plate-frame {
+            position: absolute; inset: 0; overflow: hidden; border-radius: 8px;
+            clip-path: inset(0 100% 0 0);
+            transition: clip-path 1.05s var(--ease);
+            box-shadow: 0 28px 70px rgba(0, 0, 0, 0.55);
+        }
+        .cap-panel.is-on .cap-plate-frame { clip-path: inset(0 0 0 0); transition-delay: 0.12s; }
+        /* Wrapper carries the scroll parallax; the img carries the hover zoom,
+           so the two never fight over one transform. */
+        .cap-plate-media {
+            position: absolute; inset: -7% 0;
+            transform: translateY(calc((var(--p, 0) - 0.5) * -26px));
+        }
+        .cap-plate-media img {
+            width: 100%; height: 100%; object-fit: cover;
+            transition: transform 0.75s var(--ease);
+        }
+        .cap-plate:hover .cap-plate-media img { transform: scale(1.06); }
+        .cap-plate-veil {
+            position: absolute; inset: 0; pointer-events: none;
+            background:
+                linear-gradient(to top, rgba(12, 17, 22, 0.62) 0%, rgba(12, 17, 22, 0.06) 48%, transparent 100%),
+                linear-gradient(to right, rgba(12, 17, 22, 0.34) 0%, transparent 40%);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.10);
+            border-radius: 8px;
+        }
+        .cap-plate .badge-pill { z-index: 3; }
+
+        /* Register marks: two hairlines that draw along the plate's edges. */
+        .cap-plate::before, .cap-plate::after {
+            content: ''; position: absolute; z-index: 4; background: var(--accent-teal);
+            transition: transform 0.9s var(--ease) 0.35s;
+        }
+        .cap-plate::before {
+            top: -1px; left: 0; width: 100%; height: 1px;
+            transform: scaleX(0); transform-origin: 0 50%;
+        }
+        .cap-plate::after {
+            top: 0; left: -1px; width: 1px; height: 100%;
+            transform: scaleY(0); transform-origin: 50% 0;
+        }
+        .cap-panel.is-on .cap-plate::before { transform: scaleX(1); }
+        .cap-panel.is-on .cap-plate::after { transform: scaleY(1); }
+        .cap-panel--gold .cap-plate::before, .cap-panel--gold .cap-plate::after { background: var(--accent-gold); }
+
+        /* Numeral bleeding off the plate and across the gutter */
+        .cap-num {
+            position: absolute; z-index: 5; top: -0.30em; left: -0.36em;
+            font-size: clamp(5.5rem, 10vw, 9rem); font-weight: 900; line-height: 0.74;
+            color: transparent; -webkit-text-stroke: 1px rgba(255, 255, 255, 0.20);
+            letter-spacing: -0.04em; pointer-events: none; user-select: none;
+        }
+        .cap-panel--gold .cap-num { -webkit-text-stroke-color: rgba(212, 192, 138, 0.34); }
+
+        .badge-pill.wwd-gold { background: rgba(184, 165, 115, 0.95); }
+
+        /* --- Parallax divider band --- */
+        .wwd-divider {
+            position: relative;
+            padding: 122px 20px;
+            overflow: hidden;
+            text-align: center;
+            border-top: 1px solid var(--border-subtle);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .wwd-divider-media { position: absolute; inset: -14% 0; z-index: 0; will-change: transform; }
+        .wwd-divider-media img { width: 100%; height: 100%; object-fit: cover; }
+        .wwd-divider-ov {
+            position: absolute; inset: 0; z-index: 1;
+            background: linear-gradient(135deg, rgba(15, 20, 25, 0.93) 0%, rgba(26, 35, 50, 0.72) 58%, rgba(15, 20, 25, 0.86) 100%);
+        }
+        .wwd-divider .container { position: relative; z-index: 2; max-width: 820px; }
+        .wwd-divider h2 {
+            font-size: clamp(1.9rem, 4.6vw, 3rem);
+            font-weight: 800;
+            line-height: 1.14;
+            margin: 8px 0 18px;
+            color: #fff;
+            text-shadow: 0 10px 34px rgba(0, 0, 0, 0.5);
+        }
+        .wwd-divider p { color: rgba(255, 255, 255, 0.9); font-size: 1.15rem; margin-bottom: 30px; }
+
+        /* --- Capability spectrum --- */
+        .wwd-spectrum {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 34px;
+        }
+        .wwd-step-wrap { position: relative; height: 100%; }
+        .wwd-step-wrap:not(:last-child)::after {
+            content: '\2192';
+            position: absolute;
+            right: -27px;
+            top: 46%;
+            transform: translateY(-50%);
+            font-size: 1.7rem;
+            color: var(--accent-gold);
+            opacity: 0.75;
+            z-index: 3;
+            pointer-events: none;
+        }
+        .wwd-step {
+            position: relative;
+            display: block;
+            height: 100%;
+            border-radius: 12px;
+            color: inherit;
+        }
+        .wwd-step-inner {
+            position: relative;
+            height: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(160deg, var(--surface) 0%, #1b2432 100%);
+            border: 1px solid var(--border-subtle);
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.42);
+            transition: border-color 0.35s ease;
+        }
+        .wwd-step:hover .wwd-step-inner { border-color: var(--accent-teal); }
+        .wwd-step-media { position: relative; height: 196px; overflow: hidden; }
+        .wwd-step-media img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.65s var(--ease); }
+        .wwd-step:hover .wwd-step-media img { transform: scale(1.08); }
+        .wwd-step-media::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(to top, rgba(14, 19, 26, 0.78) 0%, rgba(14, 19, 26, 0.1) 60%, transparent 100%);
+        }
+        .wwd-step-level {
+            position: absolute;
+            left: 18px; top: 10px;
+            font-size: 2.7rem;
+            font-weight: 900;
+            color: rgba(255, 255, 255, 0.92);
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.55);
+            line-height: 1;
+            z-index: 2;
+        }
+        .wwd-step-body { padding: 22px 22px 24px; display: flex; flex-direction: column; flex: 1; }
+        .wwd-meter { display: flex; gap: 6px; margin-bottom: 15px; }
+        .wwd-meter i { width: 26px; height: 5px; border-radius: 3px; background: rgba(255, 255, 255, 0.14); }
+        .wwd-meter i.on { background: linear-gradient(90deg, var(--accent-teal), var(--accent-gold)); }
+        .wwd-step-body h3 { color: #fff; font-size: 1.35rem; margin-bottom: 9px; }
+        .wwd-step-body p { color: var(--text-secondary); font-size: 0.97rem; line-height: 1.7; flex: 1; }
+        .wwd-step-cta {
+            margin-top: 16px;
+            color: var(--accent-gold-bright);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.82rem;
+            letter-spacing: 0.6px;
+            display: inline-flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .wwd-step-cta .ar { transition: transform 0.3s var(--ease); }
+        .wwd-step:hover .wwd-step-cta .ar { transform: translateX(6px); }
+
+        /* --- Process timeline (white section) --- */
+        .wwd-timeline { position: relative; max-width: 900px; margin: 10px auto 0; }
+        .wwd-timeline::before {
+            content: '';
+            position: absolute;
+            top: 6px; bottom: 6px;
+            left: 50%;
+            width: 3px;
+            transform: translateX(-50%);
+            background: rgba(45, 156, 202, 0.16);
+            border-radius: 3px;
+        }
+        .wwd-tl-fill {
+            position: absolute;
+            top: 6px;
+            left: 50%;
+            width: 3px;
+            height: 0;
+            transform: translateX(-50%);
+            background: linear-gradient(var(--accent-teal), var(--accent-gold));
+            border-radius: 3px;
+            z-index: 1;
+        }
+        .wwd-tl-item {
+            position: relative;
+            width: 50%;
+            box-sizing: border-box;
+            padding: 12px 48px;
+            margin-bottom: 12px;
+        }
+        .wwd-tl-item--left { left: 0; text-align: right; }
+        .wwd-tl-item--right { left: 50%; text-align: left; }
+        .wwd-tl-node {
+            position: absolute;
+            top: 20px;
+            width: 50px; height: 50px;
+            border-radius: 50%;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.05rem;
+            color: #fff;
+            background: linear-gradient(135deg, var(--accent-teal), #1f7fa8);
+            box-shadow: 0 8px 22px rgba(45, 156, 202, 0.4);
+            border: 3px solid #fff;
+        }
+        .wwd-tl-item--left .wwd-tl-node { right: -25px; }
+        .wwd-tl-item--right .wwd-tl-node { left: -25px; }
+        .wwd-tl-item:last-child .wwd-tl-node {
+            background: linear-gradient(135deg, var(--accent-gold), #9c8a5a);
+            box-shadow: 0 8px 22px rgba(184, 165, 115, 0.4);
+        }
+        .wwd-tl-card {
+            display: inline-block;
+            text-align: left;
+            max-width: 400px;
+            background: #f6f8fb;
+            border: 1px solid #e3e8ef;
+            border-radius: 12px;
+            padding: 24px 26px;
+            box-shadow: 0 12px 30px rgba(20, 40, 60, 0.09);
+            transition: transform 0.35s var(--ease), box-shadow 0.35s ease;
+        }
+        .wwd-tl-card:hover { transform: translateY(-4px); box-shadow: 0 18px 40px rgba(20, 40, 60, 0.14); }
+        .wwd-tl-eyebrow {
+            display: block;
+            color: var(--accent-teal);
+            font-weight: 700;
+            font-size: 0.72rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .wwd-tl-card h3 { color: #16324a; font-size: 1.3rem; margin-bottom: 10px; }
+        .wwd-tl-card p { color: #4a5568; font-size: 0.98rem; line-height: 1.75; }
+        .wwd-tl-card p a {
+            color: var(--accent-teal);
+            font-weight: 700;
+            white-space: nowrap;
+            border-bottom: 1px solid rgba(45, 156, 202, 0.35);
+        }
+        .wwd-tl-card p a:hover { color: #1f7fa8; }
+
+        /* --- Stats + trust --- */
+        .wwd-stat {
+            padding: 34px 22px;
+            background: linear-gradient(160deg, var(--surface-2) 0%, #2a3442 100%);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            transition: transform 0.4s var(--ease), border-color 0.4s ease, box-shadow 0.4s ease;
+        }
+        .wwd-stat:hover { border-color: var(--accent-teal); box-shadow: var(--shadow-teal); }
+        .wwd-stat .stat-num { font-size: clamp(2.6rem, 5vw, 3.6rem); }
+        .wwd-trust {
+            margin-top: 62px;
+            padding-top: 48px;
+            border-top: 1px solid var(--border-subtle);
+            text-align: center;
+        }
+        .wwd-trust h3 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            color: var(--text-secondary);
+            font-weight: 700;
+            margin-bottom: 28px;
+        }
+
+        /* --- CTA extra links --- */
+        .wwd-cta-links {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        /* --- Responsive --- */
+        /* Capability stage: unpin below 1000px. The clip stays as a sticky
+           backdrop, but the disciplines stop swapping in place and become a
+           single scrolling column — the script switches to per-panel reveals
+           to match (see "flow" mode). */
+        @media (max-width: 1000px) {
+            .cap-track { height: auto; }
+            .cap-stick { position: static; height: auto; display: block; padding: 104px 20px 92px; }
+            .cap-head { margin-bottom: 30px; }
+            .cap-rail { display: none; }
+            .cap-panels {
+                position: static; min-height: 0; margin-top: 0;
+                display: grid; gap: 76px;
+            }
+            .cap-panel {
+                position: static; grid-template-columns: 1fr; gap: 30px;
+                align-items: start;
+            }
+            /* Photo first on a phone — it is the fastest read. */
+            .cap-plate { order: -1; height: clamp(240px, 52vw, 400px); }
+            .cap-plate-media { transform: none; }
+            .cap-num { font-size: clamp(4.5rem, 17vw, 7rem); left: -0.2em; }
+            .sv-veil {
+                background:
+                    linear-gradient(180deg, rgba(15, 20, 25, 0.94) 0%, rgba(15, 20, 25, 0.64) 14%,
+                                            rgba(15, 20, 25, 0.64) 86%, rgba(15, 20, 25, 0.94) 100%);
+            }
+        }
+        @media (max-width: 900px) {
+            .wwd-spectrum { grid-template-columns: 1fr; gap: 46px; }
+            .wwd-step-wrap:not(:last-child)::after {
+                content: '\2193';
+                right: auto;
+                left: 50%;
+                top: auto;
+                bottom: -32px;
+                transform: translateX(-50%);
+            }
+        }
+        @media (max-width: 768px) {
+            .wwd-cue { display: none; }
+            .wwd-timeline::before, .wwd-tl-fill { left: 23px; }
+            .wwd-tl-item,
+            .wwd-tl-item--left,
+            .wwd-tl-item--right {
+                width: 100%;
+                left: 0;
+                text-align: left;
+                padding: 10px 0 10px 66px;
+            }
+            .wwd-tl-item--left .wwd-tl-node,
+            .wwd-tl-item--right .wwd-tl-node { left: 0; right: auto; }
+            .wwd-tl-card { max-width: none; display: block; }
+        }
+        /* Reduced motion: the scrub itself is a scroll POSITION, not an
+           animation, so it is left alone; the choreography is switched off. */
+        @media (prefers-reduced-motion: reduce) {
+            .cap-panel,
+            .cap-copy > * { opacity: 1 !important; transform: none !important; filter: none !important; transition: none !important; }
+            .cap-title .cap-ln i { transform: none !important; transition: none !important; }
+            .cap-plate-frame { clip-path: none !important; transition: none !important; }
+            .cap-plate-media { transform: none !important; }
+            .cap-plate::before { transform: scaleX(1) !important; transition: none !important; }
+            .cap-plate::after { transform: scaleY(1) !important; transition: none !important; }
+            .sv-grain { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-overlay" id="menu-overlay"></div>
+    <header class="navbar" id="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand"><a href="index.html"><h2>LV Trade Show Rentals</h2></a></div>
+            <div class="navbar-phone"><a href="tel:+17024838279">Call Us</a></div>
+            <button class="hamburger" id="hamburger" aria-label="Open menu"><span></span><span></span><span></span></button>
+            <nav class="navbar-menu" id="navbar-menu">
+                <a href="index.html">HOME</a>
+                <a href="trade-show-labor.html">TRADE SHOW LABOR</a>
+                <a href="gallery.html">GALLERY</a>
+                <a href="about-us.html">ABOUT US</a>
+                <a href="what-we-do.html">WHAT WE DO</a>
+                <a href="contact-us.html">CONTACT US</a>
+                <a href="i-d-labor-request.html">I &amp; D LABOR REQUEST</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ===== HERO ===== -->
+    <section class="page-hero">
+        <img class="page-hero-media" src="assets/service-installation.jpg" alt="Install crew building a trade show exhibit on the show floor">
+        <div class="page-hero-overlay"></div>
+        <div class="page-hero-inner">
+            <nav class="breadcrumb" aria-label="Breadcrumb">
+                <a href="index.html">Home</a><span>/</span>What We Do
+            </nav>
+            <span class="eyebrow">What We Do</span>
+            <h1>From Concept to Dismantle</h1>
+            <p class="lead">One Las Vegas exhibit house for the entire lifecycle of your booth — design, fabrication, graphics, installation, AV, and storage. No handoffs. No finger-pointing. No surprises on the show floor.</p>
+            <div class="wwd-hero-chips">
+                <span class="wwd-chip">In-house design &rarr; build &rarr; store</span>
+                <span class="wwd-chip">I&amp;D crews at <b>&nbsp;$129/hr</b>&nbsp;per installer</span>
+                <span class="wwd-chip">CES &middot; SEMA &middot; MAGIC &middot; NAB &middot; CONEXPO</span>
+            </div>
+        </div>
+        <div class="wwd-cue" aria-hidden="true">
+            <span>Scroll</span>
+            <span class="ch"></span>
+        </div>
+    </section>
+
+    <!-- ===== INTRO ===== -->
+    <section class="section">
+        <div class="container narrow wwd-intro">
+            <span class="eyebrow gold" data-reveal>One partner, every discipline</span>
+            <h2 data-reveal>Everything your exhibit needs, under one roof.</h2>
+            <p data-reveal>
+                Most exhibitors juggle a designer, a fabricator, a labor broker, and a storage vendor. We are all four.
+                From the first rendering to the final crate back in our Las Vegas warehouse, your program stays with one
+                accountable team. Need a turnkey booth? Explore our <a href="index.html">custom booth rentals</a>.
+                Just need skilled hands on-site? Our crews deliver <a href="i-d-labor-request.html">installation &amp; dismantle labor</a>
+                at $129/hr per installer.
+            </p>
+        </div>
+    </section>
+
+    <!-- ===== CAPABILITIES — scroll-scrubbed stage =====
+         assets/scroll-video.js binds the clip's playhead to scroll: down
+         runs it forward, up runs it backward, stopping holds a frame —
+         no autoplay, no loop.
+
+         data-scroll-start="50": the scrub begins the moment this block's
+         top edge reaches the middle of the viewport.
+         ================================================================ -->
+    <div class="sv wwd-cap" id="cap" data-scroll-video data-scroll-start="50">
+      <div class="sv-track">
+
+        <div class="sv-pin">
+            <video class="sv-video"
+                   src="assets/what-we-do-scroll.mp4"
+                   preload="auto"
+                   muted
+                   playsinline
+                   webkit-playsinline
+                   disablepictureinpicture
+                   aria-hidden="true"></video>
+            <div class="sv-veil"></div>
+            <div class="sv-grid"></div>
+            <div class="sv-light"></div>
+            <div class="sv-grain"></div>
+            <div class="sv-bar"><div class="sv-bar-fill"></div></div>
+        </div>
+
+        <div class="sv-content">
+          <section class="cap-track" aria-labelledby="cap-h">
+            <div class="cap-stick">
+              <div class="cap-inner">
+
+                <div class="cap-head">
+                    <span class="eyebrow gold">Capabilities</span>
+                    <h2 id="cap-h">Six disciplines. One accountable team.</h2>
+                </div>
+
+                <!-- Chapter rail: all six at once, the active one lit -->
+                <ol class="cap-rail">
+                    <li class="cap-tick is-on"><span class="cap-tick-n">01</span><span class="cap-tick-t">Custom Fabrication</span></li>
+                    <li class="cap-tick"><span class="cap-tick-n">02</span><span class="cap-tick-t">Booth Rentals</span></li>
+                    <li class="cap-tick"><span class="cap-tick-n">03</span><span class="cap-tick-t">Graphics</span></li>
+                    <li class="cap-tick"><span class="cap-tick-n">04</span><span class="cap-tick-t">I&amp;D Labor</span></li>
+                    <li class="cap-tick"><span class="cap-tick-n">05</span><span class="cap-tick-t">Lighting &amp; AV</span></li>
+                    <li class="cap-tick"><span class="cap-tick-n">06</span><span class="cap-tick-t">Storage &amp; Logistics</span></li>
+                </ol>
+
+                <div class="cap-panels">
+
+                    <!-- 1. Custom Fabrication -->
+                    <article class="cap-panel is-on">
+                        <div class="cap-copy">
+                            <span class="cap-tag" style="--i:1">Custom Fabrication</span>
+                            <h3 class="cap-title" style="--i:2">
+                                <span class="cap-ln"><i>Cut, welded and finished</i></span>
+                                <span class="cap-ln"><i>under our <em>own roof</em>.</i></span>
+                            </h3>
+                            <p class="cap-body" style="--i:3">In-house carpentry, metalwork and CNC routing. Structures engineered to spec and test-built on our own floor before they ever see a crate &mdash; then built to survive show after show.</p>
+                            <ul class="cap-spec" style="--i:4">
+                                <li>CNC &middot; Metal &middot; Wood</li>
+                                <li>40,000 Sq Ft Shop</li>
+                                <li>Test-Built</li>
+                            </ul>
+                            <a class="cap-go" style="--i:5" href="index.html">See custom builds <span class="ar" aria-hidden="true">&rarr;</span></a>
+                        </div>
+                        <a class="cap-plate" href="index.html" tabindex="-1" aria-hidden="true">
+                            <span class="cap-plate-frame">
+                                <span class="cap-plate-media"><img src="assets/service-custom-fab.jpg" alt="" loading="lazy" decoding="async"></span>
+                                <span class="cap-plate-veil"></span>
+                            </span>
+                            <span class="cap-num">01</span>
+                        </a>
+                    </article>
+
+                    <!-- 2. Custom Booth Rentals (featured) -->
+                    <article class="cap-panel cap-panel--gold">
+                        <div class="cap-copy">
+                            <span class="cap-tag" style="--i:1">Custom Booth Rentals</span>
+                            <h3 class="cap-title" style="--i:2">
+                                <span class="cap-ln"><i>Island presence.</i></span>
+                                <span class="cap-ln"><i><em>Rental</em> economics.</i></span>
+                            </h3>
+                            <p class="cap-body" style="--i:3">Turnkey exhibits from 10&times;10 inlines to towering islands &mdash; rented, refreshed and re-skinned to your brand for a fraction of what it costs to own one and store it.</p>
+                            <ul class="cap-spec" style="--i:4">
+                                <li>10&times;10 To Islands</li>
+                                <li>Re-Skinned To Brand</li>
+                                <li>Turnkey</li>
+                            </ul>
+                            <a class="cap-go" style="--i:5" href="index.html">Explore booth rentals <span class="ar" aria-hidden="true">&rarr;</span></a>
+                        </div>
+                        <a class="cap-plate" href="index.html" tabindex="-1" aria-hidden="true">
+                            <span class="cap-plate-frame">
+                                <span class="cap-plate-media"><img src="assets/booth-fully-custom.jpg" alt="" loading="lazy" decoding="async"></span>
+                                <span class="cap-plate-veil"></span>
+                                <span class="badge-pill wwd-gold">Featured</span>
+                            </span>
+                            <span class="cap-num">02</span>
+                        </a>
+                    </article>
+
+                    <!-- 3. Graphic Design & Production -->
+                    <article class="cap-panel">
+                        <div class="cap-copy">
+                            <span class="cap-tag" style="--i:1">Graphic Design &amp; Production</span>
+                            <h3 class="cap-title" style="--i:2">
+                                <span class="cap-ln"><i>Brand-perfect color,</i></span>
+                                <span class="cap-ln"><i>checked <em>before</em> it ships.</i></span>
+                            </h3>
+                            <p class="cap-body" style="--i:3">Large-format printing, tension fabric and backlit graphics produced in-house &mdash; so a color correction is a walk across the shop, not a two-week reprint cycle with a vendor.</p>
+                            <ul class="cap-spec" style="--i:4">
+                                <li>Large-Format</li>
+                                <li>Tension Fabric</li>
+                                <li>Backlit</li>
+                            </ul>
+                            <a class="cap-go" style="--i:5" href="contact-us.html">Start a graphics quote <span class="ar" aria-hidden="true">&rarr;</span></a>
+                        </div>
+                        <a class="cap-plate" href="contact-us.html" tabindex="-1" aria-hidden="true">
+                            <span class="cap-plate-frame">
+                                <span class="cap-plate-media"><img src="assets/service-graphic-design.jpg" alt="" loading="lazy" decoding="async"></span>
+                                <span class="cap-plate-veil"></span>
+                            </span>
+                            <span class="cap-num">03</span>
+                        </a>
+                    </article>
+
+                    <!-- 4. I&D — Installation & Dismantle -->
+                    <article class="cap-panel">
+                        <div class="cap-copy">
+                            <span class="cap-tag" style="--i:1">I&amp;D &mdash; Installation &amp; Dismantle</span>
+                            <h3 class="cap-title" style="--i:2">
+                                <span class="cap-ln"><i>Skilled hands on your booth,</i></span>
+                                <span class="cap-ln"><i>on <em>your</em> schedule.</i></span>
+                            </h3>
+                            <p class="cap-body" style="--i:3">Certified install and dismantle crews dispatched to your space &mdash; clean setups, tight teardown windows, and supervisors who have already worked the floor you are on.</p>
+                            <ul class="cap-spec" style="--i:4">
+                                <li>$129/hr Per Installer</li>
+                                <li>Certified Crews</li>
+                                <li>Supervised On-Site</li>
+                            </ul>
+                            <a class="cap-go" style="--i:5" href="i-d-labor-request.html">Request I&amp;D labor <span class="ar" aria-hidden="true">&rarr;</span></a>
+                        </div>
+                        <a class="cap-plate" href="i-d-labor-request.html" tabindex="-1" aria-hidden="true">
+                            <span class="cap-plate-frame">
+                                <span class="cap-plate-media"><img src="assets/service-install.jpg" alt="" loading="lazy" decoding="async"></span>
+                                <span class="cap-plate-veil"></span>
+                                <span class="badge-pill">$129/hr</span>
+                            </span>
+                            <span class="cap-num">04</span>
+                        </a>
+                    </article>
+
+                    <!-- 5. Lighting & AV Integration -->
+                    <article class="cap-panel">
+                        <div class="cap-copy">
+                            <span class="cap-tag" style="--i:1">Lighting &amp; AV Integration</span>
+                            <h3 class="cap-title" style="--i:2">
+                                <span class="cap-ln"><i>Specced, wired and staged</i></span>
+                                <span class="cap-ln"><i>before it <em>leaves</em>.</i></span>
+                            </h3>
+                            <p class="cap-body" style="--i:3">Programmable lighting, LED walls, monitors and audio &mdash; integrated and powered up in the shop, so the first time your booth lights isn't on the show floor.</p>
+                            <ul class="cap-spec" style="--i:4">
+                                <li>Programmable Lighting</li>
+                                <li>LED Walls</li>
+                                <li>Pre-Staged</li>
+                            </ul>
+                            <a class="cap-go" style="--i:5" href="contact-us.html">Plan your AV <span class="ar" aria-hidden="true">&rarr;</span></a>
+                        </div>
+                        <a class="cap-plate" href="contact-us.html" tabindex="-1" aria-hidden="true">
+                            <span class="cap-plate-frame">
+                                <span class="cap-plate-media"><img src="assets/service-lighting-av.jpg" alt="" loading="lazy" decoding="async"></span>
+                                <span class="cap-plate-veil"></span>
+                            </span>
+                            <span class="cap-num">05</span>
+                        </a>
+                    </article>
+
+                    <!-- 6. Storage & Logistics -->
+                    <article class="cap-panel">
+                        <div class="cap-copy">
+                            <span class="cap-tag" style="--i:1">Storage &amp; Logistics</span>
+                            <h3 class="cap-title" style="--i:2">
+                                <span class="cap-ln"><i>Stored clean.</i></span>
+                                <span class="cap-ln"><i>Shipped <em>on schedule</em>.</i></span>
+                            </h3>
+                            <p class="cap-body" style="--i:3">Climate-controlled warehousing, asset tracking and show-to-show freight. Your booth comes back, gets refurbished and goes out again to the next city without you touching it.</p>
+                            <ul class="cap-spec" style="--i:4">
+                                <li>Climate-Controlled</li>
+                                <li>Asset-Tracked</li>
+                                <li>Show-To-Show Freight</li>
+                            </ul>
+                            <a class="cap-go" style="--i:5" href="contact-us.html">Ask about storage <span class="ar" aria-hidden="true">&rarr;</span></a>
+                        </div>
+                        <a class="cap-plate" href="contact-us.html" tabindex="-1" aria-hidden="true">
+                            <span class="cap-plate-frame">
+                                <span class="cap-plate-media"><img src="assets/service-coordination.jpg" alt="" loading="lazy" decoding="async"></span>
+                                <span class="cap-plate-veil"></span>
+                            </span>
+                            <span class="cap-num">06</span>
+                        </a>
+                    </article>
+
+                </div>
+
+              </div>
+            </div>
+          </section>
+        </div><!-- /.sv-content -->
+
+      </div><!-- /.sv-track -->
+    </div><!-- /.sv -->
+
+    <!-- ===== PARALLAX DIVIDER ===== -->
+    <section class="wwd-divider">
+        <div class="wwd-divider-media" data-parallax="0.16">
+            <img src="assets/service-custom.jpg" alt="" aria-hidden="true">
+        </div>
+        <div class="wwd-divider-ov"></div>
+        <div class="container">
+            <span class="eyebrow gold" data-reveal>Full-service, end-to-end</span>
+            <h2 data-reveal>One partner, from the first sketch to the last crate.</h2>
+            <p data-reveal>Design, build, install, dismantle, store — then do it again for the next show. Fewer vendors, tighter timelines, and zero blame games when the doors open.</p>
+            <div data-reveal="scale">
+                <a href="index.html" class="cta-button">Explore Custom Booth Rentals</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== CAPABILITY SPECTRUM ===== -->
+    <section class="section">
+        <div class="container">
+            <div class="section-head" data-reveal>
+                <span class="eyebrow">The spectrum</span>
+                <h2>Choose your level of custom.</h2>
+                <p>Scale from fast-and-affordable to fully bespoke — the same finish standards and on-time installs at every tier.</p>
+            </div>
+
+            <div class="wwd-spectrum reveal-group">
+                <!-- Level 1 -->
+                <div class="wwd-step-wrap">
+                    <div class="wwd-step tilt" data-tilt-max="5">
+                        <div class="tilt-inner wwd-step-inner">
+                            <div class="wwd-step-media">
+                                <span class="wwd-step-level">01</span>
+                                <img src="assets/booth-simple-rental.jpg" alt="Simple rental booth" loading="lazy">
+                            </div>
+                            <div class="wwd-step-body">
+                                <div class="wwd-meter" aria-hidden="true"><i class="on"></i><i></i><i></i></div>
+                                <h3>Simple Rental</h3>
+                                <p>Standard structures, ready fast. Professional polish for inline spaces and quick turnarounds without the custom lead time.</p>
+                            </div>
+                            <div class="tilt-glare" aria-hidden="true"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Level 2 -->
+                <div class="wwd-step-wrap">
+                    <div class="wwd-step tilt" data-tilt-max="5">
+                        <div class="tilt-inner wwd-step-inner">
+                            <div class="wwd-step-media">
+                                <span class="wwd-step-level">02</span>
+                                <img src="assets/booth-semi-custom.jpg" alt="Semi-custom booth" loading="lazy">
+                            </div>
+                            <div class="wwd-step-body">
+                                <div class="wwd-meter" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i></div>
+                                <h3>Semi-Custom</h3>
+                                <p>Proven frames dressed in your brand — custom graphics, lighting, and layout changes without full-build timelines or budgets.</p>
+                            </div>
+                            <div class="tilt-glare" aria-hidden="true"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Level 3 -->
+                <div class="wwd-step-wrap">
+                    <a class="wwd-step tilt" data-tilt-max="5" href="index.html">
+                        <div class="tilt-inner wwd-step-inner">
+                            <div class="wwd-step-media">
+                                <span class="badge-pill wwd-gold">Signature</span>
+                                <span class="wwd-step-level">03</span>
+                                <img src="assets/booth-fully-custom.jpg" alt="Fully custom island booth build" loading="lazy">
+                            </div>
+                            <div class="wwd-step-body">
+                                <div class="wwd-meter" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i></div>
+                                <h3>Fully Custom</h3>
+                                <p>100% bespoke. Multi-level islands, interactive features, and integrated AV — engineered from a blank sheet to own the aisle.</p>
+                                <span class="wwd-step-cta">See custom builds <span class="ar" aria-hidden="true">&rarr;</span></span>
+                            </div>
+                            <div class="tilt-glare" aria-hidden="true"></div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== PROCESS TIMELINE ===== -->
+    <section class="section white">
+        <div class="container">
+            <div class="section-head" data-reveal>
+                <span class="eyebrow">How it works</span>
+                <h2>A clear path to the show floor.</h2>
+                <p>Four phases, one team, every detail tracked — from the first conversation to the crate coming home.</p>
+            </div>
+
+            <div class="wwd-timeline">
+                <span class="wwd-tl-fill" aria-hidden="true"></span>
+
+                <div class="wwd-tl-item wwd-tl-item--left" data-reveal="left">
+                    <div class="wwd-tl-node">01</div>
+                    <div class="wwd-tl-card">
+                        <span class="wwd-tl-eyebrow">Phase 01</span>
+                        <h3>Consult &amp; Design</h3>
+                        <p>We translate your goals into 3D renderings and a fixed scope — objectives, footprint, budget, and timeline locked before a single panel is cut.</p>
+                    </div>
+                </div>
+
+                <div class="wwd-tl-item wwd-tl-item--right" data-reveal="right">
+                    <div class="wwd-tl-node">02</div>
+                    <div class="wwd-tl-card">
+                        <span class="wwd-tl-eyebrow">Phase 02</span>
+                        <h3>Fabrication</h3>
+                        <p>Your booth is built and finished in our Las Vegas shop. Graphics printed, components pre-fit, and everything quality-checked before it ships.</p>
+                    </div>
+                </div>
+
+                <div class="wwd-tl-item wwd-tl-item--left" data-reveal="left">
+                    <div class="wwd-tl-node">03</div>
+                    <div class="wwd-tl-card">
+                        <span class="wwd-tl-eyebrow">Phase 03</span>
+                        <h3>Installation</h3>
+                        <p>Our I&amp;D crews set, level, and stage on-site — structure, graphics, lighting, and AV — booth show-ready before doors open. Need crews only? <a href="i-d-labor-request.html">Request I&amp;D labor &rarr;</a></p>
+                    </div>
+                </div>
+
+                <div class="wwd-tl-item wwd-tl-item--right" data-reveal="right">
+                    <div class="wwd-tl-node">04</div>
+                    <div class="wwd-tl-card">
+                        <span class="wwd-tl-eyebrow">Phase 04</span>
+                        <h3>Dismantle &amp; Storage</h3>
+                        <p>We tear down, crate, and truck your exhibit back to climate-controlled storage — inventoried, refurbished, and ready for the next show.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== STATS + TRUST ===== -->
+    <section class="section alt">
+        <div class="container">
+            <div class="section-head" data-reveal>
+                <span class="eyebrow gold">By the numbers</span>
+                <h2>Built on a decade-plus of show floors.</h2>
+            </div>
+
+            <div class="stats-row reveal-group">
+                <div class="stat-box wwd-stat" data-count="20" data-suffix="+">
+                    <div class="stat-num">0</div>
+                    <div class="stat-label">Years On The Floor</div>
+                </div>
+                <div class="stat-box wwd-stat" data-count="1000" data-suffix="+">
+                    <div class="stat-num">0</div>
+                    <div class="stat-label">Booths Delivered</div>
+                </div>
+                <div class="stat-box wwd-stat" data-count="6">
+                    <div class="stat-num">0</div>
+                    <div class="stat-label">In-House Disciplines</div>
+                </div>
+                <div class="stat-box wwd-stat" data-count="100" data-suffix="%">
+                    <div class="stat-num">0</div>
+                    <div class="stat-label">On-Time Installs</div>
+                </div>
+            </div>
+
+            <div class="wwd-trust" data-reveal>
+                <h3>Built for the industry's biggest shows</h3>
+                <div class="event-logos">
+                    <div class="event-logos-track">
+                        <div class="logo-item"><img src="assets/ces-logo.png" alt="CES" class="event-logo"></div>
+                        <div class="logo-item"><img src="assets/sema-logo.png" alt="SEMA" class="event-logo"></div>
+                        <div class="logo-item"><img src="assets/magic-logo.png" alt="MAGIC" class="event-logo"></div>
+                        <div class="logo-item"><img src="assets/nab-logo.png" alt="NAB" class="event-logo"></div>
+                        <div class="logo-item"><img src="assets/CONEXPO.png" alt="CONEXPO" class="event-logo"></div>
+                        <div class="logo-item"><img src="assets/ces-logo.png" alt="CES" class="event-logo"></div>
+                        <div class="logo-item"><img src="assets/sema-logo.png" alt="SEMA" class="event-logo"></div>
+                        <div class="logo-item"><img src="assets/magic-logo.png" alt="MAGIC" class="event-logo"></div>
+                        <div class="logo-item"><img src="assets/nab-logo.png" alt="NAB" class="event-logo"></div>
+                        <div class="logo-item"><img src="assets/CONEXPO.png" alt="CONEXPO" class="event-logo"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== CTA BAND ===== -->
+    <section class="cta-band">
+        <div class="cta-bg" style="background-image:url('assets/final-cta-bg.jpg')"></div>
+        <div class="cta-ov"></div>
+        <div class="container">
+            <span class="eyebrow gold">Start a project</span>
+            <h2>Let's build your next exhibit.</h2>
+            <p>Tell us the show and the goal — we'll handle everything from concept to dismantle, on schedule and on budget.</p>
+            <div class="cta-group">
+                <a href="contact-us.html" class="cta-button">Request a Quote</a>
+                <a href="tel:+17024838279" class="cta-button secondary">Call 702-483-8279</a>
+            </div>
+            <div class="wwd-cta-links">
+                <a href="index.html" class="cta-button ghost">Custom Booth Rentals</a>
+                <a href="i-d-labor-request.html" class="cta-button ghost">I&amp;D Labor Request</a>
+            </div>
+            <div class="urgency-text">Now booking the 2026&ndash;2027 trade show season.</div>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="site-footer">
+        <div class="container footer-grid">
+            <div class="footer-col">
+                <h3>LV Trade Show Rentals</h3>
+                <p>Full-service trade show exhibit house — custom design, fabrication, installation &amp; I&amp;D labor across Las Vegas.</p>
+                <a href="tel:+17024838279" class="phone-link">702-483-8279</a>
+                <p class="footer-loc">📍 Las Vegas, Nevada</p>
+            </div>
+            <div class="footer-col">
+                <h4>Explore</h4>
+                <a href="index.html">Home</a>
+                <a href="gallery.html">Gallery</a>
+                <a href="about-us.html">About Us</a>
+                <a href="what-we-do.html">What We Do</a>
+            </div>
+            <div class="footer-col">
+                <h4>Services</h4>
+                <a href="index.html">Custom Booth Rentals</a>
+                <a href="what-we-do.html">I&amp;D Labor</a>
+                <a href="contact-us.html">Contact Us</a>
+                <a href="i-d-labor-request.html">Labor Request</a>
+            </div>
+            <div class="footer-col cta">
+                <h4>Start a project</h4>
+                <a href="contact-us.html" class="cta-button">Request a Quote</a>
+            </div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2026 LV Trade Show Rentals. All rights reserved.</p></div>
+    </footer>
+
+    <script src="assets/site.js" defer></script>
+    <!-- Binds the capabilities clip's playhead to scroll. Shared with index.html and about-us.html. -->
+    <script src="assets/scroll-video.js" defer></script>
+
+    <!-- ============================================================
+         CAPABILITIES — stage controller
+
+         Two modes, chosen by viewport and motion preference:
+
+           "pin"  — the stage is stuck to the viewport and the six
+                    disciplines swap in place. A rAF loop reads one
+                    number, the block's scroll progress, and publishes it
+                    as --p (the drafting grid fades on it, the chapter
+                    rail fills on it, the photo plate parallaxes on it)
+                    and as the active index.
+           "flow" — below 1000px, or under reduced motion, nothing is
+                    pinned; the disciplines are a normal column and
+                    reveal individually as they come into view.
+
+         The loop only runs while the stage is on screen, and reads
+         layout inside rAF rather than on the scroll event, so it never
+         forces a synchronous reflow mid-scroll.
+         ============================================================ -->
+    <script>
+    (function () {
+        'use strict';
+
+        var stage = document.getElementById('cap');
+        if (!stage) return;
+
+        var track  = stage.querySelector('.cap-track');
+        var pin    = stage.querySelector('.sv-pin');
+        var panels = Array.prototype.slice.call(stage.querySelectorAll('.cap-panel'));
+        var ticks  = Array.prototype.slice.call(stage.querySelectorAll('.cap-tick'));
+        if (!track || !panels.length) return;
+
+        var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+
+        /* ---- Active discipline ---- */
+        var active = 0;
+        function setActive(i) {
+            if (i === active) return;
+            active = i;
+            for (var n = 0; n < panels.length; n++) panels[n].classList.toggle('is-on', n === i);
+            for (var s = 0; s < ticks.length;  s++) ticks[s].classList.toggle('is-on', s === i);
+        }
+
+        /* ---- "pin" mode: one rAF loop, one number ---- */
+        var running = false, raf = 0;
+
+        function frame() {
+            if (!running) return;
+            raf = window.requestAnimationFrame(frame);
+
+            /* Distance the sticky holder is stuck for: the track's height
+               less the one viewport it occupies while stuck. */
+            var span = Math.max(1, track.offsetHeight - window.innerHeight);
+            var p = clamp01(-track.getBoundingClientRect().top / span);
+
+            stage.style.setProperty('--p', p.toFixed(4));
+
+            /* A short lead-in and tail, so the first discipline is readable
+               before it starts advancing and the last one holds rather than
+               flashing past as the stage releases. */
+            var q = clamp01((p - 0.04) / 0.88);
+            setActive(Math.min(panels.length - 1, Math.floor(q * panels.length)));
+        }
+
+        function run(on) {
+            if (on === running) return;
+            running = on;
+            if (on) raf = window.requestAnimationFrame(frame);
+            else if (raf) window.cancelAnimationFrame(raf);
+        }
+
+        /* ---- Mode switching ---- */
+        var mode = '', stageIO = null, panelIO = null;
+
+        function teardown() {
+            run(false);
+            if (stageIO) { stageIO.disconnect(); stageIO = null; }
+            if (panelIO) { panelIO.disconnect(); panelIO = null; }
+        }
+
+        function setup() {
+            var want = (reduce || !window.matchMedia('(min-width: 1001px)').matches ||
+                        !('IntersectionObserver' in window)) ? 'flow' : 'pin';
+            if (want === mode) return;
+            teardown();
+            mode = want;
+
+            if (mode === 'pin') {
+                panels.forEach(function (el, n) { el.classList.toggle('is-on', n === 0); });
+                active = 0;
+                stageIO = new IntersectionObserver(function (entries) {
+                    run(entries[0].isIntersecting);
+                }, { rootMargin: '20% 0px' });
+                stageIO.observe(track);
+                return;
+            }
+
+            /* flow: every panel is in the document flow, so each reveals on
+               its own. --p is parked at 1 so the drafting grid is not left
+               sitting at full strength over the copy. */
+            stage.style.setProperty('--p', '1');
+            ticks.forEach(function (el) { el.classList.add('is-on'); });
+
+            if (reduce || !('IntersectionObserver' in window)) {
+                panels.forEach(function (el) { el.classList.add('is-on'); });
+                return;
+            }
+            panelIO = new IntersectionObserver(function (entries) {
+                entries.forEach(function (en) {
+                    /* `top < 0` catches panels the visitor has already passed —
+                       a restored scroll position or an anchor jump skips over
+                       them without ever reporting them as intersecting, and
+                       they would otherwise stay invisible above the fold. */
+                    if (en.isIntersecting || en.boundingClientRect.top < 0) {
+                        en.target.classList.add('is-on');
+                        panelIO.unobserve(en.target);
+                    }
+                });
+            }, { threshold: 0.25, rootMargin: '0px 0px -10% 0px' });
+            panels.forEach(function (el) { panelIO.observe(el); });
+        }
+
+        var resizeTimer = 0;
+        window.addEventListener('resize', function () {
+            window.clearTimeout(resizeTimer);
+            resizeTimer = window.setTimeout(setup, 150);
+        }, { passive: true });
+
+        /* ---- Work light tracking the cursor across the footage ---- */
+        if (pin && !reduce && window.matchMedia('(pointer: fine)').matches) {
+            stage.addEventListener('pointermove', function (e) {
+                var r = pin.getBoundingClientRect();
+                pin.style.setProperty('--mx', (((e.clientX - r.left) / r.width) * 100).toFixed(1) + '%');
+                pin.style.setProperty('--my', (((e.clientY - r.top) / r.height) * 100).toFixed(1) + '%');
+            }, { passive: true });
+        }
+
+        setup();
+    })();
+    </script>
+
+    <script>
+        /* Page-specific: scroll-driven timeline progress fill */
+        (function () {
+            var rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            function initTimeline() {
+                var tl = document.querySelector('.wwd-timeline');
+                var fill = document.querySelector('.wwd-tl-fill');
+                if (!tl || !fill) return;
+                if (rm) { fill.style.height = '100%'; return; }
+                var ticking = false;
+                function update() {
+                    var vh = window.innerHeight;
+                    var r = tl.getBoundingClientRect();
+                    var span = r.height * 0.82;
+                    var prog = span > 0 ? (vh * 0.82 - r.top) / span : 0;
+                    if (prog < 0) prog = 0;
+                    if (prog > 1) prog = 1;
+                    fill.style.height = (prog * 100).toFixed(1) + '%';
+                    ticking = false;
+                }
+                window.addEventListener('scroll', function () {
+                    if (!ticking) { requestAnimationFrame(update); ticking = true; }
+                }, { passive: true });
+                window.addEventListener('resize', update);
+                update();
+            }
+            if (document.readyState !== 'loading') initTimeline();
+            else document.addEventListener('DOMContentLoaded', initTimeline);
+        })();
+    </script>
+</body>
+</html>
