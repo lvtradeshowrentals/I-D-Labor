@@ -507,263 +507,149 @@
             font-weight: 600;
         }
 
-        /* ===== CAPABILITY SPECTRUM SECTION ===== */
+        /* ===== THE THREE SECTIONS OVER THE SCROLL VIDEO =====
+           Only the shells live here now; their contents are the .hx-*
+           block below. All three are dark so they read the same whether
+           the clip loads or .sv-off falls back to their own background —
+           the process section used to be a white slab, which made it a
+           bright interruption mid-sequence. */
         .capability-section {
+            background: var(--primary-dark);
+            padding: 80px 20px;
+        }
+
+        .process-section {
             background: var(--primary-bg);
             padding: 80px 20px;
         }
 
-        .capability-content {
+        .hx-wrap {
             max-width: 1200px;
             margin: 0 auto;
         }
 
-        .capability-section h2 {
-            font-size: 2.2rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            text-align: center;
-            margin-bottom: 60px;
+        /* ============================================================
+           HOME STAGE CONTENT (.hx-*)
+           ============================================================
+           The three sections that play over the scroll video, rebuilt in
+           the same language as the about-us and what-we-do stages:
+           numerals, hairlines and photo plates instead of bordered
+           boxes.
+
+           DESIGNED TRANSPARENT-FIRST. These elements assume the video
+           behind them, so unlike the card styles they replace they need
+           no `.sv:not(.sv-off)` twin — the .sv-off fallback only has to
+           restore the three sections' own backgrounds.
+
+           NOTHING HERE MAY TRANSITION `opacity` OR SET `transform` ON A
+           [data-sv-fade] ELEMENT. The inline rAF loop at the foot of this
+           file writes opacity to those elements every frame; a
+           transition on it would lag a frame behind the scroll, and a
+           transform of ours would fight the loop. Hover effects live on
+           children instead.
+           ============================================================ */
+        .hx-head { max-width: 1200px; margin: 0 auto 46px; }
+        .hx-eyebrow {
+            display: block; font-size: 0.72rem; font-weight: 700; letter-spacing: 3.2px;
+            text-transform: uppercase; color: var(--accent-gold); margin-bottom: 12px;
+        }
+        .hx-head h2 {
+            font-size: clamp(1.7rem, 3.2vw, 2.5rem); font-weight: 800;
+            color: #fff; letter-spacing: -0.5px; line-height: 1.14;
+        }
+        .hx-head p {
+            color: var(--text-secondary); font-size: 1.05rem; margin-top: 14px; max-width: 62ch;
         }
 
-        .capability-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-top: 40px;
+        /* --- Tier ladder: simple → semi-custom → fully custom --- */
+        .hx-tiers {
+            max-width: 1200px; margin: 0 auto;
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 38px;
         }
+        .hx-tier { position: relative; padding-top: 17px; }
+        .hx-tier::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 1px;
+            background: linear-gradient(90deg, var(--accent-teal), rgba(45, 156, 202, 0.08));
+        }
+        .hx-tier:nth-child(3)::before { background: linear-gradient(90deg, var(--accent-gold), rgba(184, 165, 115, 0.08)); }
+        .hx-tier-n {
+            font-size: 0.68rem; font-weight: 700; letter-spacing: 2px;
+            color: var(--accent-gold); font-variant-numeric: tabular-nums;
+        }
+        .hx-tier-plate {
+            position: relative; margin: 14px 0 20px; height: 224px;
+            overflow: hidden; border-radius: 8px;
+        }
+        .hx-tier-plate img {
+            width: 100%; height: 100%; object-fit: cover; display: block;
+            transition: transform 0.75s var(--ease);
+        }
+        .hx-tier:hover .hx-tier-plate img { transform: scale(1.06); }
+        .hx-tier-plate::after {
+            content: ''; position: absolute; inset: 0; border-radius: 8px; pointer-events: none;
+            background: linear-gradient(to top, rgba(12, 17, 22, 0.62) 0%, rgba(12, 17, 22, 0.05) 55%, transparent 100%);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.10);
+        }
+        .hx-tier-tag {
+            display: inline-block; font-size: 0.66rem; font-weight: 700; letter-spacing: 1.6px;
+            text-transform: uppercase; color: var(--accent-teal); margin-bottom: 8px;
+        }
+        .hx-tier:nth-child(3) .hx-tier-tag { color: var(--accent-gold-bright); }
+        .hx-tier h3 { font-size: 1.34rem; font-weight: 800; color: #fff; margin-bottom: 10px; line-height: 1.2; }
+        .hx-tier p { color: var(--text-secondary); font-size: 0.97rem; line-height: 1.75; }
 
-        .capability-card {
-            background: var(--primary-dark);
-            border: 1px solid var(--border-subtle);
-            border-radius: 4px;
-            overflow: hidden;
-            /* Deliberately NOT `all`: opacity is driven per-frame by the scroll
-               fade, and a transition on it would lag a frame behind the scroll. */
-            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
-            position: relative;
+        /* --- Process rail: four steps, no boxes --- */
+        .hx-steps {
+            max-width: 1200px; margin: 0 auto;
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 34px;
         }
+        /* Column, with the paragraph flexing, so the discipline hairline sits
+           on the same baseline in all four steps however the copy wraps. */
+        .hx-step { position: relative; padding-top: 18px; display: flex; flex-direction: column; }
+        .hx-step p { flex: 1; }
+        .hx-step::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 1px;
+            background: linear-gradient(90deg, var(--accent-teal), rgba(45, 156, 202, 0.08));
+        }
+        .hx-step-n {
+            display: block; font-size: 2.5rem; font-weight: 900; line-height: 1;
+            color: transparent; -webkit-text-stroke: 1px rgba(255, 255, 255, 0.30);
+            letter-spacing: -0.03em; margin-bottom: 14px; font-variant-numeric: tabular-nums;
+        }
+        .hx-step h3 { font-size: 1.12rem; font-weight: 800; color: #fff; margin-bottom: 8px; line-height: 1.25; }
+        .hx-step p { color: var(--text-secondary); font-size: 0.94rem; line-height: 1.7; }
 
-        .capability-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--accent-teal);
-            box-shadow: 0 10px 30px rgba(45, 156, 202, 0.2);
+        /* The lead-time note: a line, not a yellow warning box. */
+        .hx-note {
+            max-width: 1200px; margin: 42px auto 0; padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+            color: var(--text-secondary); font-size: 1rem; line-height: 1.75;
         }
+        .hx-note b { color: var(--accent-gold-bright); font-weight: 800; }
 
-        .capability-image {
-            width: 100%;
-            height: 220px;
-            object-fit: cover;
-            display: block;
+        /* --- Disciplines, hung off the step they belong to ---
+           This replaces the old third section. "Fabrication" and
+           "Installation" were literally steps AND stand-alone service cards;
+           attaching each discipline to its step removes the duplication and
+           keeps the links through to what-we-do.html. */
+        .hx-disc {
+            list-style: none; margin-top: 14px; padding-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.11);
+            display: flex; flex-wrap: wrap; gap: 6px 14px;
         }
-
-        .capability-card-content {
-            padding: 30px;
+        .hx-disc a {
+            position: relative; font-size: 0.72rem; font-weight: 700;
+            letter-spacing: 0.6px; color: var(--accent-teal);
+            text-decoration: none; white-space: nowrap;
+            transition: color 0.3s ease;
         }
-
-        .capability-card h3 {
-            font-size: 1.5rem;
-            color: var(--accent-teal);
-            margin-bottom: 15px;
-            font-weight: 600;
+        .hx-disc a::after {
+            content: ''; position: absolute; left: 0; right: 0; bottom: -3px; height: 1px;
+            background: currentColor; transform: scaleX(0); transform-origin: 100% 50%;
+            transition: transform 0.35s var(--ease);
         }
-
-        .capability-card p {
-            color: var(--text-secondary);
-            line-height: 1.7;
-            font-size: 1rem;
-        }
-
-        .capability-badge {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            /* The image below is given opacity < 1 over the video, which puts it
-               in the same paint group as this badge — without a z-index the
-               later-in-DOM image would cover it. */
-            z-index: 2;
-            background: rgba(45, 156, 202, 0.9);
-            color: white;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-
-        /* ===== PROCESS SECTION ===== */
-        .process-section {
-            background: #ffffff;
-            padding: 80px 20px;
-        }
-
-        .process-content {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .process-section h2 {
-            font-size: 2.2rem;
-            font-weight: 700;
-            color: #1a5f7a;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .process-subtitle {
-            text-align: center;
-            color: #5a6c7d;
-            font-size: 1.1rem;
-            margin-bottom: 60px;
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .timeline {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 40px;
-            margin-top: 50px;
-        }
-
-        .timeline-step {
-            padding: 35px 30px;
-            background: #f8f9fa;
-            border-left: 4px solid var(--accent-teal);
-            border-radius: 4px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease, border-left-color 0.3s ease, background 0.3s ease;
-        }
-
-        .timeline-step:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(45, 156, 202, 0.15);
-            border-left-color: #1a5f7a;
-        }
-
-        .timeline-step h3 {
-            font-size: 1.5rem;
-            color: #1a5f7a;
-            margin-bottom: 15px;
-            font-weight: 700;
-        }
-
-        .timeline-step p {
-            color: #4a5568;
-            line-height: 1.8;
-            font-size: 1.05rem;
-        }
-
-        .timeline-callout {
-            background: #fff3cd;
-            border-left: 4px solid var(--accent-gold);
-            padding: 20px 25px;
-            margin-top: 40px;
-            border-radius: 4px;
-        }
-
-        .timeline-callout strong {
-            color: #856404;
-            font-size: 1.1rem;
-        }
-
-        .timeline-callout p {
-            color: #856404;
-            margin-top: 8px;
-        }
-
-        /* ===== SERVICES GRID SECTION ===== */
-        .services-grid-section {
-            background: var(--primary-dark);
-            padding: 80px 20px;
-        }
-
-        .services-grid-section h2 {
-            font-size: 2.2rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            text-align: center;
-            margin-bottom: 60px;
-        }
-
-        .services-color-grid {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-        }
-
-        .service-color-card {
-            position: relative;
-            height: 320px;
-            border-radius: 4px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: transform 0.4s ease, box-shadow 0.4s ease;
-        }
-
-        /* The photo lives on its own layer rather than on the element, so it can
-           be dialled down independently over the video without touching the
-           tint above it or the copy above that. Set per card with --card-img. */
-        .service-color-card::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: var(--card-img);
-            background-size: cover;
-            background-position: center;
-            transition: opacity 0.4s ease;
-            z-index: 0;
-        }
-
-        .service-color-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(15, 20, 25, 0.85) 0%, rgba(26, 35, 50, 0.75) 100%);
-            transition: background 0.4s ease;
-            z-index: 1;
-        }
-
-        .service-color-card:hover::before {
-            background: linear-gradient(135deg, rgba(45, 156, 202, 0.85) 0%, rgba(26, 95, 122, 0.75) 100%);
-        }
-
-        .service-color-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 40px rgba(45, 156, 202, 0.3);
-        }
-
-        .service-color-card-content {
-            position: relative;
-            z-index: 2;
-            padding: 30px;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-        }
-
-        .service-color-card h3 {
-            font-size: 1.6rem;
-            color: #ffffff;
-            margin-bottom: 12px;
-            font-weight: 700;
-        }
-
-        .service-color-card p {
-            color: rgba(255, 255, 255, 0.9);
-            line-height: 1.7;
-            font-size: 1rem;
-        }
+        .hx-disc a:hover { color: var(--accent-teal-bright); }
+        .hx-disc a:hover::after { transform: scaleX(1); transform-origin: 0 50%; }
 
         /* ============================================================
            SCROLL-SCRUBBED VIDEO STAGE
@@ -831,11 +717,16 @@
             height: 100%;
             pointer-events: none;
             background:
+                /* The middle band carries more weight than it used to. The
+                   bordered cards this stage used to hold brought their own
+                   opaque panels; the .hx-* content is bare type over the
+                   footage, so the scrim is now the only thing holding body
+                   copy legible against a bright frame. */
                 linear-gradient(180deg,
-                    rgba(15, 20, 25, 0.92) 0%,
-                    rgba(15, 20, 25, 0.40) 16%,
-                    rgba(15, 20, 25, 0.40) 84%,
-                    rgba(15, 20, 25, 0.92) 100%),
+                    rgba(15, 20, 25, 0.94) 0%,
+                    rgba(15, 20, 25, 0.58) 15%,
+                    rgba(15, 20, 25, 0.58) 85%,
+                    rgba(15, 20, 25, 0.94) 100%),
                 linear-gradient(90deg,
                     rgba(15, 20, 25, 0.45) 0%,
                     rgba(15, 20, 25, 0.10) 50%,
@@ -867,8 +758,7 @@
 
         /* --- Sections over the video --- */
         .sv:not(.sv-off) .capability-section,
-        .sv:not(.sv-off) .process-section,
-        .sv:not(.sv-off) .services-grid-section {
+        .sv:not(.sv-off) .process-section {
             background: transparent;
             /* A screen apiece, so each group of cards gets its own beat and the
                clip has room to run rather than racing past in one flick. */
@@ -878,101 +768,31 @@
             padding: 130px 20px;
         }
 
-        /* These wrappers centre themselves with `margin: 0 auto`. As grid items
-           an auto margin suppresses the default stretch and they would shrink to
-           fit-content, so give them a definite width to centre within. */
-        .sv:not(.sv-off) .capability-content,
-        .sv:not(.sv-off) .process-content,
-        .sv:not(.sv-off) .services-color-grid {
+        /* .hx-wrap centres itself with `margin: 0 auto`. As a grid item an auto
+           margin suppresses the default stretch and it would shrink to
+           fit-content, so give it a definite width to centre within. */
+        .sv:not(.sv-off) .hx-wrap {
             width: 100%;
         }
 
-        /* --- Capability cards ---
+        /* The .hx-* content is designed transparent-first — numerals, hairlines
+           and photo plates read the same with or without the clip behind them —
+           so unlike the bordered cards it replaced it needs no over-video twin.
+           The photo plates are dialled back slightly so the footage still shows
+           through the composition rather than being blocked out by three
+           full-strength stills.
+
            Deliberately NO backdrop-filter anywhere over the clip: frosted glass
-           makes the compositor re-blur a live video texture behind every panel
-           on every frame, and the texture changes on every seek. Behind the
-           scrim a plain translucent panel is all but indistinguishable. */
-        .sv:not(.sv-off) .capability-card {
-            background: rgba(15, 20, 25, 0.55);
-            border-color: rgba(255, 255, 255, 0.14);
-            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+           makes the compositor re-blur a live video texture on every frame, and
+           the texture changes on every seek. */
+        .sv:not(.sv-off) .hx-tier-plate img {
+            opacity: 0.88;
         }
 
-        .sv:not(.sv-off) .capability-card:hover {
-            background: rgba(15, 20, 25, 0.68);
-        }
-
-        .sv:not(.sv-off) .capability-image {
-            opacity: 0.86;
-        }
-
-        .sv:not(.sv-off) .capability-card p {
-            color: rgba(240, 239, 244, 0.82);
-        }
-
-        /* --- Process timeline (light-on-white by default, inverted here) --- */
-        .sv:not(.sv-off) .process-section h2 {
-            color: var(--text-primary);
-        }
-
-        .sv:not(.sv-off) .process-subtitle {
-            color: rgba(240, 239, 244, 0.75);
-        }
-
-        .sv:not(.sv-off) .timeline-step {
-            background: rgba(15, 20, 25, 0.55);
-            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.42);
-        }
-
-        .sv:not(.sv-off) .timeline-step:hover {
-            background: rgba(15, 20, 25, 0.68);
-            border-left-color: var(--accent-gold);
-        }
-
-        .sv:not(.sv-off) .timeline-step h3 {
-            color: var(--accent-teal-bright);
-        }
-
-        .sv:not(.sv-off) .timeline-step p {
-            color: rgba(240, 239, 244, 0.8);
-        }
-
-        .sv:not(.sv-off) .timeline-callout {
-            background: rgba(45, 38, 20, 0.55);
-        }
-
-        .sv:not(.sv-off) .timeline-callout > strong,
-        .sv:not(.sv-off) .timeline-callout p strong {
-            color: var(--accent-gold-bright);
-        }
-
-        .sv:not(.sv-off) .timeline-callout p {
-            color: rgba(240, 239, 244, 0.85);
-        }
-
-        /* --- Service cards --- */
-        .sv:not(.sv-off) .service-color-card {
-            background: rgba(15, 20, 25, 0.30);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
-        }
-
-        .sv:not(.sv-off) .service-color-card::after {
-            opacity: 0.34;
-        }
-
-        .sv:not(.sv-off) .service-color-card:hover::after {
-            opacity: 0.6;
-        }
-
-        /* Enough tint to hold white copy over the brighter shop photos, still
-           light enough to read as glass with the clip moving behind it. */
-        .sv:not(.sv-off) .service-color-card::before {
-            background: linear-gradient(135deg, rgba(15, 20, 25, 0.62) 0%, rgba(26, 35, 50, 0.50) 100%);
-        }
-
-        .sv:not(.sv-off) .service-color-card:hover::before {
-            background: linear-gradient(135deg, rgba(45, 156, 202, 0.62) 0%, rgba(26, 95, 122, 0.50) 100%);
+        .sv:not(.sv-off) .hx-note {
+            background: rgba(15, 20, 25, 0.35);
+            padding: 20px 22px;
+            border-top-color: rgba(184, 165, 115, 0.45);
         }
 
         /* --- Fallback: no video, page reverts to its own backgrounds --- */
@@ -1235,11 +1055,12 @@
                 font-size: 2rem;
             }
 
-            .capability-grid,
-            .services-color-grid,
-            .timeline {
+            .hx-tiers,
+            .hx-steps {
                 grid-template-columns: 1fr;
+                gap: 44px;
             }
+
 
             .stats-row {
                 grid-template-columns: 1fr;
@@ -1254,33 +1075,23 @@
             /* Stacked cards already make these sections far taller than a
                screen, so the min-height would only add dead space. */
             .sv:not(.sv-off) .capability-section,
-            .sv:not(.sv-off) .process-section,
-            .sv:not(.sv-off) .services-grid-section {
+            .sv:not(.sv-off) .process-section {
                 min-height: 0;
                 padding: 80px 20px;
             }
 
             /* Copy sits over a much larger slice of moving footage once the
-               grids collapse to one column, so lean the panels more opaque. */
-            .sv:not(.sv-off) .capability-card,
-            .sv:not(.sv-off) .timeline-step {
-                background: rgba(15, 20, 25, 0.72);
+               grids collapse to one column, so let the plates come back up to
+               full strength and give the index rows something to sit on. */
+            .sv:not(.sv-off) .hx-tier-plate img {
+                opacity: 1;
             }
 
-            .sv:not(.sv-off) .service-color-card {
-                background: rgba(15, 20, 25, 0.45);
-            }
-
-            .sv:not(.sv-off) .service-color-card::after {
-                opacity: 0.5;
-            }
         }
 
         @media (max-width: 480px) {
             .intro-headline,
-            .capability-section h2,
-            .process-section h2,
-            .services-grid-section h2,
+            .hx-head h2,
             .final-cta h2 {
                 font-size: 1.8rem;
             }
@@ -1454,35 +1265,41 @@
 
     <!-- ===== CAPABILITY SPECTRUM SECTION ===== -->
     <section class="capability-section">
-        <div class="capability-content">
-            <h2 data-sv-fade>From Simple Rentals to Fully Custom Builds</h2>
+        <div class="hx-wrap">
+            <div class="hx-head" data-sv-fade>
+                <span class="hx-eyebrow">The spectrum</span>
+                <h2>From simple rentals to fully custom builds</h2>
+            </div>
 
-            <div class="capability-grid">
-                <div class="capability-card" data-sv-fade>
-                    <span class="capability-badge">Quick Setup</span>
-                    <img src="assets/booth-simple-rental.jpg" alt="Simple booth rental" class="capability-image">
-                    <div class="capability-card-content">
-                        <h3>Simple Rentals</h3>
-                        <p>Standard booths ready to go. Perfect for quick turnarounds with professional polish. Clean, modern designs that make your brand shine.</p>
+            <div class="hx-tiers">
+                <div class="hx-tier" data-sv-fade>
+                    <span class="hx-tier-n">01</span>
+                    <div class="hx-tier-plate">
+                        <img src="assets/booth-simple-rental.jpg" alt="Simple booth rental" loading="lazy" decoding="async">
                     </div>
+                    <span class="hx-tier-tag">Quick Setup</span>
+                    <h3>Simple Rentals</h3>
+                    <p>Standard booths ready to go — clean, modern and professionally finished. The fastest route to a show floor when the calendar is tight.</p>
                 </div>
 
-                <div class="capability-card" data-sv-fade>
-                    <span class="capability-badge">Flexible</span>
-                    <img src="assets/booth-semi-custom.jpg" alt="Semi-custom booth" class="capability-image">
-                    <div class="capability-card-content">
-                        <h3>Semi-Custom</h3>
-                        <p>Modify existing structures to match your brand. Custom graphics, lighting upgrades, and layout adjustments. The sweet spot between budget and customization.</p>
+                <div class="hx-tier" data-sv-fade>
+                    <span class="hx-tier-n">02</span>
+                    <div class="hx-tier-plate">
+                        <img src="assets/booth-semi-custom.jpg" alt="Semi-custom booth" loading="lazy" decoding="async">
                     </div>
+                    <span class="hx-tier-tag">Flexible</span>
+                    <h3>Semi-Custom</h3>
+                    <p>Existing structures reworked to your brand — custom graphics, lighting upgrades and layout changes. The sweet spot between budget and bespoke.</p>
                 </div>
 
-                <div class="capability-card" data-sv-fade>
-                    <span class="capability-badge">Unlimited</span>
-                    <img src="assets/booth-fully-custom.jpg" alt="Fully custom booth build" class="capability-image">
-                    <div class="capability-card-content">
-                        <h3>Fully Custom</h3>
-                        <p>100% bespoke fabrication. Multi-story displays, interactive elements, integrated AV—whatever you dream, we engineer and build. No limits.</p>
+                <div class="hx-tier" data-sv-fade>
+                    <span class="hx-tier-n">03</span>
+                    <div class="hx-tier-plate">
+                        <img src="assets/booth-fully-custom.jpg" alt="Fully custom booth build" loading="lazy" decoding="async">
                     </div>
+                    <span class="hx-tier-tag">Unlimited</span>
+                    <h3>Fully Custom</h3>
+                    <p>100% bespoke fabrication. Multi-story structures, interactive elements, integrated AV — engineered and built from a blank sheet.</p>
                 </div>
             </div>
         </div>
@@ -1490,71 +1307,44 @@
 
     <!-- ===== PROCESS SECTION ===== -->
     <section class="process-section">
-        <div class="process-content">
-            <h2 data-sv-fade>How It Works</h2>
-            <p class="process-subtitle" data-sv-fade>A streamlined process that turns your vision into reality, on schedule and on budget.</p>
+        <div class="hx-wrap">
+            <div class="hx-head" data-sv-fade>
+                <span class="hx-eyebrow">How it works</span>
+                <h2>Four steps, one deadline</h2>
+                <p>Every discipline is ours, and every one of them answers to the same install date. Follow a build from first sketch to the crate coming home.</p>
+            </div>
 
-            <div class="timeline">
-                <div class="timeline-step" data-sv-fade>
-                    <h3>Consult & Design</h3>
-                    <p>We listen to your goals, sketch initial concepts, and refine until it's perfect. Our designers bring your brand story to life in 3D renderings.</p>
+            <div class="hx-steps">
+                <div class="hx-step" data-sv-fade>
+                    <span class="hx-step-n">01</span>
+                    <h3>Consult &amp; Design</h3>
+                    <p>We listen to your goals, sketch concepts and refine until it's right — your brand story rendered in 3D before anything gets built.</p>
+                    <ul class="hx-disc"><li><a href="what-we-do.html">Design &amp; Renderings</a></li><li><a href="what-we-do.html">Graphic Design</a></li></ul>
                 </div>
 
-                <div class="timeline-step" data-sv-fade>
+                <div class="hx-step" data-sv-fade>
+                    <span class="hx-step-n">02</span>
                     <h3>Fabrication</h3>
-                    <p>Custom builds come to life in our Las Vegas shop. Precision carpentry, graphics production, and quality checks at every stage.</p>
+                    <p>The build comes to life in our Las Vegas shop. Precision carpentry, graphics production and quality checks at every stage.</p>
+                    <ul class="hx-disc"><li><a href="what-we-do.html">Custom Fabrication</a></li><li><a href="what-we-do.html">Graphics Production</a></li></ul>
                 </div>
 
-                <div class="timeline-step" data-sv-fade>
+                <div class="hx-step" data-sv-fade>
+                    <span class="hx-step-n">03</span>
                     <h3>Installation</h3>
-                    <p>Professional setup on-site. Our expert crews handle everything—structural build, graphics, lighting, AV integration, and final staging.</p>
+                    <p>Professional setup on-site. Our crews handle structure, graphics, lighting, AV integration and final staging.</p>
+                    <ul class="hx-disc"><li><a href="what-we-do.html">Professional Install</a></li><li><a href="what-we-do.html">Lighting &amp; AV</a></li></ul>
                 </div>
 
-                <div class="timeline-step" data-sv-fade>
-                    <h3>Dismantle & Storage</h3>
-                    <p>We handle teardown and can store your booth for future events. Asset protection and logistics, all taken care of.</p>
-                </div>
-            </div>
-
-            <div class="timeline-callout" data-sv-fade>
-                <strong>Plan Ahead:</strong>
-                <p>We recommend at least <strong>8 weeks lead time</strong> for major custom builds to ensure we meet your installation deadline with zero compromises.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- ===== SERVICES GRID SECTION ===== -->
-    <section class="services-grid-section">
-        <h2 data-sv-fade>Full-Service Exhibit Solutions</h2>
-
-        <div class="services-color-grid">
-            <div class="service-color-card" data-sv-fade style="--card-img: url('assets/service-custom-fab.jpg');">
-                <div class="service-color-card-content">
-                    <h3>Custom Fabrication</h3>
-                    <p>In-house carpentry, metalwork, and structural builds. From traditional wood frames to modern aluminum systems—built to spec, built to last.</p>
+                <div class="hx-step" data-sv-fade>
+                    <span class="hx-step-n">04</span>
+                    <h3>Dismantle &amp; Storage</h3>
+                    <p>We handle teardown and store your booth between shows — asset protection and logistics, all taken care of.</p>
+                    <ul class="hx-disc"><li><a href="what-we-do.html">Storage &amp; Logistics</a></li><li><a href="what-we-do.html">Show-To-Show Freight</a></li></ul>
                 </div>
             </div>
 
-            <div class="service-color-card" data-sv-fade style="--card-img: url('assets/service-graphic-design.jpg');">
-                <div class="service-color-card-content">
-                    <h3>Graphic Design & Production</h3>
-                    <p>Our design team creates stunning visuals that stop traffic. High-resolution printing, fabric tension graphics, backlit displays, and more.</p>
-                </div>
-            </div>
-
-            <div class="service-color-card" data-sv-fade style="--card-img: url('assets/service-installation.jpg');">
-                <div class="service-color-card-content">
-                    <h3>Professional Installation</h3>
-                    <p>Flawless booth setup by experienced crews. We coordinate with union labor, manage logistics, and ensure your booth is show-ready on time.</p>
-                </div>
-            </div>
-
-            <div class="service-color-card" data-sv-fade style="--card-img: url('assets/service-lighting-av.jpg');">
-                <div class="service-color-card-content">
-                    <h3>Lighting & AV Integration</h3>
-                    <p>Create unforgettable experiences with professional lighting, video walls, interactive kiosks, and sound systems—all seamlessly integrated.</p>
-                </div>
-            </div>
+            <p class="hx-note" data-sv-fade>Plan ahead: major custom builds want at least <b>8 weeks lead time</b> so we can hit your installation deadline with zero compromises.</p>
         </div>
     </section>
 

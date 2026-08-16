@@ -200,8 +200,242 @@
         }
         .gal-grid-note b { color: var(--accent-teal); }
 
-        /* Persist captions where hover is unavailable (touch) */
-        .gal-touch .gallery-item .gallery-cap { opacity: 1; transform: none; }
+        /* ===================================================================
+           PORTFOLIO GRID (.g-*)
+           ===================================================================
+           Replaces the pill filter buttons and the 15-up eager grid.
+
+           Deliberately uses its own class names rather than the shared
+           .filter-btn / .gallery-item / [data-full] ones. Those are bound by
+           assets/site.js (filter handler + lightbox), and its lightbox
+           snapshots [data-full] ONCE at load — which desyncs the moment items
+           filter or reveal progressively. Opting out of those names means the
+           shared handlers no-op here and the local ones below own the
+           behaviour, with zero blast radius on the other six pages.
+
+           Progressive enhancement throughout: View Transitions, @starting-style
+           and view() timelines are all wrapped in @supports or feature checks,
+           so a browser without them gets the same layout without the motion.
+           =================================================================== */
+
+        /* ---- Filter rail: text on a hairline, not pills ---- */
+        .g-rail { margin-bottom: 42px; }
+        .g-rail-track {
+            position: relative; display: flex; flex-wrap: wrap; gap: 4px 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.13);
+            padding-bottom: 14px;
+        }
+        .g-chip {
+            position: relative; display: inline-flex; align-items: baseline; gap: 8px;
+            background: none; border: 0; padding: 4px 0; cursor: pointer;
+            font: inherit; color: var(--text-secondary);
+            opacity: 0.55; transition: opacity 0.35s var(--ease), color 0.35s var(--ease);
+        }
+        .g-chip:hover { opacity: 0.85; }
+        .g-chip.is-on { opacity: 1; color: #fff; }
+        .g-chip-t { font-size: 0.98rem; font-weight: 700; letter-spacing: 0.2px; }
+        .g-chip-n {
+            font-size: 0.66rem; font-weight: 700; letter-spacing: 1px;
+            color: var(--accent-gold); font-variant-numeric: tabular-nums;
+        }
+        .g-chip:focus-visible { outline: 2px solid var(--accent-teal); outline-offset: 4px; border-radius: 2px; }
+        /* The sliding indicator. Position and width are written by the script
+           as pixel values, so it animates between any two labels. */
+        .g-rail-ink {
+            position: absolute; left: 0; bottom: -1px; height: 2px; width: 0;
+            background: linear-gradient(90deg, var(--accent-teal), var(--accent-gold));
+            transform: translateX(0); transition: transform 0.5s var(--ease), width 0.5s var(--ease);
+            pointer-events: none;
+        }
+        .g-rail-live {
+            margin-top: 14px; font-size: 0.78rem; letter-spacing: 1.4px;
+            text-transform: uppercase; font-weight: 700; color: var(--text-secondary);
+        }
+
+        /* ---- Art-directed grid ---- */
+        /* Six columns with hand-assigned spans (data-span), not auto-flow:
+           the three highest-resolution sources carry the wide feature cells.
+           `dense` backfills the holes filtering leaves behind. */
+        .g-grid {
+            display: grid; grid-template-columns: repeat(6, 1fr);
+            gap: 18px; grid-auto-flow: row dense;
+        }
+        .g-item {
+            grid-column: span var(--span, 2);
+            display: block; padding: 0; border: 0; background: none;
+            font: inherit; color: inherit; text-align: left; cursor: pointer;
+            /* Skip layout/paint for offscreen cells; the size hint keeps the
+               scrollbar honest while they are skipped. */
+            content-visibility: auto;
+            contain-intrinsic-size: auto 340px;
+        }
+        .g-item[data-span="3"] { --span: 3; }
+        .g-item[data-span="2"] { --span: 2; }
+        .g-item[hidden] { display: none; }
+
+        /* Cell ratios are ART DIRECTION, not the source's intrinsic ratio.
+           11 of the 15 sources are portrait; honouring their real ratios
+           produced 850px-tall cells and exactly the "bulky blob" this rebuild
+           exists to fix. These two ratios are chosen so a 3-span and a 2-span
+           come out the SAME height, which is what makes the rows line up:
+             3-span ≈ 564px wide ÷ 2.0  = 282px
+             2-span ≈ 379px wide ÷ 1.33 = 284px
+           object-fit: cover crops to taste from the centre. */
+        .g-item[data-span="3"] .g-frame { aspect-ratio: 2 / 1; }
+        .g-item[data-span="2"] .g-frame { aspect-ratio: 4 / 3; }
+
+        .g-frame {
+            position: relative; display: block; overflow: hidden; border-radius: 8px;
+            /* The LQIP is a ~300-byte inlined WebP, blurred up underneath the
+               real image so a slow cell never flashes empty. */
+            background-image: var(--lqip); background-size: cover; background-position: center;
+            box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42);
+        }
+        .g-frame::after {
+            content: ''; position: absolute; inset: 0; border-radius: 8px; pointer-events: none;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.10);
+            background: linear-gradient(to top, rgba(12, 17, 22, 0.45) 0%, transparent 45%);
+            opacity: 0; transition: opacity 0.4s var(--ease);
+        }
+        .g-item:hover .g-frame::after { opacity: 1; }
+        .g-frame img {
+            width: 100%; height: 100%; object-fit: cover; display: block;
+            transition: transform 0.8s var(--ease), filter 0.5s var(--ease);
+        }
+        .g-item:hover .g-frame img { transform: scale(1.05); }
+        .g-item:focus-visible .g-frame { outline: 2px solid var(--accent-teal); outline-offset: 3px; }
+
+        /* Caption below the frame on a hairline — not a hover-only overlay,
+           which is unreachable on touch and invisible to a keyboard. */
+        .g-meta {
+            display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: start;
+            padding-top: 12px; margin-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        .g-num {
+            font-size: 0.64rem; font-weight: 700; letter-spacing: 1.6px;
+            color: var(--accent-gold); font-variant-numeric: tabular-nums; padding-top: 3px;
+        }
+        .g-txt b { display: block; font-size: 0.98rem; font-weight: 700; color: #fff; line-height: 1.3; }
+        .g-txt i {
+            display: block; font-style: normal; font-size: 0.8rem;
+            color: var(--text-secondary); margin-top: 3px;
+        }
+
+        /* ---- Show more ---- */
+        .g-more-wrap { display: flex; justify-content: center; margin-top: 40px; }
+        .g-more {
+            background: none; border: 0; cursor: pointer; font: inherit;
+            display: inline-flex; align-items: center; gap: 10px;
+            font-size: 0.8rem; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase;
+            color: var(--accent-teal); padding-bottom: 6px;
+            border-bottom: 1px solid rgba(45, 156, 202, 0.4);
+            transition: color 0.3s ease, border-color 0.3s ease;
+        }
+        .g-more:hover { color: var(--accent-teal-bright); border-color: var(--accent-teal-bright); }
+        .g-more .ar { transition: transform 0.3s var(--ease); }
+        .g-more:hover .ar { transform: translateY(3px); }
+        .g-more[hidden] { display: none; }
+
+        /* ---- Entrance, off the main thread ----
+           A scroll-driven view() timeline: no rAF, no IntersectionObserver, and
+           the compositor runs it. Guarded so browsers without it just show the
+           cells rather than leaving them stuck at opacity 0. */
+        @supports (animation-timeline: view()) {
+            @media (prefers-reduced-motion: no-preference) {
+                .g-item {
+                    animation: gRise linear both;
+                    animation-timeline: view();
+                    animation-range: entry 0% entry 42%;
+                }
+                @keyframes gRise {
+                    from { opacity: 0; transform: translateY(26px); }
+                    to   { opacity: 1; transform: none; }
+                }
+            }
+        }
+
+        /* ---- Filter enter/exit without JS timing hacks ----
+           transition-behavior: allow-discrete lets `display` participate in a
+           transition, and @starting-style supplies the from-state for an
+           element that has just been displayed. */
+        @supports (transition-behavior: allow-discrete) {
+            @media (prefers-reduced-motion: no-preference) {
+                .g-item {
+                    transition: opacity 0.4s var(--ease), scale 0.4s var(--ease),
+                                display 0.4s allow-discrete;
+                }
+                .g-item.is-out { opacity: 0; scale: 0.94; }
+                @starting-style { .g-item.is-in { opacity: 0; scale: 0.94; } }
+            }
+        }
+
+        /* ---- Lightbox ---- */
+        .g-lb {
+            position: fixed; inset: 0; z-index: 2000; border: 0; padding: 0;
+            width: 100%; height: 100%; max-width: none; max-height: none;
+            background: rgba(8, 11, 15, 0.94);
+            grid-template-rows: 1fr auto; place-items: center;
+        }
+        /* A closed <dialog> is display:none by UA default — stating `display`
+           on the base rule would override that and pin it open. Only the
+           [open] state gets a display value. */
+        .g-lb:not([open]) { display: none; }
+        .g-lb[open] { display: grid; }
+        .g-lb::backdrop { background: rgba(8, 11, 15, 0.7); }
+        .g-lb-img {
+            max-width: min(94vw, 1100px); max-height: 78vh;
+            object-fit: contain; border-radius: 8px;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.7);
+        }
+        .g-lb-bar {
+            width: min(94vw, 1100px); display: flex; align-items: baseline;
+            gap: 16px; padding: 18px 2px 26px;
+        }
+        .g-lb-bar .n { font-size: 0.68rem; font-weight: 700; letter-spacing: 1.8px; color: var(--accent-gold); }
+        .g-lb-bar b { font-size: 1.05rem; font-weight: 700; color: #fff; }
+        .g-lb-bar i { font-style: normal; font-size: 0.85rem; color: var(--text-secondary); }
+        .g-lb-btn {
+            position: fixed; top: 50%; translate: 0 -50%; z-index: 2;
+            width: 52px; height: 52px; border-radius: 50%; cursor: pointer;
+            background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.18);
+            color: #fff; font-size: 1.5rem; line-height: 1;
+            transition: background 0.3s ease, border-color 0.3s ease;
+        }
+        .g-lb-btn:hover { background: rgba(255, 255, 255, 0.16); border-color: var(--accent-teal); }
+        .g-lb-prev { left: 22px; }
+        .g-lb-next { right: 22px; }
+        .g-lb-close { position: fixed; top: 22px; right: 22px; translate: none; }
+
+        /* ---- Shared-element morph: the thumbnail BECOMES the lightbox image.
+           Set on only one pair at a time by the script, since a
+           view-transition-name must be unique in the document. ---- */
+        @media (prefers-reduced-motion: no-preference) {
+            ::view-transition-old(g-hero),
+            ::view-transition-new(g-hero) {
+                animation-duration: 0.42s;
+                animation-timing-function: var(--ease);
+            }
+        }
+
+        @media (max-width: 1000px) {
+            .g-grid { grid-template-columns: repeat(4, 1fr); gap: 16px; }
+            .g-item[data-span="3"] { --span: 4; }
+            .g-item[data-span="2"] { --span: 2; }
+        }
+        @media (max-width: 640px) {
+            .g-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+            .g-item[data-span="3"], .g-item[data-span="2"] { --span: 2; }
+            /* Every cell is full width here, so the 2/1 feature ratio would
+               letterbox to a 160px sliver. One ratio for all of them. */
+            .g-item[data-span="3"] .g-frame,
+            .g-item[data-span="2"] .g-frame { aspect-ratio: 4 / 3; }
+            .g-rail-track { gap: 4px 20px; }
+            .g-chip-t { font-size: 0.9rem; }
+            .g-lb-btn { width: 44px; height: 44px; }
+            .g-lb-prev { left: 10px; }
+            .g-lb-next { right: 10px; }
+        }
 
         /* --- Cinematic stats band --- */
         .gal-stats-band {
@@ -334,76 +568,264 @@
                     <p>Filter by program type. Tap any image to open the full-screen view and step through the collection.</p>
                 </div>
 
-                <div class="gallery-filter" data-reveal>
-                    <button class="filter-btn active" data-filter="all">All Work</button>
-                    <button class="filter-btn" data-filter="islands">Custom Islands</button>
-                    <button class="filter-btn" data-filter="inline">Inline Booths</button>
-                    <button class="filter-btn" data-filter="fabrication">Fabrication</button>
-                    <button class="filter-btn" data-filter="graphics">Graphics</button>
-                    <button class="filter-btn" data-filter="lighting">Lighting &amp; AV</button>
+                <div class="g-rail" data-reveal>
+                    <div class="g-rail-track" role="tablist" aria-label="Filter portfolio by program type">
+                        <button class="g-chip is-on" data-filter="all" role="tab" aria-selected="true"><span class="g-chip-t">All Work</span><span class="g-chip-n">15</span></button>
+                        <button class="g-chip" data-filter="islands" role="tab" aria-selected="false"><span class="g-chip-t">Custom Islands</span><span class="g-chip-n">4</span></button>
+                        <button class="g-chip" data-filter="inline" role="tab" aria-selected="false"><span class="g-chip-t">Inline Booths</span><span class="g-chip-n">3</span></button>
+                        <button class="g-chip" data-filter="fabrication" role="tab" aria-selected="false"><span class="g-chip-t">Fabrication</span><span class="g-chip-n">5</span></button>
+                        <button class="g-chip" data-filter="graphics" role="tab" aria-selected="false"><span class="g-chip-t">Graphics</span><span class="g-chip-n">3</span></button>
+                        <button class="g-chip" data-filter="lighting" role="tab" aria-selected="false"><span class="g-chip-t">Lighting &amp; AV</span><span class="g-chip-n">4</span></button>
+                        <span class="g-rail-ink" aria-hidden="true"></span>
+                    </div>
+                    <p class="g-rail-live" role="status" aria-live="polite">Showing all 15 builds</p>
                 </div>
 
-                <div class="gallery-grid reveal-group">
-                    <div class="gallery-item" data-cat="islands lighting" data-full="assets/booth-fully-custom.jpg">
-                        <img src="assets/booth-fully-custom.jpg" alt="40 by 40 double-deck custom island exhibit at CES 2026">
-                        <div class="gallery-cap"><h4>40×40 Double-Deck Island</h4><span>CES 2026 · Central Hall</span></div>
-                    </div>
-                    <div class="gallery-item" data-cat="islands" data-full="assets/portfolio-1.jpg">
-                        <img src="assets/portfolio-1.jpg" alt="30 by 30 peninsula island exhibit with backlit brand wall at NAB Show">
-                        <div class="gallery-cap"><h4>30×30 Peninsula Island</h4><span>NAB Show 2026</span></div>
-                    </div>
-                    <div class="gallery-item" data-cat="graphics" data-full="assets/service-graphic-design.jpg">
-                        <img src="assets/service-graphic-design.jpg" alt="Backlit tension-fabric graphics on a large-format exhibit wall">
-                        <div class="gallery-cap"><h4>Backlit Fabric Graphics</h4><span>Large-Format Print</span></div>
-                    </div>
-                    <div class="gallery-item" data-cat="inline" data-full="assets/booth-semi-custom.jpg">
-                        <img src="assets/booth-semi-custom.jpg" alt="20 by 20 semi-custom inline booth with tower and reception counter at SEMA">
-                        <div class="gallery-cap"><h4>20×20 Semi-Custom Inline</h4><span>SEMA 2026</span></div>
-                    </div>
-                    <div class="gallery-item" data-cat="lighting" data-full="assets/service-lighting-av.jpg">
-                        <img src="assets/service-lighting-av.jpg" alt="Seamless LED video wall integrated into an exhibit header">
-                        <div class="gallery-cap"><h4>Video Wall Integration</h4><span>LED &amp; AV Systems</span></div>
-                    </div>
-                    <div class="gallery-item" data-cat="fabrication" data-full="assets/service-custom-fab.jpg">
-                        <img src="assets/service-custom-fab.jpg" alt="Custom reception counter under fabrication in the build shop">
-                        <div class="gallery-cap"><h4>Reception Counter Fabrication</h4><span>In-House Build Shop</span></div>
-                    </div>
-                    <div class="gallery-item" data-cat="islands graphics" data-full="assets/portfolio-2.jpg">
-                        <img src="assets/portfolio-2.jpg" alt="20 by 30 open-concept island exhibit with feature graphics at CONEXPO">
-                        <div class="gallery-cap"><h4>20×30 Open-Concept Island</h4><span>CONEXPO 2026</span></div>
-                    </div>
-                    <div class="gallery-item" data-cat="inline" data-full="assets/booth-simple-rental.jpg">
-                        <img src="assets/booth-simple-rental.jpg" alt="10 by 20 modular rental booth with backwall graphics at MAGIC">
-                        <div class="gallery-cap"><h4>10×20 Modular Rental</h4><span>MAGIC 2026</span></div>
-                    </div>
-                    <div class="gallery-item" data-cat="fabrication" data-full="assets/service-installation.jpg">
-                        <img src="assets/service-installation.jpg" alt="Install crew assembling structural exhibit framework on the show floor">
-                        <div class="gallery-cap"><h4>On-Site Structural Install</h4><span>Certified I&amp;D Crew</span></div>
-                    </div>
-                    <div class="gallery-item" data-cat="graphics fabrication" data-full="assets/service-custom.jpg">
-                        <img src="assets/service-custom.jpg" alt="Illuminated dimensional logo header mounted on a custom exhibit">
-                        <div class="gallery-cap"><h4>Illuminated Logo Header</h4><span>Custom Signage</span></div>
-                    </div>
-                    <div class="gallery-item" data-cat="fabrication" data-full="assets/service-install.jpg">
-                        <img src="assets/service-install.jpg" alt="Engineered steel framework for a double-deck exhibit under construction">
-                        <div class="gallery-cap"><h4>Double-Deck Steel Framework</h4><span>Engineered Build</span></div>
-                    </div>
-                    <div class="gallery-item" data-cat="islands lighting" data-full="assets/booth-cta-bg.jpg">
-                        <img src="assets/booth-cta-bg.jpg" alt="40 by 50 flagship island exhibit lit for the CES show floor">
-                        <div class="gallery-cap"><h4>40×50 Flagship Island</h4><span>CES 2026</span></div>
-                    </div>
-                    <div class="gallery-item" data-cat="inline" data-full="assets/service-coordination.jpg">
-                        <img src="assets/service-coordination.jpg" alt="Semi-custom meeting lounge environment inside an inline exhibit">
-                        <div class="gallery-cap"><h4>Meeting Lounge Environment</h4><span>Semi-Custom Inline</span></div>
-                    </div>
-                    <div class="gallery-item" data-cat="lighting" data-full="assets/service-emergency.jpg">
-                        <img src="assets/service-emergency.jpg" alt="Overnight lighting retrofit on an exhibit ahead of show open">
-                        <div class="gallery-cap"><h4>Overnight Lighting Retrofit</h4><span>Rush Turnaround</span></div>
-                    </div>
-                    <div class="gallery-item" data-cat="fabrication" data-full="assets/service1-install.jpg">
-                        <img src="assets/service1-install.jpg" alt="Custom exhibit components crated and staged for freight and storage">
-                        <div class="gallery-cap"><h4>Crated &amp; Staged for Freight</h4><span>Storage &amp; Logistics</span></div>
-                    </div>
+                <div class="g-grid" id="gGrid">
+                        <button class="g-item" data-span="3" data-cat="islands lighting"
+                                data-stem="booth-fully-custom" data-title="40×40 Double-Deck Island" data-meta="CES 2026 · Central Hall"
+                                style="--lqip:url('data:image/webp;base64,UklGRhwBAABXRUJQVlA4IBABAABwBgCdASoUAB4APuliqE0pJaQiMAgBIB0JZQC4NAgdmDYFv4NtDElu7uT7WcgRk6l2YUQW05EnSdoyawAA/s+0ZVZ9cHWw/3VOfg3gI8ttgRUl57KPrQIRXSErE56iqjvokBd7EDBUfQYiNhzBtygUgi13QYFPQ4RaNifMGOLIaQGxKGkB8THYlg2rfD7s2COWdvwCcbM9/GvH7WdB+U40SaBz2ZuTLH0Go5KuJhGmWHtne/DRor4RBcSUGjc7N2OlsFf6eQ34rGtHLT8h6qZwwOH77SCX09DAZAShG9cBY1IwfUN8QmYdBvi4JQlJIoBRF5J5axA/WDDUFc/UkyKg4GkZzXMut8ZCVTXoEwAAAA==')">
+                            <span class="g-frame">
+                                <picture>
+                                    <source type="image/webp" srcset="assets/gallery/booth-fully-custom-400.webp 400w, assets/gallery/booth-fully-custom-640.webp 640w, assets/gallery/booth-fully-custom-832.webp 832w" sizes="(max-width:640px) 100vw, (max-width:1000px) 50vw, 50vw">
+                                    <img src="assets/gallery/booth-fully-custom-832.jpg"
+                                         width="832" height="1248" alt="40 by 40 double-deck custom island exhibit at CES 2026"
+                                         loading="eager" decoding="async" fetchpriority="high">
+                                </picture>
+                            </span>
+                            <span class="g-meta">
+                                <span class="g-num">01</span>
+                                <span class="g-txt"><b>40×40 Double-Deck Island</b><i>CES 2026 · Central Hall</i></span>
+                            </span>
+                        </button>
+                        <button class="g-item" data-span="3" data-cat="lighting"
+                                data-stem="service-lighting-av" data-title="Video Wall Integration" data-meta="LED &amp; AV Systems"
+                                style="--lqip:url('data:image/webp;base64,UklGRkYBAABXRUJQVlA4IDoBAAAQBwCdASoUAB4APulepk0pJSOiMAgBIB0JbACdOUFS3ezOTjEi+e6HPsC2J0w0KvTs+T3LjS3N1UBcw5ibZ+gIHAD+7xEND5+6e/yya5LtfvsVNnf0fPCAvJhPfhtR9IN7JlKLd8lMejD2dnSi5ioa/hSMPco88D5XEt2vqJfnH32A1rbahCgGpO/pw6mq8GSZzUCScVR150Sai0fJLLjRO1cp5KlW3d7fz3ppRp4PBqoI+MIF8v1FRzSJjm+CTmPa0Va7G+T8S9UVyLs1OEvF4Ivp89n2QgtPf2G4OJlepOOzC+v30wZHN81QA4rrFBq7vj0FZdB4VOKny2+743kB7RI/wUpPPTW3F9iX657jpnK1SethiRir4IS/pNdrixC887QCdqZMJ6roCpGZJAc9BqbQr8vaEAAAAA==')">
+                            <span class="g-frame">
+                                <picture>
+                                    <source type="image/webp" srcset="assets/gallery/service-lighting-av-400.webp 400w, assets/gallery/service-lighting-av-640.webp 640w, assets/gallery/service-lighting-av-784.webp 784w" sizes="(max-width:640px) 100vw, (max-width:1000px) 50vw, 50vw">
+                                    <img src="assets/gallery/service-lighting-av-784.jpg"
+                                         width="784" height="1168" alt="Seamless LED video wall integrated into an exhibit header"
+                                         loading="eager" decoding="async" fetchpriority="high">
+                                </picture>
+                            </span>
+                            <span class="g-meta">
+                                <span class="g-num">02</span>
+                                <span class="g-txt"><b>Video Wall Integration</b><i>LED &amp; AV Systems</i></span>
+                            </span>
+                        </button>
+                        <button class="g-item" data-span="2" data-cat="islands"
+                                data-stem="portfolio-1" data-title="30×30 Peninsula Island" data-meta="NAB Show 2026"
+                                style="--lqip:url('data:image/webp;base64,UklGRpQAAABXRUJQVlA4IIgAAADQAwCdASoUAA8APuleqE0pJSOiMAgBIB0JYwAATpm2YIhMRHSiNsAA/un3j+kMpHVDhERWrZ6hjGYRvaewVUdatHADe9ReGB9pZ7flRNS86h1JRByGYwt94jYK9Nrp7MJt3nYutF/qDaNAJy9mCcgFf1Urk8vy79mBeXdRJ89JW6MxHlMagAAA')">
+                            <span class="g-frame">
+                                <picture>
+                                    <source type="image/webp" srcset="assets/gallery/portfolio-1-400.webp 400w, assets/gallery/portfolio-1-640.webp 640w" sizes="(max-width:640px) 100vw, (max-width:1000px) 50vw, 33vw">
+                                    <img src="assets/gallery/portfolio-1-640.jpg"
+                                         width="640" height="480" alt="30 by 30 peninsula island exhibit with backlit brand wall at NAB Show"
+                                         loading="lazy" decoding="async">
+                                </picture>
+                            </span>
+                            <span class="g-meta">
+                                <span class="g-num">03</span>
+                                <span class="g-txt"><b>30×30 Peninsula Island</b><i>NAB Show 2026</i></span>
+                            </span>
+                        </button>
+                        <button class="g-item" data-span="2" data-cat="inline"
+                                data-stem="booth-semi-custom" data-title="20×20 Semi-Custom Inline" data-meta="SEMA 2026"
+                                style="--lqip:url('data:image/webp;base64,UklGRqIAAABXRUJQVlA4IJYAAADwAwCdASoUAA8APulgqE0pJaOiMAgBIB0JZADCgCIhATa0UppL17MoAP7c/lMhSMo7DtWJnbvElU8ff5L8905YsEscieqjl+nE36V2B23PVSTeBIVU5X3Ix32uG4vaUH94D/P1IMjb0yKjEwpn8stkuaQx8/bxhlmVhdXqb8XDBuGNxIvbTsyvp6wPGUmZgjCZ4jEAAAA=')">
+                            <span class="g-frame">
+                                <picture>
+                                    <source type="image/webp" srcset="assets/gallery/booth-semi-custom-400.webp 400w, assets/gallery/booth-semi-custom-640.webp 640w" sizes="(max-width:640px) 100vw, (max-width:1000px) 50vw, 33vw">
+                                    <img src="assets/gallery/booth-semi-custom-640.jpg"
+                                         width="640" height="480" alt="20 by 20 semi-custom inline booth with tower and reception counter at SEMA"
+                                         loading="lazy" decoding="async">
+                                </picture>
+                            </span>
+                            <span class="g-meta">
+                                <span class="g-num">04</span>
+                                <span class="g-txt"><b>20×20 Semi-Custom Inline</b><i>SEMA 2026</i></span>
+                            </span>
+                        </button>
+                        <button class="g-item" data-span="2" data-cat="fabrication"
+                                data-stem="service-installation" data-title="On-Site Structural Install" data-meta="Certified I&amp;D Crew"
+                                style="--lqip:url('data:image/webp;base64,UklGRsgAAABXRUJQVlA4ILwAAADwBACdASoUABQAPulsrlGpJaQiqAgBIB0JZQDE2A9joS6NqQYem6X734BjNNblGQAA9piu+rwp11RBRMK3calamDg4BnZuJlBLb1GwQWdQI+2Zsd0VzK6DcnSK0RXFIQMgHAt18cFYCoB4GBRYyo0ERgqRgvE1Nua5EdHigdPXPd0kJGoJIBeEpzFSXtitA/uV1XnjLzMxmDC04Vw39MtJl4Gc9K7ZF0IqZVwhAuinBKjWP4eqS3M8TzkAAA==')">
+                            <span class="g-frame">
+                                <picture>
+                                    <source type="image/webp" srcset="assets/gallery/service-installation-400.webp 400w, assets/gallery/service-installation-640.webp 640w, assets/gallery/service-installation-675.webp 675w" sizes="(max-width:640px) 100vw, (max-width:1000px) 50vw, 33vw">
+                                    <img src="assets/gallery/service-installation-675.jpg"
+                                         width="675" height="690" alt="Install crew assembling structural exhibit framework on the show floor"
+                                         loading="lazy" decoding="async">
+                                </picture>
+                            </span>
+                            <span class="g-meta">
+                                <span class="g-num">05</span>
+                                <span class="g-txt"><b>On-Site Structural Install</b><i>Certified I&amp;D Crew</i></span>
+                            </span>
+                        </button>
+                        <button class="g-item" data-span="3" data-cat="islands lighting"
+                                data-stem="booth-cta-bg" data-title="40×50 Flagship Island" data-meta="CES 2026"
+                                style="--lqip:url('data:image/webp;base64,UklGRg4BAABXRUJQVlA4IAIBAADwBQCdASoUAB4APuleqE0pJSOiMAgBIB0JQBdkHMwYwy9V+i6hk4Ihu337ACrv4OTSodoxz10fOAD+6UQKhhMz3vRk5X/Akz/RxAm6q6gSgFbyvP/v+nTqycWRDfjOdq+PFnk/WxDEeYKZg2GVLmZzgv7+ETZ9oMO9OEK8iGa/GfOWvQhWxflY3CwlUNjJFJ6RA3/RZ5HdBoZcgukLU5bRZ/MPZlwiMpW8zDXrEaCrTh2abDvh30Ea00j3pKprDDreUt1c2X7loJObI26YcaglRS0aQtSEaL1PaXUO31JPB8HbiYNpbHvqY9/PmwVHtSrF1TGO6hRF9agFNFa0MaeFeAA=')">
+                            <span class="g-frame">
+                                <picture>
+                                    <source type="image/webp" srcset="assets/gallery/booth-cta-bg-400.webp 400w, assets/gallery/booth-cta-bg-640.webp 640w, assets/gallery/booth-cta-bg-784.webp 784w" sizes="(max-width:640px) 100vw, (max-width:1000px) 50vw, 50vw">
+                                    <img src="assets/gallery/booth-cta-bg-784.jpg"
+                                         width="784" height="1168" alt="40 by 50 flagship island exhibit lit for the CES show floor"
+                                         loading="lazy" decoding="async">
+                                </picture>
+                            </span>
+                            <span class="g-meta">
+                                <span class="g-num">06</span>
+                                <span class="g-txt"><b>40×50 Flagship Island</b><i>CES 2026</i></span>
+                            </span>
+                        </button>
+                        <button class="g-item" data-span="3" data-cat="fabrication"
+                                data-stem="service-custom-fab" data-title="Reception Counter Fabrication" data-meta="In-House Build Shop"
+                                style="--lqip:url('data:image/webp;base64,UklGRgIBAABXRUJQVlA4IPYAAADwBQCdASoUAB4APulkqU0pJaQiMAgBIB0JQBafP/2K53ABKyswnCKvP5z9GpugEcf9vLOKhD6ggAD2dfHBtgEFwERCIKSYW2ouwgw1sEf5tafs4QFUvBGe2vzaUyeyD7yGdWiHXb9zC/4gzhPX0o4GH+eBrovxKABlTjVI+OV/cIHBtWfDikQI12q8FgTa4n9KncWWnK9HjrJsSOuzzBJbw4kcWLRLJWT+ZtSLRHutDOaGcCvK9jS9C3HmOzVvdIct/usdSz8HoY6Az33sTMkgP5beVeZuw8udTyNIxiCi68efrmgxzwlpt+AUeUqXBO5jIMQAAAA=')">
+                            <span class="g-frame">
+                                <picture>
+                                    <source type="image/webp" srcset="assets/gallery/service-custom-fab-400.webp 400w, assets/gallery/service-custom-fab-640.webp 640w, assets/gallery/service-custom-fab-784.webp 784w" sizes="(max-width:640px) 100vw, (max-width:1000px) 50vw, 50vw">
+                                    <img src="assets/gallery/service-custom-fab-784.jpg"
+                                         width="784" height="1168" alt="Custom reception counter under fabrication in the build shop"
+                                         loading="lazy" decoding="async">
+                                </picture>
+                            </span>
+                            <span class="g-meta">
+                                <span class="g-num">07</span>
+                                <span class="g-txt"><b>Reception Counter Fabrication</b><i>In-House Build Shop</i></span>
+                            </span>
+                        </button>
+                        <button class="g-item" data-span="2" data-cat="inline"
+                                data-stem="booth-simple-rental" data-title="10×20 Modular Rental" data-meta="MAGIC 2026"
+                                style="--lqip:url('data:image/webp;base64,UklGRqwAAABXRUJQVlA4IKAAAACwBACdASoUAA8APulgqE0pJaOiMAgBIB0JQBOmUAS4gxRb/uzUNO9/aBQ/OPywAP7SoB/vooO1teffJsJDGi7zQpa9pTeE/fUUBVVCLsjIHkrvV/8brHSGMwCvt5dSsKmwhTcBZcETYvSpmw6qELyq24NfMcK6Zt9zoCuw30Z1GGgWu9o/SMfEoDwdo7vd3HhAIsOpFTR4fntPjgZ+gAAA')">
+                            <span class="g-frame">
+                                <picture>
+                                    <source type="image/webp" srcset="assets/gallery/booth-simple-rental-400.webp 400w, assets/gallery/booth-simple-rental-640.webp 640w" sizes="(max-width:640px) 100vw, (max-width:1000px) 50vw, 33vw">
+                                    <img src="assets/gallery/booth-simple-rental-640.jpg"
+                                         width="640" height="480" alt="10 by 20 modular rental booth with backwall graphics at MAGIC"
+                                         loading="lazy" decoding="async">
+                                </picture>
+                            </span>
+                            <span class="g-meta">
+                                <span class="g-num">08</span>
+                                <span class="g-txt"><b>10×20 Modular Rental</b><i>MAGIC 2026</i></span>
+                            </span>
+                        </button>
+                        <button class="g-item" data-span="2" data-cat="islands graphics"
+                                data-stem="portfolio-2" data-title="20×30 Open-Concept Island" data-meta="CONEXPO 2026"
+                                style="--lqip:url('data:image/webp;base64,UklGRiIBAABXRUJQVlA4IBYBAAAQBgCdASoUAB4APulep00pJSOiMAgBIB0JQBlAZYMN8zSLdbWfGU/wntcdmp7Ayx36xUl98fskkuAA/r3R3OCre5NgSVDh0+bPwhoWCkp09umqZvxlrR2vd1asCyQHSN0nn10Lo+DCielHUnsClys+IzxAghq3CpEaGndBCd/a6TBd2yWyYCDZ9a9HXILNnRMIxITmzaWnl9b+k3EYdIBkV9nqByLItS2WpnZOjv/NwI65a49FOrRvisACth/nYlIDOZy4MxcZPZ/bP/30pwfwo9or9Dqh6b5psMmeBABKh3mznMOgQ0Ka6g5x3PGGF34NZj/qdb6Fre9YtvpNqhjnwfA/5SFJEjDrQ1QiZQuSDisH13gAAA==')">
+                            <span class="g-frame">
+                                <picture>
+                                    <source type="image/webp" srcset="assets/gallery/portfolio-2-400.webp 400w, assets/gallery/portfolio-2-464.webp 464w" sizes="(max-width:640px) 100vw, (max-width:1000px) 50vw, 33vw">
+                                    <img src="assets/gallery/portfolio-2-464.jpg"
+                                         width="464" height="688" alt="20 by 30 open-concept island exhibit with feature graphics at CONEXPO"
+                                         loading="lazy" decoding="async">
+                                </picture>
+                            </span>
+                            <span class="g-meta">
+                                <span class="g-num">09</span>
+                                <span class="g-txt"><b>20×30 Open-Concept Island</b><i>CONEXPO 2026</i></span>
+                            </span>
+                        </button>
+                        <button class="g-item" data-span="2" data-cat="fabrication"
+                                data-stem="service-install" data-title="Double-Deck Steel Framework" data-meta="Engineered Build"
+                                style="--lqip:url('data:image/webp;base64,UklGRs4AAABXRUJQVlA4IMIAAADwBQCdASoUABsAPuleqk+pJKOiMBgIASAdCWQAsQz8uGW4AHSMPt+UInw46rPeWebcAEKdeX/5KADJ4MMOopeOEW3s6L24pLAIpO6nwhj4SzMBghuO8gAdSSw2qUebY1vYtMv0O6zMeIC7764JuvGEcBJCoHwXtldfBJXU2XpD2Q8tZqVRHW5LTz21uzRfYI6j6OWLW0hgsVFtWT68Qw0+35lw3agVQYHmiRytjKe1vIQ02MuxlDio1+CleX0FyD6AAA==')">
+                            <span class="g-frame">
+                                <picture>
+                                    <source type="image/webp" srcset="assets/gallery/service-install-400.webp 400w, assets/gallery/service-install-480.webp 480w" sizes="(max-width:640px) 100vw, (max-width:1000px) 50vw, 33vw">
+                                    <img src="assets/gallery/service-install-480.jpg"
+                                         width="480" height="640" alt="Engineered steel framework for a double-deck exhibit under construction"
+                                         loading="lazy" decoding="async">
+                                </picture>
+                            </span>
+                            <span class="g-meta">
+                                <span class="g-num">10</span>
+                                <span class="g-txt"><b>Double-Deck Steel Framework</b><i>Engineered Build</i></span>
+                            </span>
+                        </button>
+                        <button class="g-item" data-span="3" data-cat="graphics fabrication"
+                                data-stem="service-custom" data-title="Illuminated Logo Header" data-meta="Custom Signage"
+                                style="--lqip:url('data:image/webp;base64,UklGRugAAABXRUJQVlA4INwAAAAwBgCdASoUAB4APulipk0pJaMiMBgMASAdCWwAtRqEgP9/hVe91BSteZiwPgvT1iC70HxvDXw83b6AAP71mdcfJog7oZQpbQ5YeGdKRrljgboa8TJMCgQgJ2uIsSWOMvFHTS1kCRzWhIBUkA1v2N6/xbsIXuZ8Mssl5xpK/RZsqiN1lYDW6U2St03MQ7wxWtvArveWPTOGDlNnDCsnBkwt+PKzcfXjm2Z3zYr3O4ozu6PIC1I1KSfPZYkKm2aki1i7vu8jNFlDGeo/ce44pNdp+Qr5zVkfSxJr6AAA')" hidden>
+                            <span class="g-frame">
+                                <picture>
+                                    <source type="image/webp" srcset="assets/gallery/service-custom-400.webp 400w, assets/gallery/service-custom-640.webp 640w, assets/gallery/service-custom-784.webp 784w" sizes="(max-width:640px) 100vw, (max-width:1000px) 50vw, 50vw">
+                                    <img src="assets/gallery/service-custom-784.jpg"
+                                         width="784" height="1168" alt="Illuminated dimensional logo header mounted on a custom exhibit"
+                                         loading="lazy" decoding="async">
+                                </picture>
+                            </span>
+                            <span class="g-meta">
+                                <span class="g-num">11</span>
+                                <span class="g-txt"><b>Illuminated Logo Header</b><i>Custom Signage</i></span>
+                            </span>
+                        </button>
+                        <button class="g-item" data-span="3" data-cat="lighting"
+                                data-stem="service-emergency" data-title="Overnight Lighting Retrofit" data-meta="Rush Turnaround"
+                                style="--lqip:url('data:image/webp;base64,UklGRiQBAABXRUJQVlA4IBgBAADQBgCdASoUAB4APulep00pJSOiMAgBIB0JYgDDs3gc1VGBKge5AwTWPse4uJOdgzJLodWEIToXn7hTaQ0AcgAA/uZmRWt9JyzziwQ0ZUg8ZlkUChSwEu1JW6b1VlSYV2M1xFS4K/YkyJry5N/+lMr40EDjMVnNccJ4HvL6TfIi5Aff4akUzyFCoBuwy0BzypAVHl1E4hyU9WlA9FChte4wshA5WLzalbsKNRYeLlxapkR/2jvKjteA1eu7LCc/l/UfBY2oT3CZmLI+iyCIDBW52qB++vGhPQ0jd/fwaEEN/Kgw3MyZ8cQXTQ+VJ+dLjbBYlWs/x8s6z67/I53HApoiDPmE8eMG8Tp/045rshmoe5PNMvzR7UAA')" hidden>
+                            <span class="g-frame">
+                                <picture>
+                                    <source type="image/webp" srcset="assets/gallery/service-emergency-400.webp 400w, assets/gallery/service-emergency-640.webp 640w, assets/gallery/service-emergency-784.webp 784w" sizes="(max-width:640px) 100vw, (max-width:1000px) 50vw, 50vw">
+                                    <img src="assets/gallery/service-emergency-784.jpg"
+                                         width="784" height="1168" alt="Overnight lighting retrofit on an exhibit ahead of show open"
+                                         loading="lazy" decoding="async">
+                                </picture>
+                            </span>
+                            <span class="g-meta">
+                                <span class="g-num">12</span>
+                                <span class="g-txt"><b>Overnight Lighting Retrofit</b><i>Rush Turnaround</i></span>
+                            </span>
+                        </button>
+                        <button class="g-item" data-span="2" data-cat="graphics"
+                                data-stem="service-graphic-design" data-title="Backlit Fabric Graphics" data-meta="Large-Format Print"
+                                style="--lqip:url('data:image/webp;base64,UklGRhgBAABXRUJQVlA4IAwBAACwBgCdASoUACQAPulmqlApJSOiqqgBIB0JZQDIj75vQTRQYTh6ti71yeAjSERbAcq4RPimqkMfUmQjBtPUWAD+8N3v5ZsJqfPfgpDmMI7HQjGi6aMbXjSJYY7B2WgQNG+Z2jWdxL4B6F7NbgS8mvyvvQzmfBjuWO0LDAwgX/H3908PFVxlv5H19KuuI77GNEw4Clh2PN0CPmutA7RL/ZepRVb1ZiDuE/tfShAcLNHl1699Pg0mN2uyOnImXF3xRrYIuuCCg26+oCcRItAux9JrUIhyeNIxtZYyp/b7QPMGMcDMsqZLj7/CliRfvubKk8w6Rw4y0BGl0UIuLtOg8s1so/8jew7PI7mPvAAA')" hidden>
+                            <span class="g-frame">
+                                <picture>
+                                    <source type="image/webp" srcset="assets/gallery/service-graphic-design-400.webp 400w, assets/gallery/service-graphic-design-416.webp 416w" sizes="(max-width:640px) 100vw, (max-width:1000px) 50vw, 33vw">
+                                    <img src="assets/gallery/service-graphic-design-416.jpg"
+                                         width="416" height="752" alt="Backlit tension-fabric graphics on a large-format exhibit wall"
+                                         loading="lazy" decoding="async">
+                                </picture>
+                            </span>
+                            <span class="g-meta">
+                                <span class="g-num">13</span>
+                                <span class="g-txt"><b>Backlit Fabric Graphics</b><i>Large-Format Print</i></span>
+                            </span>
+                        </button>
+                        <button class="g-item" data-span="2" data-cat="inline"
+                                data-stem="service-coordination" data-title="Meeting Lounge Environment" data-meta="Semi-Custom Inline"
+                                style="--lqip:url('data:image/webp;base64,UklGRsgAAABXRUJQVlA4ILwAAADwBACdASoUABQAPulsrlGpJaQiqAgBIB0JZQDE2A9joS6NqQYem6X734BjNNblGQAA9piu+rwp11RBRMK3calamDg4BnZuJlBLb1GwQWdQI+2Zsd0VzK6DcnSK0RXFIQMgHAt18cFYCoB4GBRYyo0ERgqRgvE1Nua5EdHigdPXPd0kJGoJIBeEpzFSXtitA/uV1XnjLzMxmDC04Vw39MtJl4Gc9K7ZF0IqZVwhAuinBKjWP4eqS3M8TzkAAA==')" hidden>
+                            <span class="g-frame">
+                                <picture>
+                                    <source type="image/webp" srcset="assets/gallery/service-coordination-400.webp 400w, assets/gallery/service-coordination-640.webp 640w, assets/gallery/service-coordination-675.webp 675w" sizes="(max-width:640px) 100vw, (max-width:1000px) 50vw, 33vw">
+                                    <img src="assets/gallery/service-coordination-675.jpg"
+                                         width="675" height="690" alt="Semi-custom meeting lounge environment inside an inline exhibit"
+                                         loading="lazy" decoding="async">
+                                </picture>
+                            </span>
+                            <span class="g-meta">
+                                <span class="g-num">14</span>
+                                <span class="g-txt"><b>Meeting Lounge Environment</b><i>Semi-Custom Inline</i></span>
+                            </span>
+                        </button>
+                        <button class="g-item" data-span="2" data-cat="fabrication"
+                                data-stem="service1-install" data-title="Crated &amp; Staged for Freight" data-meta="Storage &amp; Logistics"
+                                style="--lqip:url('data:image/webp;base64,UklGRgABAABXRUJQVlA4IPQAAAAQBgCdASoUAB4APuliqE0pJaQiMAgBIB0JQBneAQHLYQkeStdSlWmhbMOzDsZP8SKDSU9U9zZqo2AA/u+WQ5F4JFHQNzKiPZols15nuzL94BkX9gdR+yqavZIjIi3ATv94ToFBpL73M2AQ7dpBRZ5x9B21pP6pukgVzJ73r29ouuz0Q29l/8+w0qiY5QyUGAGQOhhgHDEClbPI17SRNB6v9/orNsar93oUHCPVccq4zC9nbCIivH5Xy88XTVkFXXYtVPuv7B7NMyuVLHfYlW0ZZSyNIET20vQJoksVSJUMFpbkX8PV08y7vrj5X09mpsyDAAAA')" hidden>
+                            <span class="g-frame">
+                                <picture>
+                                    <source type="image/webp" srcset="assets/gallery/service1-install-400.webp 400w, assets/gallery/service1-install-640.webp 640w, assets/gallery/service1-install-784.webp 784w" sizes="(max-width:640px) 100vw, (max-width:1000px) 50vw, 33vw">
+                                    <img src="assets/gallery/service1-install-784.jpg"
+                                         width="784" height="1168" alt="Custom exhibit components crated and staged for freight and storage"
+                                         loading="lazy" decoding="async">
+                                </picture>
+                            </span>
+                            <span class="g-meta">
+                                <span class="g-num">15</span>
+                                <span class="g-txt"><b>Crated &amp; Staged for Freight</b><i>Storage &amp; Logistics</i></span>
+                            </span>
+                        </button>
+                </div>
+
+                <div class="g-more-wrap">
+                    <button class="g-more" id="gMore">Show all 15 builds <span class="ar" aria-hidden="true">&darr;</span></button>
                 </div>
 
                 <p class="gal-grid-note">Showing a selection of recent programs — our full <b>1,000+ build</b> archive is available on request.</p>
@@ -513,10 +935,190 @@
     </footer>
 
     <script>
-        /* Touch devices have no hover — keep gallery captions visible. */
-        if (!window.matchMedia('(pointer: fine)').matches) {
-            document.body.classList.add('gal-touch');
-        }
+        /* ============================================================
+           PORTFOLIO GRID — filtering, progressive reveal, lightbox
+
+           Owns .g-* entirely; the shared handlers in assets/site.js bind
+           .filter-btn / .gallery-item / [data-full], none of which exist
+           on this page any more, so they no-op rather than fighting this.
+
+           Motion is layered on top of a working page, never required by
+           it: every View Transition call goes through vt(), which falls
+           straight through to the mutation when the API is missing.
+           ============================================================ */
+        (function () {
+            'use strict';
+
+            var grid  = document.getElementById('gGrid');
+            var rail  = document.querySelector('.g-rail-track');
+            if (!grid || !rail) return;
+
+            var items = Array.prototype.slice.call(grid.querySelectorAll('.g-item'));
+            var chips = Array.prototype.slice.call(rail.querySelectorAll('.g-chip'));
+            var ink   = rail.querySelector('.g-rail-ink');
+            var live  = document.querySelector('.g-rail-live');
+            var more  = document.getElementById('gMore');
+            var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            var filter = 'all';
+            var expanded = false;
+            /* Must match FOLD in the generator that emitted this markup:
+               10 == rows 1-4 (3+3 | 2+2+2 | 3+3 | 2+2+2), a clean edge with
+               no orphaned cell dangling in a half-filled row. */
+            var FOLD = 10;
+
+            /* Run a DOM mutation inside a View Transition when the browser has
+               one. Reduced motion opts out — a cross-fade is still motion. */
+            function vt(mutate) {
+                if (reduce || !document.startViewTransition) { mutate(); return; }
+                document.startViewTransition(mutate);
+            }
+
+            function matches(el) {
+                return filter === 'all' ||
+                       (' ' + el.dataset.cat + ' ').indexOf(' ' + filter + ' ') !== -1;
+            }
+
+            /* Which items should be on screen right now, in DOM order. This is
+               recomputed on every change rather than snapshotted, which is what
+               keeps the lightbox's prev/next in step with what is visible. */
+            function visible() {
+                return items.filter(function (el) { return !el.hidden; });
+            }
+
+            function apply() {
+                var shown = 0;
+                items.forEach(function (el) {
+                    var want = matches(el) && (expanded || shown < FOLD);
+                    if (want) shown++;
+                    el.hidden = !want;
+                    el.classList.toggle('is-in', want);
+                    el.classList.toggle('is-out', !want);
+                });
+
+                var total = items.filter(matches).length;
+                if (live) {
+                    live.textContent = filter === 'all'
+                        ? 'Showing ' + shown + ' of ' + total + ' builds'
+                        : 'Showing ' + shown + ' of ' + total + ' in this category';
+                }
+                if (more) {
+                    more.hidden = shown >= total;
+                    more.firstChild.nodeValue = 'Show all ' + total + ' builds ';
+                }
+            }
+
+            /* The sliding indicator is written in pixels off the live label box,
+               so it lands correctly whatever the labels wrap to. */
+            function moveInk() {
+                var on = rail.querySelector('.g-chip.is-on');
+                if (!on || !ink) return;
+                ink.style.width = on.offsetWidth + 'px';
+                ink.style.transform = 'translateX(' + on.offsetLeft + 'px)';
+            }
+
+            chips.forEach(function (chip) {
+                chip.addEventListener('click', function () {
+                    if (chip.dataset.filter === filter) return;
+                    filter = chip.dataset.filter;
+                    expanded = false;
+                    chips.forEach(function (c) {
+                        var on = c === chip;
+                        c.classList.toggle('is-on', on);
+                        c.setAttribute('aria-selected', on ? 'true' : 'false');
+                    });
+                    moveInk();
+                    vt(apply);
+                });
+            });
+
+            if (more) {
+                more.addEventListener('click', function () {
+                    expanded = true;
+                    vt(apply);
+                });
+            }
+
+            window.addEventListener('resize', moveInk, { passive: true });
+            if (document.fonts && document.fonts.ready) document.fonts.ready.then(moveInk);
+
+            /* ---------- Lightbox ---------- */
+            var lb = document.createElement('dialog');
+            lb.className = 'g-lb';
+            lb.innerHTML =
+                '<button class="g-lb-btn g-lb-close" aria-label="Close">&times;</button>' +
+                '<button class="g-lb-btn g-lb-prev" aria-label="Previous">&#8249;</button>' +
+                '<button class="g-lb-btn g-lb-next" aria-label="Next">&#8250;</button>' +
+                '<img class="g-lb-img" alt="">' +
+                '<div class="g-lb-bar"><span class="n"></span><b></b><i></i></div>';
+            document.body.appendChild(lb);
+
+            var lbImg = lb.querySelector('.g-lb-img');
+            var lbN   = lb.querySelector('.n');
+            var lbT   = lb.querySelector('b');
+            var lbM   = lb.querySelector('i');
+            var cur   = null;
+
+            /* The morph: name the thumbnail and the lightbox image the same
+               thing for the duration of one transition and the browser tweens
+               between them. A view-transition-name must be unique in the
+               document, so it is cleared again immediately afterwards. */
+            function morph(el, mutate) {
+                if (reduce || !document.startViewTransition) { mutate(); return; }
+                var frame = el && el.querySelector('.g-frame');
+                if (frame) frame.style.viewTransitionName = 'g-hero';
+                lbImg.style.viewTransitionName = 'g-hero';
+                var t = document.startViewTransition(mutate);
+                t.finished.finally(function () {
+                    if (frame) frame.style.viewTransitionName = '';
+                    lbImg.style.viewTransitionName = '';
+                });
+            }
+
+            function paint(el) {
+                var img = el.querySelector('img');
+                cur = el;
+                lbImg.src = img.currentSrc || img.src;
+                lbImg.alt = img.alt;
+                lbN.textContent = el.querySelector('.g-num').textContent;
+                lbT.textContent = el.dataset.title;
+                lbM.textContent = el.dataset.meta;
+            }
+
+            function open(el) {
+                morph(el, function () { paint(el); lb.showModal(); });
+            }
+
+            function step(dir) {
+                var list = visible();
+                var i = list.indexOf(cur);
+                if (i === -1) return;
+                var next = list[(i + dir + list.length) % list.length];
+                morph(next, function () { paint(next); });
+            }
+
+            items.forEach(function (el) {
+                el.addEventListener('click', function () { open(el); });
+            });
+
+            lb.querySelector('.g-lb-close').addEventListener('click', function () {
+                morph(cur, function () { lb.close(); });
+            });
+            lb.querySelector('.g-lb-prev').addEventListener('click', function () { step(-1); });
+            lb.querySelector('.g-lb-next').addEventListener('click', function () { step(1); });
+            lb.addEventListener('click', function (e) {
+                if (e.target === lb) morph(cur, function () { lb.close(); });
+            });
+            lb.addEventListener('keydown', function (e) {
+                if (e.key === 'ArrowLeft') { e.preventDefault(); step(-1); }
+                else if (e.key === 'ArrowRight') { e.preventDefault(); step(1); }
+            });
+            /* Esc closes a <dialog> natively; return focus to the thumbnail. */
+            lb.addEventListener('close', function () { if (cur) cur.focus(); });
+
+            apply();
+            moveInk();
+        })();
 
         /* Hero video: plays once on entry, holds on the last frame, and re-plays
            from the top each time the hero scrolls back into view. */

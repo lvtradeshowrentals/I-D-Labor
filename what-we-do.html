@@ -245,7 +245,10 @@
         }
 
         /* ---- The spread ---- */
-        .cap-panels { position: relative; margin-top: 40px; min-height: clamp(318px, 46vh, 460px); }
+        /* Floor is the measured height of the tallest panel's copy column —
+           below that the copy overflows the panel box and the CTA drifts into
+           the fold. See the short-viewport trim further down. */
+        .cap-panels { position: relative; margin-top: 40px; min-height: clamp(370px, 46vh, 460px); }
         .cap-panel {
             position: absolute; inset: 0;
             display: grid; grid-template-columns: 1fr 0.9fr; gap: 58px; align-items: stretch;
@@ -656,6 +659,23 @@
             .wwd-tl-item--right .wwd-tl-node { left: 0; right: auto; }
             .wwd-tl-card { max-width: none; display: block; }
         }
+        /* Short viewports (small laptops, browser chrome eating the window):
+           the panel floor plus the heading and rail no longer fit in 100vh,
+           so give the fixed furniture back some room rather than letting the
+           spread overflow the pin. */
+        @media (min-width: 1001px) and (max-height: 780px) {
+            .cap-stick { padding: 74px 20px 40px; }
+            .cap-head { margin-bottom: 18px; }
+            .cap-head h2 { font-size: 1.5rem; }
+            .cap-tick { padding-top: 11px; }
+            /* The trimmed body copy above shrinks the tallest column to ~333px,
+               so the floor can come down with it. */
+            .cap-panels { margin-top: 26px; min-height: 340px; }
+            .cap-body { font-size: 0.97rem; line-height: 1.7; margin-top: 14px; }
+            .cap-spec { margin-top: 18px; }
+            .cap-go { margin-top: 20px; }
+        }
+
         /* Reduced motion: the scrub itself is a scroll POSITION, not an
            animation, so it is left alone; the choreography is switched off. */
         @media (prefers-reduced-motion: reduce) {
