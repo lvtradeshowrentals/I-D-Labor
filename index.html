@@ -322,10 +322,12 @@
         }
 
         /* ===== LOGO SHOWCASE SECTION ===== */
+        /* No bottom border: the intro section's top ramp starts on this
+           exact colour and blends down into white, so a hairline here
+           would cut straight through the blend. */
         .logo-showcase-section {
             background: var(--primary-bg);
-            padding: 40px 20px;
-            border-bottom: 1px solid var(--border-subtle);
+            padding: 40px 20px 60px;
         }
 
         .logo-showcase-content {
@@ -434,78 +436,423 @@
             }
         }
 
-        /* ===== INTRO SECTION ===== */
-        .intro-section {
-            background: #ffffff;
-            padding: 80px 20px;
+        /* ============================================================
+           HEADLINE STAGE — "house lights"
+
+           A sticky pin that lights one word at a time. The whole
+           sentence is on screen the entire time as an unlit ghost, and a
+           travelling pool of light picks out each word in turn — so the
+           fade is motivated by a physical object moving through a dark
+           hall rather than by seven opacity keyframes.
+
+           Dark → white → dark is an APERTURE, not a crossfade: a white
+           sheet (.hs-day) opens from a seam at the horizon to full
+           screen, then the dark closes back down over it from the top
+           edge. The same clip-path also clips a SECOND copy of the
+           headline (.hs-line.is-day) that is styled for a white field,
+           so one variable flips the entire colour scheme — no blend
+           modes, no per-element colour maths, and `inset()` is
+           universally supported and composites cleanly.
+
+           Nothing here reads layout during the scroll loop: word
+           positions are cached by measure() and every frame is a
+           custom-property write. Driver is at the foot of the file.
+
+           NOTE: no `overflow` other than visible, and no transform /
+           filter / will-change, may be set on .hs — either would make it
+           a containing block and the sticky pin would stop pinning.
+           ============================================================ */
+        .hs {
             position: relative;
+            background: var(--primary-dark);
+        }
+
+        /* The tall scroll track only exists once the driver is running,
+           so with JS off this stays a normal-height static section
+           instead of four blank screens. */
+        /* svh, not vh and never dvh: dvh recomputes on every mobile
+           URL-bar movement, which would relayout the pin mid-scroll. */
+        .hs.hs-live {
+            height: 420vh;
+            height: 420svh;
+        }
+
+        .hs-pin {
+            display: grid;
+            place-items: center;
+            height: 100vh;
+            height: 100svh;
             overflow: hidden;
+            overflow: clip;             /* clips this element's own content;
+                                           it is the sticky box, not one of
+                                           its ancestors, so the pin is safe */
+            isolation: isolate;
+            will-change: transform;     /* on the sticky box ITSELF — this is
+                                           what stops Safari shimmering the
+                                           contents against the pin. Never on
+                                           an ancestor: that would make .hs a
+                                           containing block and kill sticky. */
+            /* Opens on the logo strip's colour and darkens as the rig
+               powers up, so the seam above never shows as an edge. */
+            background: color-mix(in oklab,
+                var(--primary-bg), var(--primary-dark) calc(var(--rig, 1) * 100%));
         }
 
-        /* Decorative elements */
-        .intro-section::before {
-            content: '';
+        .hs.hs-live .hs-pin {
+            position: sticky;
+            top: 0;
+        }
+
+        /* Static fallbacks (no JS, reduced motion): the line goes back to
+           being a normal in-flow block so the section sizes to its own
+           content instead of collapsing behind an absolute child. */
+        .hs:not(.hs-live) .hs-pin {
+            height: auto;
+            padding: 26vh 20px;
+        }
+
+        .hs:not(.hs-live) .hs-line,
+        .hs-static .hs-line {
+            position: static;
+            display: block;
+            padding: 0 4vw;
+        }
+
+        /* ---- the aperture ---- */
+        .hs-day {
             position: absolute;
-            top: -150px;
-            right: -100px;
-            width: 600px;
-            height: 600px;
-            background: repeating-linear-gradient(
-                45deg,
-                rgba(45, 156, 202, 0.18),
-                rgba(45, 156, 202, 0.18) 20px,
-                transparent 20px,
-                transparent 40px
-            );
-            clip-path: polygon(30% 0%, 100% 0%, 100% 70%, 0% 100%);
-            pointer-events: none;
-            z-index: 0;
+            inset: 0;
+            z-index: 3;
+            background: #f4f6f8;
+            clip-path: inset(var(--cyt, 50%) 0 var(--cyb, 50%) 0);
         }
 
-        .intro-section::after {
-            content: '';
+        /* Gold hairlines locked to the aperture's two edges — the truss
+           gap the light is coming through. */
+        .hs-seam {
             position: absolute;
-            bottom: -180px;
-            left: -120px;
-            width: 550px;
-            height: 550px;
-            background: radial-gradient(circle at 50% 50%, rgba(26, 95, 122, 0.2) 0%, rgba(26, 95, 122, 0.08) 40%, transparent 70%);
-            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            left: 0;
+            right: 0;
+            z-index: 4;
+            height: 1px;
+            background: linear-gradient(90deg,
+                transparent, var(--accent-gold) 18%, var(--accent-gold) 82%, transparent);
+            opacity: calc(var(--fld, 0) * 0.55);
             pointer-events: none;
-            z-index: 0;
-            transform: rotate(15deg);
         }
 
-        .intro-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
+        .hs-seam-t { top: var(--cyt, 50%); }
+        .hs-seam-b { bottom: var(--cyb, 50%); }
+
+        /* ---- the rig ---- */
+        .hs-truss {
+            position: absolute;
+            top: 13vh;
+            left: 50%;
+            z-index: 2;
+            height: 1px;
+            width: calc(var(--rig, 0) * 88vw);
+            transform: translateX(-50%);
+            background: linear-gradient(90deg,
+                transparent, var(--accent-teal) 14%, var(--accent-teal) 86%, transparent);
+            opacity: calc(var(--rig, 0) * 0.5 * (1 - var(--fld, 0)));
+            pointer-events: none;
+        }
+
+        /* ---- the travelling light pool ---- */
+        .hs-pool {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            width: 70vmax;
+            height: 70vmax;
+            margin: -35vmax 0 0 -35vmax;
+            border-radius: 50%;
+            background: radial-gradient(circle at 50% 50%,
+                rgba(72, 182, 228, 0.26) 0%,
+                rgba(45, 156, 202, 0.12) 30%,
+                rgba(184, 165, 115, 0.05) 50%,
+                transparent 78%);
+            opacity: calc(1 - var(--fld, 0) * 0.88);
+            will-change: transform;
+            pointer-events: none;
+        }
+
+        /* ---- the sentence ---- */
+        /* Both copies are absolute at inset:0 so their clip box is the
+           SAME box .hs-day uses. An auto-height line box would resolve the
+           identical inset() percentage against its own height instead, and
+           the two halves of the aperture would cut at different heights. */
+        .hs-line {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            z-index: 2;
+            margin: 0;
+            padding: 70px 4vw 0;    /* clears the fixed navbar */
+            /* Arial Black / Segoe UI Black ship on Windows, macOS and iOS,
+               so this is a genuine display face with nothing to download.
+               The UI stack's Bold is too light to carry type this large. */
+            font-family: "Arial Black", "Segoe UI Black", "Helvetica Neue",
+                Helvetica, Arial, sans-serif;
+            /* One continuous scale from 320px to 4K — measured to hold the
+               longest row at 70-84% of the available width the whole way,
+               so no breakpoint ever needs to restate the type size. */
+            font-size: clamp(1.4rem, 5.5vw, 4.4rem);
+            font-weight: 900;
+            /* Tight, but not so tight that IMAGINE's comma descends into
+               BUILD's crop-mark box on the line below. */
+            line-height: 1;
+            letter-spacing: -0.045em;
+            text-transform: uppercase;
+
+            /* The unlit sentence never drops below ~0.12 alpha: at 0 a
+               find-in-page hit would land on invisible text, and the
+               ghosted shape of the whole line is what makes the light
+               feel like it is moving through something. */
+            --hs-ghost: rgba(240, 239, 244, 0.125);
+            --hs-hot: #f0eff4;
+            --hs-hero: var(--accent-gold-bright);
+            --hs-hero-deep: var(--accent-gold);
+        }
+
+        /* The white-field twin. Clipped by the same inset as .hs-day, so
+           the aperture reveals a lit hall with dark type sitting exactly
+           on top of the dark hall with light type. */
+        .hs-line.is-day {
+            z-index: 4;
+            clip-path: inset(var(--cyt, 50%) 0 var(--cyb, 50%) 0);
+            user-select: none;
+
+            --hs-ghost: rgba(15, 20, 25, 0.135);
+            --hs-hot: #0f1419;
+            --hs-hero: #8f7636;
+            --hs-hero-deep: #6d5822;
+        }
+
+        .hs-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            justify-content: center;
+            gap: 0 0.28em;
+        }
+
+        .w {
             position: relative;
-            z-index: 10;
+            display: inline-block;
+            color: var(--hs-ghost);
         }
 
-        .intro-headline {
-            font-size: 2.2rem;
+        /* The lit layer. One `--front` drives both the mask that wipes the
+           word in and the centre of the radial highlight painted through
+           it, so the beam doing the revealing IS the light on the
+           letterforms — not two animations that happen to agree. */
+        .w::after {
+            content: attr(data-t);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            opacity: var(--o, 1);
+            pointer-events: none;
+
+            /* Travels far enough past 100% that the coloured core of the
+               beam clears the word entirely — otherwise the highlight
+               parks on the last letter instead of sweeping off it. */
+            --front: calc(var(--t, 1) * 168% - 32%);
+
+            color: transparent;
+            -webkit-text-fill-color: transparent;
+            background-image: radial-gradient(78% 260% at var(--front) 50%,
+                #ffffff 0%,
+                var(--accent-gold-bright) 14%,
+                var(--accent-teal-bright) 30%,
+                var(--hs-hot) 46%);
+            -webkit-background-clip: text;
+                    background-clip: text;
+
+            -webkit-mask-image: linear-gradient(96deg,
+                #000 calc(var(--front) - 20%), #0000 calc(var(--front) + 20%));
+                    mask-image: linear-gradient(96deg,
+                #000 calc(var(--front) - 20%), #0000 calc(var(--front) + 20%));
+        }
+
+        /* The two words that carry the idea: bigger, gold, and they stay
+           lit once reached instead of handing the light on. */
+        .w-hero,
+        .w-build {
+            font-size: clamp(2.4rem, 12.2vw, 10.2rem);
+            letter-spacing: -0.055em;
+        }
+
+        /* IMAGINE settles gold — it is the idea. BUILD settles to the
+           field's own hot colour — it is the delivered thing. Same beam,
+           two different resting states. */
+        .w-hero::after {
+            background-image: radial-gradient(70% 240% at var(--front) 50%,
+                #ffffff 0%,
+                var(--accent-gold-bright) 14%,
+                var(--hs-hero) 34%,
+                var(--hs-hero-deep) 62%);
+        }
+
+        .w-build::after {
+            background-image: radial-gradient(70% 240% at var(--front) 50%,
+                #ffffff 0%,
+                var(--accent-gold-bright) 13%,
+                var(--hs-hero) 26%,
+                var(--hs-hot) 50%);
+        }
+
+        /* Fixed radius, animated alpha only — animating a blur radius per
+           frame is the one thing guaranteed to cost frames on mobile. */
+        .w-build {
+            text-shadow: 0 0 0.2em rgba(212, 192, 138, calc(var(--flash, 0) * 0.75));
+        }
+
+        /* ---- crop marks closing on BUILD ---- */
+        .hs-rule {
+            position: absolute;
+            z-index: 5;
+            background: var(--accent-gold);
+            opacity: calc(var(--conv, 0) * 0.85);
+            pointer-events: none;
+        }
+
+        .hs-rule-t,
+        .hs-rule-b {
+            height: 1px;
+            left: calc(var(--bx, 0) * 1px);
+            width: calc(var(--bw, 0) * 1px);
+        }
+
+        .hs-rule-t {
+            top: calc(var(--by, 0) * 1px);
+            transform: translateY(calc((1 - var(--conv, 0)) * -44vh));
+        }
+
+        .hs-rule-b {
+            top: calc((var(--by, 0) + var(--bh, 0)) * 1px);
+            transform: translateY(calc((1 - var(--conv, 0)) * 44vh));
+        }
+
+        .hs-rule-l,
+        .hs-rule-r {
+            width: 1px;
+            top: calc(var(--by, 0) * 1px);
+            height: calc(var(--bh, 0) * 1px);
+        }
+
+        .hs-rule-l {
+            left: calc(var(--bx, 0) * 1px);
+            transform: translateX(calc((1 - var(--conv, 0)) * -50vw));
+        }
+
+        .hs-rule-r {
+            left: calc((var(--bx, 0) + var(--bw, 0)) * 1px);
+            transform: translateX(calc((1 - var(--conv, 0)) * 50vw));
+        }
+
+        /* ---- position counter ----
+           A long pin with no end in sight is the one thing people
+           reliably hate about this pattern. This says how much is left. */
+        .hs-count {
+            position: absolute;
+            left: 5vw;
+            bottom: 6vh;
+            z-index: 6;
+            display: flex;
+            gap: 0.6em;
+            font-size: 0.66rem;
             font-weight: 700;
-            color: #1a5f7a;
-            margin-bottom: 25px;
-            line-height: 1.3;
-            text-align: center;
+            letter-spacing: 0.3em;
+            font-variant-numeric: tabular-nums;
+            color: color-mix(in oklab,
+                rgba(240, 239, 244, 0.45), rgba(15, 20, 25, 0.55) calc(var(--fld, 0) * 100%));
+            pointer-events: none;
         }
 
-        .intro-text {
-            font-size: 1.15rem;
-            line-height: 1.8;
-            color: #2a3442;
-            margin: 0 auto;
-            max-width: 900px;
-            text-align: center;
+        /* Per-word wiring: the driver writes --t0..--t6 / --o0..--o6 once
+           onto .hs-pin and both headline copies inherit them. Fourteen
+           style writes a frame, on one element. */
+        .w0 { --t: var(--t0, 1); --o: var(--o0, 1); }
+        .w1 { --t: var(--t1, 1); --o: var(--o1, 1); }
+        .w2 { --t: var(--t2, 1); --o: var(--o2, 1); }
+        .w3 { --t: var(--t3, 1); --o: var(--o3, 1); }
+        .w4 { --t: var(--t4, 1); --o: var(--o4, 1); }
+        .w5 { --t: var(--t5, 1); --o: var(--o5, 1); }
+        .w6 { --t: var(--t6, 1); --o: var(--o6, 1); }
+
+        @media (max-width: 900px) {
+            .hs.hs-live { height: 300vh; height: 300svh; }
+
+            .hs-line { padding: 70px 6vw 0; }
+
+            .hs-truss { top: 11vh; }
         }
 
-        .intro-text strong {
-            color: #1a5f7a;
-            font-weight: 600;
+        @media (max-width: 520px) {
+            .hs.hs-live { height: 260vh; height: 260svh; }
+
+            .hs-line { padding: 64px 5vw 0; }
+
+            .hs-row { gap: 0 0.22em; }
+            .hs-count { left: 6vw; font-size: 0.6rem; }
         }
+
+        /* Reduced motion: no pin, no light, no scrub — just the sentence,
+           legible and static. The driver bails before it writes anything. */
+        .hs-static .hs-pin {
+            position: static;
+            height: auto;
+            padding: 24vh 20px;
+            background: var(--primary-dark);
+        }
+
+        .hs-static .hs-day,
+        .hs-static .hs-seam,
+        .hs-static .hs-pool,
+        .hs-static .hs-truss,
+        .hs-static .hs-rule,
+        .hs-static .hs-count,
+        .hs-static .hs-line.is-day {
+            display: none;
+        }
+
+        /* --t:1 parks the beam fully off the far edge, so every word
+           settles to its resting colour instead of freezing mid-sweep
+           with the highlight's teal/gold core stuck across it. */
+        .hs-static .w { --t: 1; --o: 1; }
+
+        .hs-static .w::after {
+            -webkit-mask-image: none;
+                    mask-image: none;
+        }
+
+        /* Windows High Contrast blanks transparent-filled text outright. */
+        @media (forced-colors: active) {
+            .w { color: CanvasText; }
+
+            .w::after {
+                -webkit-text-fill-color: CanvasText;
+                color: CanvasText;
+                background: none;
+                opacity: 1;
+                -webkit-mask-image: none;
+                        mask-image: none;
+            }
+
+            .hs-day,
+            .hs-pool,
+            .hs-line.is-day { display: none; }
+        }
+
+        .hs-line::selection,
+        .w::selection { background: var(--accent-teal); }
 
         /* ===== THE THREE SECTIONS OVER THE SCROLL VIDEO =====
            Only the shells live here now; their contents are the .hx-*
@@ -1090,7 +1437,6 @@
         }
 
         @media (max-width: 480px) {
-            .intro-headline,
             .hx-head h2,
             .final-cta h2 {
                 font-size: 1.8rem;
@@ -1224,13 +1570,67 @@
         </div>
     </section>
 
-    <!-- ===== INTRO SECTION ===== -->
-    <section class="intro-section">
-        <div class="intro-content">
-            <h2 class="intro-headline">Whatever You Can Imagine, We Can Build</h2>
-            <p class="intro-text">
-                We're not just a rental company. <strong>We're a full-service exhibit house</strong> that takes your vision from sketch to showroom floor. Whether you need a simple 10×10 or a jaw-dropping custom island booth, we handle <strong>design, fabrication, installation, and dismantle</strong>. Your booth becomes our obsession—delivered flawlessly, on time, every time.
-            </p>
+    <!-- ============================================================
+         HEADLINE STAGE — "house lights"
+         The pin lights one word at a time as you scroll and releases on
+         "Build", straight into the booth-build clip below.
+
+         The sentence is duplicated: .hs-line is the real <h2> (styled for
+         the dark hall) and .hs-line.is-day is an aria-hidden twin styled
+         for the white hall, clipped by the aperture. The <h2> keeps the
+         whole sentence as text for crawlers; aria-label carries it for
+         screen readers so the word spans are never announced as seven
+         separate fragments.
+         ============================================================ -->
+    <section class="hs" data-headline-stage>
+        <div class="hs-pin">
+            <div class="hs-pool" aria-hidden="true"></div>
+            <div class="hs-truss" aria-hidden="true"></div>
+
+            <h2 class="hs-line" aria-label="Whatever You Can Imagine, We Can Build">
+                <span class="hs-row">
+                    <span class="w w0" data-t="Whatever" aria-hidden="true">Whatever</span>
+                    <span class="w w1" data-t="You" aria-hidden="true">You</span>
+                    <span class="w w2" data-t="Can" aria-hidden="true">Can</span>
+                </span>
+                <span class="hs-row">
+                    <span class="w w3 w-hero" data-t="Imagine," aria-hidden="true">Imagine,</span>
+                </span>
+                <span class="hs-row">
+                    <span class="w w4" data-t="We" aria-hidden="true">We</span>
+                    <span class="w w5" data-t="Can" aria-hidden="true">Can</span>
+                    <span class="w w6 w-build" data-t="Build" aria-hidden="true">Build</span>
+                </span>
+            </h2>
+
+            <div class="hs-day" aria-hidden="true"></div>
+            <i class="hs-seam hs-seam-t" aria-hidden="true"></i>
+            <i class="hs-seam hs-seam-b" aria-hidden="true"></i>
+
+            <div class="hs-line is-day" aria-hidden="true">
+                <span class="hs-row">
+                    <span class="w w0" data-t="Whatever">Whatever</span>
+                    <span class="w w1" data-t="You">You</span>
+                    <span class="w w2" data-t="Can">Can</span>
+                </span>
+                <span class="hs-row">
+                    <span class="w w3 w-hero" data-t="Imagine,">Imagine,</span>
+                </span>
+                <span class="hs-row">
+                    <span class="w w4" data-t="We">We</span>
+                    <span class="w w5" data-t="Can">Can</span>
+                    <span class="w w6 w-build" data-t="Build">Build</span>
+                </span>
+            </div>
+
+            <i class="hs-rule hs-rule-t" aria-hidden="true"></i>
+            <i class="hs-rule hs-rule-b" aria-hidden="true"></i>
+            <i class="hs-rule hs-rule-l" aria-hidden="true"></i>
+            <i class="hs-rule hs-rule-r" aria-hidden="true"></i>
+
+            <div class="hs-count" aria-hidden="true">
+                <span class="hs-count-n">01</span><span>/ 07</span>
+            </div>
         </div>
     </section>
 
@@ -1533,6 +1933,248 @@
         }, { threshold: 0.5 });
 
         document.querySelectorAll('.stat-box').forEach(box => statsObserver.observe(box));
+
+        /* ---------------------------------------------------------------
+           HEADLINE STAGE driver — "house lights".
+
+           Progress is `(pageYOffset - trackTop) / scrub` against offsets
+           cached by measure(), the same shape as assets/scroll-video.js.
+           No getBoundingClientRect() runs inside the frame loop: word
+           positions for the light pool are measured once and re-measured
+           only on resize / font load / re-entry.
+
+           Everything the frame writes is a custom property on ONE element
+           (.hs-pin); both copies of the headline inherit them. The only
+           other per-frame write is the pool's transform, which is
+           compositor-only.
+
+           A pure-CSS scroll-driven version (animation-timeline: view())
+           would be cheaper and would run on Safari's scrolling thread, but
+           it cannot position the light pool — that needs measured word
+           geometry — so this stays one rAF loop for the whole stage rather
+           than splitting the effect across two timing sources.
+           --------------------------------------------------------------- */
+        (function () {
+            const stage = document.querySelector('[data-headline-stage]');
+            if (!stage) return;
+
+            const pin   = stage.querySelector('.hs-pin');
+            const pool  = stage.querySelector('.hs-pool');
+            const count = stage.querySelector('.hs-count-n');
+            const words = Array.prototype.slice.call(
+                stage.querySelectorAll('.hs-line:not(.is-day) .w'));
+
+            if (!pin || !pool || words.length !== 7) return;
+
+            /* Reduced motion: no pin, no scrub, no light — the CSS shows
+               the sentence flat and this driver never runs. */
+            if (window.matchMedia &&
+                window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                stage.classList.add('hs-static');
+                return;
+            }
+
+            stage.classList.add('hs-live');
+
+            /* [start, end] of each word's lit beat in track progress.
+               The beats OVERLAP on purpose — a gap between them reads as a
+               for-loop rather than as choreography. */
+            const BEATS = [
+                [0.055, 0.180],   // Whatever
+                [0.160, 0.268],   // You
+                [0.248, 0.352],   // Can
+                [0.336, 0.520],   // Imagine,  — hero, holds lit
+                [0.520, 0.606],   // We
+                [0.592, 0.680],   // Can
+                [0.664, 0.860]    // Build     — hero, holds lit
+            ];
+            const HERO = [false, false, false, true, false, false, true];
+
+            const APERTURE = [0.330, 0.470];   // dark -> white, opens from the horizon
+            const BLACKOUT = [0.860, 0.968];   // white -> dark, closes from the top
+            const CONVERGE = [0.700, 0.828];   // crop marks closing on BUILD
+            const FLASH    = [0.822, 0.884];
+
+            let top = 0, scrub = 1, spots = [];
+
+            function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+
+            /* Smoothstep — no visible corner where a ramp starts or stops. */
+            function ss(a, b, v) {
+                const t = clamp01((v - a) / ((b - a) || 1));
+                return t * t * (3 - 2 * t);
+            }
+
+            function expo(t) { return t >= 1 ? 1 : 1 - Math.pow(2, -10 * t); }
+
+            function progress() {
+                return clamp01((window.pageYOffset - top) / scrub);
+            }
+
+            function measure() {
+                const r = stage.getBoundingClientRect();
+                top = r.top + window.pageYOffset;
+                scrub = Math.max(1, stage.offsetHeight - window.innerHeight);
+
+                /* Word centres relative to the pin. Both rects are read in
+                   the same frame, so the difference is correct wherever the
+                   pin happens to be sitting. */
+                const p = pin.getBoundingClientRect();
+                spots = words.map(function (w) {
+                    const b = w.getBoundingClientRect();
+                    return {
+                        x: b.left - p.left + b.width / 2,
+                        y: b.top - p.top + b.height / 2,
+                        w: b.width
+                    };
+                });
+
+                /* The crop marks are pinned to BUILD's box, held off it by
+                   a small margin so they never graze the comma hanging
+                   down out of IMAGINE on the line above. */
+                const b = words[6].getBoundingClientRect();
+                const PAD_X = 18, PAD_Y = 14;
+                pin.style.setProperty('--bx', (b.left - p.left - PAD_X).toFixed(1));
+                pin.style.setProperty('--by', (b.top - p.top - PAD_Y).toFixed(1));
+                pin.style.setProperty('--bw', (b.width + PAD_X * 2).toFixed(1));
+                pin.style.setProperty('--bh', (b.height + PAD_Y * 2).toFixed(1));
+            }
+
+            function render(p) {
+                const st = pin.style;
+
+                st.setProperty('--rig', ss(0, 0.06, p).toFixed(3));
+
+                let active = 0;
+                for (let i = 0; i < 7; i++) {
+                    const b = BEATS[i];
+                    const len = b[1] - b[0];
+
+                    /* The wipe finishes at 60% of the beat so the word has
+                       time to sit lit before the light moves on. */
+                    const t = expo(clamp01((p - b[0]) / (len * 0.6)));
+
+                    /* Brightness ramps up over the first third; non-hero
+                       words hand the light on, hero words keep it. */
+                    let o = ss(b[0], b[0] + len * 0.3, p);
+                    if (!HERO[i]) o *= 1 - ss(b[1], b[1] + 0.05, p);
+
+                    st.setProperty('--t' + i, t.toFixed(3));
+                    st.setProperty('--o' + i, o.toFixed(3));
+
+                    if (p >= b[0]) active = i;
+                }
+
+                /* Continuous index so the pool travels between words rather
+                   than jumping when a beat flips. */
+                let fi = active;
+                if (active < 6) {
+                    const a = BEATS[active][0];
+                    const n = BEATS[active + 1][0];
+                    fi = active + clamp01((p - a) / ((n - a) || 1));
+                }
+                const i0 = Math.floor(fi);
+                const i1 = Math.min(6, i0 + 1);
+                const f  = fi - i0;
+                const s0 = spots[i0] || { x: 0, y: 0, w: 200 };
+                const s1 = spots[i1] || s0;
+
+                const x = s0.x + (s1.x - s0.x) * f;
+                const y = s0.y + (s1.y - s0.y) * f;
+                const wpx = s0.w + (s1.w - s0.w) * f;
+
+                const day   = ss(APERTURE[0], APERTURE[1], p);
+                const night = ss(BLACKOUT[0], BLACKOUT[1], p);
+
+                /* The pool tracks the lit word, then blooms open as the
+                   aperture does — the light opening IS the house lights
+                   coming up. */
+                const vmax = Math.max(window.innerWidth, window.innerHeight) || 1;
+                const scale = Math.max(0.34, (wpx / vmax) * 2.4) * (1 + day * 3);
+                pool.style.transform =
+                    'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0) ' +
+                    'scale(' + scale.toFixed(3) + ')';
+
+                /* One inset drives the white sheet, its two gold seams and
+                   the white-field copy of the headline. Opening: a band
+                   growing from the horizon. Closing: dark falling from the
+                   top edge, like house lights being killed. */
+                let cyt, cyb;
+                if (night > 0) {
+                    cyt = night * 100;
+                    cyb = 0;
+                } else {
+                    cyt = (1 - day) * 50;
+                    cyb = (1 - day) * 50;
+                }
+                st.setProperty('--cyt', cyt.toFixed(2) + '%');
+                st.setProperty('--cyb', cyb.toFixed(2) + '%');
+                st.setProperty('--fld', (day * (1 - night)).toFixed(3));
+
+                st.setProperty('--conv', ss(CONVERGE[0], CONVERGE[1], p).toFixed(3));
+                st.setProperty('--flash',
+                    (p < FLASH[0] ? 0 : 1 - ss(FLASH[0], FLASH[1], p)).toFixed(3));
+
+                if (count) {
+                    const label = '0' + (active + 1);
+                    if (count.textContent !== label) count.textContent = label;
+                }
+            }
+
+            let running = false, raf = 0, onScreen = false;
+
+            function frame() {
+                if (!running) return;
+                raf = window.requestAnimationFrame(frame);
+                render(progress());
+            }
+
+            function start() {
+                if (running) return;
+                running = true;
+                raf = window.requestAnimationFrame(frame);
+            }
+
+            function stop() {
+                running = false;
+                if (raf) window.cancelAnimationFrame(raf);
+            }
+
+            function refresh() { measure(); render(progress()); }
+
+            refresh();
+
+            /* Only burn frames while the stage is anywhere near the screen. */
+            if ('IntersectionObserver' in window) {
+                new IntersectionObserver(function (entries) {
+                    onScreen = entries[entries.length - 1].isIntersecting;
+                    if (onScreen) {
+                        measure();
+                        if (!document.hidden) start();
+                    } else {
+                        stop();
+                    }
+                }, { rootMargin: '20% 0px' }).observe(stage);
+            } else {
+                onScreen = true;
+                start();
+            }
+
+            document.addEventListener('visibilitychange', function () {
+                if (document.hidden || !onScreen) stop(); else start();
+            });
+
+            let rt = 0;
+            window.addEventListener('resize', function () {
+                clearTimeout(rt);
+                rt = setTimeout(refresh, 120);
+            }, { passive: true });
+
+            window.addEventListener('load', refresh);
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(refresh);
+            }
+        })();
 
         /* ---------------------------------------------------------------
            Scroll-linked card fades over the video stage.
