@@ -559,6 +559,100 @@
             pointer-events: none;
         }
 
+        /* ---- the beam ----
+           A volumetric shaft hung off the truss that PANS to whichever
+           word is lit, like a moving-head fixture. It is what fills the
+           empty upper half on a phone: the void stops reading as blank
+           space and starts reading as unlit air with a light cutting
+           through it. Pivots from its top edge, so the rotation is the
+           physical pan rather than a slide. */
+        .hs-beam {
+            position: absolute;
+            top: 13vh;
+            left: 50%;
+            z-index: 1;
+            width: 150vw;
+            height: 100vh;
+            margin-left: -75vw;
+            transform-origin: 50% 0;
+            transform: rotate(var(--beam-r, 0deg));
+            /* The cone is a conic-gradient struck from the apex, not a
+               clip-path. A clipped polygon is razor sharp near the apex —
+               exactly where the beam is narrowest — and reads as a grey
+               wedge laid over the type. Angular stops feather the sides
+               evenly down the whole length instead. */
+            background: conic-gradient(from 168deg at 50% 0%,
+                transparent 0deg,
+                rgba(72, 182, 228, 0.03) 4deg,
+                rgba(120, 205, 240, 0.10) 12deg,
+                rgba(72, 182, 228, 0.03) 20deg,
+                transparent 24deg);
+            /* Distance falloff: the shaft dies out before the floor. */
+            -webkit-mask-image: linear-gradient(180deg,
+                #000 0%, rgba(0, 0, 0, 0.5) 44%, transparent 84%);
+                    mask-image: linear-gradient(180deg,
+                #000 0%, rgba(0, 0, 0, 0.5) 44%, transparent 84%);
+            opacity: calc(var(--rig, 0) * (1 - var(--fld, 0)));
+            pointer-events: none;
+        }
+
+        /* A tighter, brighter core inside the shaft — two densities is
+           what separates a volumetric beam from a flat triangle. */
+        .hs-beam::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: conic-gradient(from 176deg at 50% 0%,
+                transparent 0deg,
+                rgba(170, 228, 250, 0.10) 3deg,
+                rgba(170, 228, 250, 0.10) 5deg,
+                transparent 8deg);
+        }
+
+        /* ---- the floor ----
+           A horizon hairline with a wash under it, so the composition sits
+           on a surface instead of floating. Occupies the lower void. */
+        .hs-floor {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            /* The driver puts the horizon in whatever room is left BELOW
+               the type. On desktop the stack fills the pin, there is no
+               room, and --floor-a switches the whole thing off rather than
+               drawing a rule straight through BUILD. */
+            top: var(--floor-y, 70%);
+            z-index: 1;
+            background:
+                linear-gradient(180deg, rgba(184, 165, 115, 0.16) 0 1px, transparent 1px),
+                /* starts transparent so the wash has no visible top edge —
+                   only the hairline reads as the horizon */
+                linear-gradient(180deg, transparent 0%,
+                    rgba(72, 182, 228, 0.06) 46%, transparent 100%);
+            opacity: calc(var(--rig, 0) * (1 - var(--fld, 0)) * var(--floor-a, 0));
+            pointer-events: none;
+        }
+
+        /* Where the beam lands on that floor — tracks the lit word, so the
+           top and bottom halves of the frame are visibly the same light. */
+        .hs-spill {
+            position: absolute;
+            left: 50%;
+            bottom: 0;
+            z-index: 1;
+            width: 88vw;
+            height: 27vh;
+            margin-left: -44vw;
+            border-radius: 50%;
+            transform: translate(var(--spill-x, 0px), 40%);
+            background: radial-gradient(ellipse at 50% 50%,
+                rgba(72, 182, 228, 0.13) 0%,
+                rgba(45, 156, 202, 0.04) 44%,
+                transparent 72%);
+            opacity: calc(var(--rig, 0) * (1 - var(--fld, 0)) * var(--floor-a, 0));
+            pointer-events: none;
+        }
+
         /* ---- the travelling light pool ---- */
         .hs-pool {
             position: absolute;
@@ -590,19 +684,25 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
+            gap: var(--hs-gap, 0px);
             z-index: 2;
             margin: 0;
             padding: 70px 4vw 0;    /* clears the fixed navbar */
-            /* Arial Black / Segoe UI Black ship on Windows, macOS and iOS,
-               so this is a genuine display face with nothing to download.
-               The UI stack's Bold is too light to carry type this large. */
-            font-family: "Arial Black", "Segoe UI Black", "Helvetica Neue",
-                Helvetica, Arial, sans-serif;
-            /* One continuous scale from 320px to 4K — measured to hold the
-               longest row at 70-84% of the available width the whole way,
-               so no breakpoint ever needs to restate the type size. */
-            font-size: clamp(1.4rem, 5.5vw, 4.4rem);
+            /* Arial Black is on Windows and macOS but NOT iOS, where this
+               used to fall all the way through to Helvetica Neue Bold — a
+               much narrower, lighter face, which is why the line came out
+               undersized on iPhone. -apple-system sits ahead of that
+               fallback so iOS resolves to SF Pro at weight 900 (a real
+               Black), and the fit pass below absorbs whatever width
+               difference is left over. */
+            font-family: "Segoe UI Black", "Arial Black", -apple-system,
+                BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+            /* Base scale, then multiplied by --hs-fit, which the driver
+               solves at runtime so the longest line lands on --hs-fill of
+               the available width whatever face actually rendered. */
+            font-size: calc(clamp(1.5rem, 6.6vw, 6rem) * var(--hs-fit, 1));
             font-weight: 900;
+            --hs-fill: 0.82;
             /* Tight, but not so tight that IMAGINE's comma descends into
                BUILD's crop-mark box on the line below. */
             line-height: 1;
@@ -638,12 +738,18 @@
             flex-wrap: wrap;
             align-items: baseline;
             justify-content: center;
-            gap: 0 0.28em;
+            column-gap: 0.28em;
+            row-gap: var(--hs-gap, 0px);
         }
+
+        /* Measuring state used by the fit pass: no wrapping, so each row's
+           true unwrapped width can be read. */
+        .hs-line.is-measuring .hs-row { flex-wrap: nowrap; }
 
         .w {
             position: relative;
             display: inline-block;
+            flex-shrink: 0;         /* never let flex squeeze a word */
             color: var(--hs-ghost);
         }
 
@@ -685,7 +791,7 @@
            lit once reached instead of handing the light on. */
         .w-hero,
         .w-build {
-            font-size: clamp(2.4rem, 12.2vw, 10.2rem);
+            font-size: calc(clamp(2.6rem, 14vw, 13rem) * var(--hs-fit, 1));
             letter-spacing: -0.055em;
         }
 
@@ -795,12 +901,19 @@
             .hs-truss { top: 11vh; }
         }
 
-        @media (max-width: 520px) {
+        /* Phones keep the desktop's three-line structure and simply run
+           the type to the edges. The leftover height is deliberate — the
+           beam, floor and spill below are what occupy it, rather than
+           leading pushed between the lines. */
+        @media (max-width: 620px) {
             .hs.hs-live { height: 260vh; height: 260svh; }
 
-            .hs-line { padding: 64px 5vw 0; }
+            .hs-line {
+                padding: 64px 3vw 0;
+                --hs-fill: 0.99;
+            }
 
-            .hs-row { gap: 0 0.22em; }
+            .hs-row { column-gap: 0.22em; }
             .hs-count { left: 6vw; font-size: 0.6rem; }
         }
 
@@ -816,6 +929,9 @@
         .hs-static .hs-day,
         .hs-static .hs-seam,
         .hs-static .hs-pool,
+        .hs-static .hs-beam,
+        .hs-static .hs-floor,
+        .hs-static .hs-spill,
         .hs-static .hs-truss,
         .hs-static .hs-rule,
         .hs-static .hs-count,
@@ -1584,6 +1700,9 @@
          ============================================================ -->
     <section class="hs" data-headline-stage>
         <div class="hs-pin">
+            <div class="hs-beam" aria-hidden="true"></div>
+            <div class="hs-floor" aria-hidden="true"></div>
+            <div class="hs-spill" aria-hidden="true"></div>
             <div class="hs-pool" aria-hidden="true"></div>
             <div class="hs-truss" aria-hidden="true"></div>
 
@@ -1961,10 +2080,11 @@
             const pin   = stage.querySelector('.hs-pin');
             const pool  = stage.querySelector('.hs-pool');
             const count = stage.querySelector('.hs-count-n');
+            const line  = stage.querySelector('.hs-line:not(.is-day)');
             const words = Array.prototype.slice.call(
                 stage.querySelectorAll('.hs-line:not(.is-day) .w'));
 
-            if (!pin || !pool || words.length !== 7) return;
+            if (!pin || !pool || !line || words.length !== 7) return;
 
             /* Reduced motion: no pin, no scrub, no light — the CSS shows
                the sentence flat and this driver never runs. */
@@ -2011,7 +2131,100 @@
                 return clamp01((window.pageYOffset - top) / scrub);
             }
 
+            /* Widest rendered line, in px. Measured from the words' own
+               boxes rather than the row box, which is stretched to the
+               full container by justify-content. */
+            function widestLine() {
+                let widest = 0;
+                line.querySelectorAll('.hs-row').forEach(function (row) {
+                    let l = Infinity, r = -Infinity;
+                    row.querySelectorAll('.w').forEach(function (el) {
+                        const b = el.getBoundingClientRect();
+                        if (b.left < l) l = b.left;
+                        if (b.right > r) r = b.right;
+                    });
+                    if (r > l && r - l > widest) widest = r - l;
+                });
+                return widest || 1;
+            }
+
+            /* Solve the type scale against what the browser ACTUALLY
+               rendered. The face differs per platform — Arial Black on
+               Windows/macOS, SF Pro on iOS, something else entirely if
+               both are missing — and a hard-coded vw scale tuned on one of
+               them leaves the others undersized. */
+            function fitType() {
+                const cs = getComputedStyle(line);
+                const fill = parseFloat(cs.getPropertyValue('--hs-fill')) || 0.85;
+                const avail = line.clientWidth -
+                    parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+                if (avail <= 0) return;
+
+                line.classList.add('is-measuring');
+                pin.style.setProperty('--hs-fit', '1');
+                const widest = widestLine();
+                line.classList.remove('is-measuring');
+
+                let fit = (avail * fill) / widest;
+                if (fit < 0.7) fit = 0.7;
+                if (fit > 1.45) fit = 1.45;
+                pin.style.setProperty('--hs-fit', fit.toFixed(4));
+
+                /* Measure the bare stack with the gaps collapsed, so both
+                   checks below work from content height alone. .hs-line is
+                   inset:0 — its own box is the pin, not the type. */
+                pin.style.setProperty('--hs-gap', '0px');
+
+                const rows = line.querySelectorAll('.hs-row');
+                let stack = 0;
+                rows.forEach(function (row) { stack += row.getBoundingClientRect().height; });
+
+                const availH = line.clientHeight -
+                    parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+
+                /* Width alone can overshoot on a short or landscape
+                   viewport, so pull the scale back if the stack no longer
+                   clears the pin. */
+                if (stack > availH * 0.9 && stack > 0) {
+                    fit *= (availH * 0.9) / stack;
+                    pin.style.setProperty('--hs-fit', fit.toFixed(4));
+                    stack = 0;
+                    rows.forEach(function (row) { stack += row.getBoundingClientRect().height; });
+                }
+
+                /* Leading stays tight and identical to desktop — the three
+                   lines are one block. Only a hair of air is allowed, tied
+                   to the type size; the leftover height on a phone is
+                   filled by the beam, floor and spill, not by pushing the
+                   lines apart. */
+                const gapMax = parseFloat(cs.fontSize) * 0.16;
+                let gap = (availH * 0.5 - stack) / Math.max(1, rows.length - 1);
+                if (gap < 0) gap = 0;
+                if (gap > gapMax) gap = gapMax;
+                pin.style.setProperty('--hs-gap', gap.toFixed(1) + 'px');
+
+                /* Place the horizon in the room left below the type, and
+                   switch the floor off entirely when there isn't enough of
+                   it to be a floor rather than a line through the words. */
+                const ph = pin.clientHeight || 1;
+                const pinTop = pin.getBoundingClientRect().top;
+                let bottom = 0;
+                line.querySelectorAll('.hs-row').forEach(function (row) {
+                    const rb = row.getBoundingClientRect().bottom - pinTop;
+                    if (rb > bottom) bottom = rb;
+                });
+
+                const room = ph - bottom;
+                pin.style.setProperty('--floor-a', room < ph * 0.17 ? '0' : '1');
+                pin.style.setProperty('--floor-y',
+                    (((bottom + room * 0.42) / ph) * 100).toFixed(2) + '%');
+            }
+
             function measure() {
+                /* Type scale first — it changes layout, and everything
+                   cached below depends on the final layout. */
+                fitType();
+
                 const r = stage.getBoundingClientRect();
                 top = r.top + window.pageYOffset;
                 scrub = Math.max(1, stage.offsetHeight - window.innerHeight);
@@ -2033,11 +2246,22 @@
                    a small margin so they never graze the comma hanging
                    down out of IMAGINE on the line above. */
                 const b = words[6].getBoundingClientRect();
-                const PAD_X = 18, PAD_Y = 14;
-                pin.style.setProperty('--bx', (b.left - p.left - PAD_X).toFixed(1));
-                pin.style.setProperty('--by', (b.top - p.top - PAD_Y).toFixed(1));
-                pin.style.setProperty('--bw', (b.width + PAD_X * 2).toFixed(1));
-                pin.style.setProperty('--bh', (b.height + PAD_Y * 2).toFixed(1));
+
+                /* BUILD sits hard against the right edge of its line, so on
+                   a narrow screen a fixed margin would push the right crop
+                   mark off the viewport. Shrink it symmetrically to
+                   whatever room actually exists on both sides. */
+                const EDGE = 5;
+                const padX = Math.max(2, Math.min(
+                    18,
+                    (b.left - p.left) - EDGE,
+                    p.width - (b.right - p.left) - EDGE));
+                const padY = Math.max(2, Math.min(14, (b.top - p.top) - EDGE));
+
+                pin.style.setProperty('--bx', (b.left - p.left - padX).toFixed(1));
+                pin.style.setProperty('--by', (b.top - p.top - padY).toFixed(1));
+                pin.style.setProperty('--bw', (b.width + padX * 2).toFixed(1));
+                pin.style.setProperty('--bh', (b.height + padY * 2).toFixed(1));
             }
 
             function render(p) {
@@ -2094,6 +2318,20 @@
                 pool.style.transform =
                     'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0) ' +
                     'scale(' + scale.toFixed(3) + ')';
+
+                /* Pan the beam so it points at the lit word, and slide the
+                   floor spill to where that beam would land. Both are
+                   driven off the same word position as the pool, so the
+                   rig, the air and the floor all agree. */
+                const pw = pin.clientWidth || 1;
+                const ph = pin.clientHeight || 1;
+                const dx = x - pw / 2;
+                const dy = Math.max(1, y - ph * 0.13);   // 0.13 == .hs-beam top
+                let ang = Math.atan2(dx, dy) * 180 / Math.PI;
+                if (ang > 26) ang = 26;
+                if (ang < -26) ang = -26;
+                st.setProperty('--beam-r', ang.toFixed(2) + 'deg');
+                st.setProperty('--spill-x', (dx * 1.12).toFixed(1) + 'px');
 
                 /* One inset drives the white sheet, its two gold seams and
                    the white-field copy of the headline. Opening: a band
