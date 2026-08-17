@@ -4,144 +4,320 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>I&amp;D Labor Request | LV Trade Show Rentals</title>
-    <meta name="description" content="Request professional trade show installation & dismantle labor in Las Vegas from $129/hr per installer. Experienced, insured crews for CES, SEMA and every major show.">
+    <meta name="description" content="Request trade show installation &amp; dismantle labor in Las Vegas. Send your show and dates and we'll confirm your crew within one business day.">
     <meta property="og:title" content="I&amp;D Labor Request | LV Trade Show Rentals">
-    <meta property="og:description" content="Book vetted, insured install & dismantle crews in Las Vegas from $129/hr.">
+    <meta property="og:description" content="Send your show and dates and we'll confirm your install crew within one business day.">
     <meta property="og:type" content="website">
     <meta property="og:image" content="assets/world2-logo.png">
     <link rel="icon" type="image/png" href="assets/world2-logo.png">
     <link rel="stylesheet" href="assets/site.css">
     <style>
         /* ============================================================
-           I&D LABOR REQUEST — page-specific styles (all lab- prefixed)
-           Builds on assets/site.css tokens & shared components.
+           I&D LABOR REQUEST
+
+           This is the end of the funnel, not the middle of it. Visitors
+           arrive from trade-show-labor.html already sold — the only job
+           here is to get the form filled in. So the page is three
+           things and nothing else:
+
+             1. A compact hero that says where they are.
+             2. The form, immediately, above the fold on most laptops.
+             3. A short scroll-scrubbed closer for anyone who wants to
+                see the work before they commit.
+
+           No stats, no logo wall, no spec sheet, no pricing. Those live
+           on the pages that do the selling.
            ============================================================ */
 
-        /* Fixed-navbar anchor offset */
-        #request, #included, #how { scroll-margin-top: 90px; }
+        #request { scroll-margin-top: 80px; }
 
-        /* ---------- Hero: price highlight + parallax depth ---------- */
-        .lab-hero-price {
-            display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px;
-            margin: 26px 0 30px; padding: 16px 24px;
-            background: rgba(15, 20, 25, 0.5);
-            border: 1px solid rgba(45, 156, 202, 0.45);
-            border-radius: 5px;
-            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-            box-shadow: 0 16px 44px rgba(0, 0, 0, 0.45);
-        }
-        .lab-hero-price .lab-amt { font-size: clamp(2.3rem, 5vw, 3.1rem); font-weight: 900; color: var(--accent-teal); line-height: 1; letter-spacing: -1.5px; }
-        .lab-hero-price .lab-per { font-size: 1.1rem; font-weight: 700; color: var(--text-secondary); }
-        .lab-hero-price .lab-price-meta { flex-basis: 100%; font-size: 0.95rem; color: rgba(255, 255, 255, 0.9); font-weight: 500; }
-        .lab-hero-price .lab-dot { color: var(--accent-gold); font-weight: 800; padding: 0 4px; }
+        /* ---------- 1. Hero — compact, static ---------- */
+        /* Built on the shared .page-hero, trimmed: no big lead paragraph,
+           no second CTA row, just the label, the line and the way in. */
+        .lab-hero { min-height: 46vh; padding: 132px 20px 64px; }
+        .lab-hero h1 { font-size: clamp(2.2rem, 5vw, 3.6rem); margin-bottom: 14px; }
+        .lab-hero h1 em { font-style: normal; color: var(--accent-gold); }
+        .lab-hero .lead { font-size: clamp(1rem, 1.7vw, 1.18rem); max-width: 52ch; }
 
-        .lab-hero-cta { display: flex; flex-wrap: wrap; gap: 6px; }
+        /* Credential strip along the foot — the only trust marks the page
+           carries, since the visitor has already seen the long version. */
+        .lab-strip {
+            display: flex; flex-wrap: wrap; align-items: center; gap: 9px 28px;
+            margin-top: 28px; padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.14); list-style: none;
+        }
+        .lab-strip li {
+            position: relative; font-size: 0.7rem; font-weight: 700;
+            letter-spacing: 2px; text-transform: uppercase; color: rgba(255, 255, 255, 0.76);
+        }
+        .lab-strip li + li::before {
+            content: ''; position: absolute; left: -15px; top: 50%; margin-top: -6px;
+            width: 1px; height: 12px; background: rgba(255, 255, 255, 0.24);
+        }
+        .lab-strip b { color: var(--accent-teal); font-weight: 800; }
 
-        .lab-hero-grid {
-            position: absolute; top: -15%; left: 0; right: 0; height: 130%; z-index: 1; pointer-events: none; opacity: 0.8;
-            background-image:
-                linear-gradient(rgba(45, 156, 202, 0.07) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(45, 156, 202, 0.07) 1px, transparent 1px);
-            background-size: 56px 56px;
-            -webkit-mask-image: radial-gradient(120% 80% at 25% 30%, #000 0%, transparent 70%);
-            mask-image: radial-gradient(120% 80% at 25% 30%, #000 0%, transparent 70%);
+        /* ---------- 2. Request — the form, on a lit stage ---------- */
+        .lab-request {
+            position: relative; overflow: hidden;
+            padding: 78px 20px 92px;
+            background: var(--primary-bg);
         }
-        .lab-hero-orb {
-            position: absolute; z-index: 1; pointer-events: none; border-radius: 50%;
-            width: 360px; height: 360px; right: -70px; top: 6%; filter: blur(4px);
-            background: radial-gradient(circle, rgba(45, 156, 202, 0.18) 0%, transparent 65%);
+        .lab-request-bg {
+            /* Bled top and bottom so the parallax shift never exposes an edge. */
+            position: absolute; inset: -12% 0; z-index: 0;
+            background-image: url('assets/service-install.jpg');
+            background-size: cover; background-position: center 30%;
+            opacity: 0.20; will-change: transform;
         }
+        .lab-request-ov {
+            position: absolute; inset: 0; z-index: 1;
+            background:
+                radial-gradient(90% 70% at 20% 0%, rgba(45, 156, 202, 0.14), transparent 68%),
+                linear-gradient(180deg, rgba(15, 20, 25, 0.90) 0%, rgba(15, 20, 25, 0.80) 40%, rgba(15, 20, 25, 0.95) 100%);
+        }
+        .lab-request-grid {
+            position: relative; z-index: 2;
+            display: grid; grid-template-columns: 0.78fr 1.22fr; gap: 58px;
+            align-items: start; max-width: var(--maxw); margin: 0 auto;
+        }
+        .lab-aside { position: sticky; top: 100px; }
+        .lab-aside h2 { font-size: clamp(1.7rem, 3.4vw, 2.4rem); line-height: 1.12; letter-spacing: -0.8px; margin-bottom: 16px; }
+        .lab-aside h2 em { font-style: normal; color: var(--accent-gold); }
+        .lab-aside > p { color: rgba(255, 255, 255, 0.78); max-width: 38ch; }
 
-        .lab-scroll-cue {
-            position: absolute; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 3;
-            width: 26px; height: 42px; border: 2px solid rgba(255, 255, 255, 0.5); border-radius: 14px;
-            display: flex; justify-content: center;
+        .lab-assure { list-style: none; margin: 26px 0 24px; }
+        .lab-assure li {
+            position: relative; padding: 11px 0 11px 32px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+            color: var(--text-secondary); font-size: 0.95rem;
         }
-        .lab-scroll-cue span { display: block; width: 4px; height: 8px; margin-top: 7px; border-radius: 2px; background: var(--accent-teal); animation: labCue 1.6s var(--ease) infinite; }
-        @keyframes labCue { 0% { transform: translateY(0); opacity: 1; } 70% { transform: translateY(14px); opacity: 0; } 100% { opacity: 0; } }
-
-        /* ---------- Request section ---------- */
-        .lab-request-grid { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 50px; align-items: start; max-width: var(--maxw); margin: 0 auto; }
-        .lab-aside { position: sticky; top: 96px; }
-        .lab-aside h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; line-height: 1.12; margin-bottom: 16px; }
-        .lab-aside > p { color: var(--text-secondary); font-size: 1.05rem; margin-bottom: 6px; }
-        .lab-price-recap {
-            display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin: 26px 0; padding: 18px 22px;
-            background: linear-gradient(135deg, var(--surface-2) 0%, #2a3442 100%);
-            border: 1px solid var(--border-subtle); border-left: 3px solid var(--accent-teal); border-radius: 5px;
+        .lab-assure li strong { color: #fff; font-weight: 600; }
+        .lab-assure li::before {
+            content: "\2713"; position: absolute; left: 0; top: 11px;
+            color: var(--accent-teal); font-weight: 800; font-size: 0.9rem;
         }
-        .lab-price-recap .lab-amt { font-size: 2.4rem; font-weight: 900; color: var(--accent-teal); line-height: 1; letter-spacing: -1px; }
-        .lab-price-recap .lab-per { color: var(--text-secondary); font-weight: 700; }
-        .lab-price-recap .lab-recap-note { flex-basis: 100%; font-size: 0.85rem; color: var(--accent-gold); font-weight: 600; }
-        .lab-aside-list { list-style: none; margin: 22px 0 26px; }
-        .lab-aside-list li { position: relative; padding: 8px 0 8px 30px; color: var(--text-secondary); }
-        .lab-aside-list li strong { color: var(--text-primary); font-weight: 600; }
-        .lab-aside-list li::before { content: "\2713"; position: absolute; left: 0; top: 8px; color: var(--success); font-weight: 800; }
-        .lab-aside-phone { display: inline-flex; align-items: baseline; gap: 8px; margin-top: 4px; font-size: 0.98rem; color: var(--text-secondary); }
-        .lab-aside-phone a { color: var(--accent-gold); font-weight: 800; font-size: 1.25rem; }
+        .lab-aside-phone { font-size: 0.92rem; color: var(--text-secondary); }
+        .lab-aside-phone a { color: var(--accent-gold); font-weight: 800; font-size: 1.3rem; }
         .lab-aside-phone a:hover { color: var(--accent-gold-bright); }
 
-        .lab-actions { margin-top: 4px; }
-        .lab-submit { width: 100%; margin: 0; }
-        .lab-fineprint { font-size: 0.82rem; color: var(--text-secondary); margin-top: 14px; text-align: center; }
-
-        /* ---------- What's included ---------- */
-        .lab-included-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 54px; align-items: center; max-width: var(--maxw); margin: 0 auto; }
-        .lab-bigprice { display: flex; align-items: baseline; gap: 6px; margin: 8px 0 10px; }
-        .lab-bigprice .lab-amt { font-size: clamp(3.4rem, 8vw, 5rem); font-weight: 900; color: var(--accent-teal); line-height: 1; letter-spacing: -2.5px; }
-        .lab-bigprice .lab-per { font-size: 1.6rem; color: var(--text-secondary); font-weight: 700; }
-        .lab-price-note-gold { color: var(--accent-gold); font-weight: 600; }
-        .lab-price-eg { margin-top: 22px; padding: 16px 18px; background: rgba(45, 156, 202, 0.06); border-left: 3px solid var(--accent-teal); border-radius: 4px; font-size: 0.92rem; color: var(--text-secondary); }
-        .lab-price-eg strong { color: var(--text-primary); }
-        .lab-frame { position: relative; margin-top: 28px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-subtle); box-shadow: var(--shadow-lg); }
-        .lab-frame img { width: 100%; height: 240px; object-fit: cover; display: block; }
-        .lab-frame .lab-frame-cap { position: absolute; inset: auto 0 0 0; padding: 30px 20px 16px; background: linear-gradient(to top, rgba(10, 14, 20, 0.92), transparent); font-size: 0.9rem; color: #fff; }
-        .lab-frame .lab-frame-cap span { color: var(--accent-teal); font-weight: 700; }
-
-        .lab-include-card { position: relative; padding: 40px 36px; border-radius: 10px; border: 1px solid var(--border-subtle); background: linear-gradient(135deg, var(--surface-2) 0%, #2a3442 100%); box-shadow: var(--shadow-lg); }
-        .lab-include-card .lab-inc-h { font-size: 1.25rem; color: #fff; margin-bottom: 6px; }
-        .lab-include-card .lab-inc-sub { font-size: 0.85rem; color: var(--accent-teal); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 20px; }
-        .lab-check { list-style: none; }
-        .lab-check li { position: relative; padding: 14px 0 14px 42px; border-bottom: 1px solid var(--border-subtle); color: var(--text-secondary); line-height: 1.5; }
-        .lab-check li:last-child { border-bottom: none; padding-bottom: 2px; }
-        .lab-check li strong { display: block; color: var(--text-primary); font-size: 1.02rem; margin-bottom: 2px; }
-        .lab-check li::before {
-            content: "\2713"; position: absolute; left: 0; top: 13px; width: 26px; height: 26px; border-radius: 50%;
-            background: rgba(45, 156, 202, 0.16); color: var(--accent-teal);
-            display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800;
+        .lab-form-card {
+            position: relative;
+            background: linear-gradient(165deg, rgba(32, 43, 61, 0.94) 0%, rgba(21, 28, 39, 0.96) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 12px;
+            padding: 40px 40px 36px;
+            box-shadow: 0 34px 90px rgba(0, 0, 0, 0.55);
+            -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+        }
+        /* Lit top edge, so the card reads as a panel rather than a box. */
+        .lab-form-card::before {
+            content: ''; position: absolute; left: 26px; right: 26px; top: -1px; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-teal), transparent);
+        }
+        .lab-form-title { font-size: 1.3rem; color: #fff; font-weight: 700; letter-spacing: -0.3px; }
+        .lab-form-sub {
+            font-size: 0.76rem; letter-spacing: 2px; text-transform: uppercase;
+            color: var(--accent-teal); font-weight: 700; margin: 2px 0 28px;
         }
 
-        /* ---------- How it works ---------- */
-        .lab-steps { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; max-width: var(--maxw); margin: 0 auto; }
-        .lab-steps::before { content: ''; position: absolute; top: 68px; left: 14%; right: 14%; height: 2px; z-index: 0; background: linear-gradient(90deg, transparent, rgba(45, 156, 202, 0.45), transparent); }
-        .lab-step { position: relative; z-index: 1; padding: 40px 30px 34px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--primary-bg); transition: transform .35s var(--ease), border-color .35s ease, box-shadow .35s ease; }
-        .lab-step:hover { transform: translateY(-8px); border-color: var(--accent-teal); box-shadow: var(--shadow-teal); }
-        .lab-step-num {
-            display: inline-flex; align-items: center; justify-content: center; width: 58px; height: 58px; border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent-teal) 0%, #1f6f92 100%); color: #fff; font-size: 1.5rem; font-weight: 900;
-            margin-bottom: 22px; box-shadow: 0 12px 28px rgba(45, 156, 202, 0.4);
+        .lab-form-card .form-grid { gap: 17px; }
+        .lab-form-card .field { margin-bottom: 0; }
+        .lab-form-card .field label {
+            font-size: 0.72rem; letter-spacing: 1.4px; text-transform: uppercase;
+            color: var(--text-secondary); font-weight: 700;
         }
-        .lab-step .lab-step-tag { display: block; font-size: 0.72rem; letter-spacing: 2px; text-transform: uppercase; color: var(--accent-gold); font-weight: 700; margin-bottom: 8px; }
-        .lab-step h3 { color: #fff; font-size: 1.25rem; margin-bottom: 12px; }
-        .lab-step p { color: var(--text-secondary); }
+        .lab-form-card .field input,
+        .lab-form-card .field select,
+        .lab-form-card .field textarea {
+            background: rgba(10, 14, 20, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 5px;
+        }
+        .lab-form-card .field input:hover,
+        .lab-form-card .field select:hover,
+        .lab-form-card .field textarea:hover { border-color: rgba(255, 255, 255, 0.2); }
+        .lab-form-card .field textarea { min-height: 104px; }
+        /* Native date inputs render their picker glyph black-on-black. */
+        .lab-form-card input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.72); cursor: pointer; }
 
-        /* ---------- Stats + trust ---------- */
-        .lab-stat { padding: 30px 20px; border-radius: 8px; border: 1px solid var(--border-subtle); background: rgba(45, 156, 202, 0.04); transition: transform .3s ease, border-color .3s ease, box-shadow .3s ease; }
-        .lab-stat:hover { transform: translateY(-6px); border-color: var(--accent-teal); box-shadow: var(--shadow-teal); }
-        .lab-trust { margin-top: 56px; padding-top: 46px; border-top: 1px solid var(--border-subtle); text-align: center; }
-        .lab-trust-title { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-secondary); font-weight: 600; margin-bottom: 26px; }
+        .lab-submit { width: 100%; margin: 26px 0 0; padding: 18px 40px; }
+        .lab-fineprint { font-size: 0.8rem; color: var(--text-secondary); margin-top: 14px; text-align: center; }
+
+        /* ---------- 3. Closer — scroll-scrubbed stage ---------- */
+        /* Same engine and .sv-* contract as index / about-us / what-we-do:
+           assets/scroll-video.js binds the clip's playhead to scroll — down
+           runs it forward, up runs it backward, stopping holds a frame.
+
+           Everything the footage touches is scoped to .sv:not(.sv-off), so
+           if the clip never loads the script adds .sv-off and the block
+           falls back to its own painted backdrop with nothing broken.
+
+           Three beats, not five: this is a closing note, not a chapter. */
+        .sv { position: relative; --p: 0; }
+        .sv-track { position: relative; }
+        .sv-pin {
+            position: sticky; top: 0; height: 100vh; overflow: hidden; z-index: 0;
+            /* Stands on its own before the clip arrives — and after .sv-off. */
+            background:
+                radial-gradient(70% 55% at 22% 24%, rgba(45, 156, 202, 0.16), transparent 70%),
+                radial-gradient(60% 60% at 88% 86%, rgba(184, 165, 115, 0.12), transparent 72%),
+                linear-gradient(160deg, #131c26 0%, #0f1419 55%, #0c1116 100%);
+        }
+        .sv-video {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; opacity: 0; transition: opacity 0.8s ease;
+            transform: translateZ(0); /* own compositor layer: a seek repaints only the video */
+        }
+        .sv.is-ready .sv-video { opacity: 1; }
+        /* Feathered top and bottom so the block has no seam, and weighted
+           LEFT so the copy always has ground to sit on. The right side is
+           left comparatively open on purpose — that is where the booth in
+           the footage reads, and there is no text over it. */
+        .sv-veil {
+            position: absolute; inset: 0; pointer-events: none; z-index: 1;
+            background:
+                linear-gradient(180deg, rgba(15, 20, 25, 0.92) 0%, rgba(15, 20, 25, 0.38) 16%,
+                                        rgba(15, 20, 25, 0.38) 84%, rgba(15, 20, 25, 0.92) 100%),
+                linear-gradient(90deg, rgba(15, 20, 25, 0.86) 0%, rgba(15, 20, 25, 0.60) 34%,
+                                       rgba(15, 20, 25, 0.12) 72%, rgba(15, 20, 25, 0.08) 100%);
+        }
+        .sv-bar {
+            position: absolute; left: 0; right: 0; bottom: 0; height: 2px; z-index: 5;
+            background: rgba(255, 255, 255, 0.07);
+        }
+        .sv-bar-fill {
+            height: 100%; background: linear-gradient(90deg, var(--accent-teal), var(--accent-gold));
+            transform: scaleX(0); transform-origin: 0 50%;
+        }
+        /* Pulled back over the pin; rides above it on z-index. */
+        .sv-content { position: relative; z-index: 1; margin-top: -100vh; }
+
+        /* Track height paces both the clip and the beat swaps: three beats
+           over (300vh - 100vh of pinning) = 100vh of scroll apiece. */
+        .seq-track { height: 300vh; }
+        .seq-stick {
+            position: sticky; top: 0; height: 100vh;
+            display: grid; align-content: center;
+            padding: 92px 20px 60px; box-sizing: border-box;
+        }
+        .seq-inner { position: relative; max-width: var(--maxw); width: 100%; margin: 0 auto; }
+        /* Floor is the tallest beat's copy — below that the body runs into
+           the rail underneath it. */
+        .seq-stage { position: relative; min-height: 238px; }
+
+        .seq-beat {
+            position: absolute; inset: 0; pointer-events: none;
+            opacity: 0; transform: translateY(22px); filter: blur(9px);
+            transition: opacity 0.55s var(--ease), transform 0.85s var(--ease), filter 0.7s var(--ease);
+        }
+        .seq-beat.is-on { opacity: 1; transform: none; filter: none; pointer-events: auto; }
+
+        /* Ghost numeral behind the copy — the only ornament, because the
+           footage is doing the visual work. Centred rather than hung off the
+           top edge, so it can never ride up into the heading. */
+        .seq-num {
+            position: absolute; z-index: 0; left: -0.06em; top: 50%;
+            font-size: clamp(8rem, 17vw, 14rem); font-weight: 900; line-height: 0.72;
+            letter-spacing: -0.05em; color: transparent;
+            -webkit-text-stroke: 1px rgba(255, 255, 255, 0.13);
+            pointer-events: none; user-select: none;
+            transform: translateY(calc(-50% + (var(--p, 0) - 0.5) * -30px));
+        }
+
+        .seq-copy { position: relative; z-index: 1; }
+        /* Children stagger in behind the beat itself. */
+        .seq-copy > * {
+            opacity: 0; transform: translateY(16px);
+            transition: opacity 0.7s var(--ease), transform 0.8s var(--ease);
+            transition-delay: calc(var(--i, 0) * 90ms);
+        }
+        .seq-beat.is-on .seq-copy > * { opacity: 1; transform: none; }
+
+        .seq-tag {
+            display: inline-flex; align-items: center; gap: 12px;
+            font-size: 0.7rem; font-weight: 700; letter-spacing: 3.2px;
+            text-transform: uppercase; color: var(--accent-teal); margin-bottom: 16px;
+        }
+        .seq-tag::before { content: ''; width: 26px; height: 1px; background: currentColor; }
+
+        .seq-title {
+            font-size: clamp(1.7rem, 3.4vw, 2.7rem); font-weight: 800;
+            line-height: 1.14; color: #fff; letter-spacing: -0.8px; max-width: 20ch;
+        }
+        .seq-title em { font-style: normal; color: var(--accent-gold); }
+        .seq-body { color: rgba(255, 255, 255, 0.78); font-size: 1.02rem; margin-top: 16px; max-width: 46ch; }
+
+        /* Beat rail — three ticks, bottom left, under the copy. */
+        .seq-rail {
+            position: relative; z-index: 1; list-style: none;
+            display: flex; gap: 26px; margin-top: 40px;
+        }
+        .seq-tick {
+            position: relative; padding-top: 13px;
+            font-size: 0.68rem; font-weight: 700; letter-spacing: 1.8px;
+            text-transform: uppercase; color: rgba(255, 255, 255, 0.4);
+            border-top: 1px solid rgba(255, 255, 255, 0.16);
+            min-width: 92px; transition: color 0.45s var(--ease);
+        }
+        .seq-tick.is-on { color: #fff; }
+        .seq-tick::before {
+            content: ''; position: absolute; left: 0; top: -1px; width: 100%; height: 1px;
+            background: var(--accent-gold);
+            transform: scaleX(0); transform-origin: 0 50%;
+            transition: transform 0.55s var(--ease);
+        }
+        .seq-tick.is-on::before { transform: scaleX(1); }
+
+        /* Closing line, sitting on the last frame of the clip. */
+        .seq-close { text-align: center; padding: 0 20px 110px; }
+        .seq-close p {
+            font-size: clamp(1.3rem, 2.8vw, 2rem); font-weight: 300;
+            line-height: 1.35; color: #fff; max-width: 22ch; margin: 0 auto 30px;
+        }
+        .seq-close .cta-button { margin: 6px 8px; }
 
         /* ---------- Responsive ---------- */
-        @media (max-width: 900px) {
+        /* Unpin below 1000px: the clip stays a sticky backdrop, but the
+           beats stop swapping in place and become a scrolling column — the
+           controller switches to "flow" to match. */
+        @media (max-width: 1000px) {
             .lab-request-grid { grid-template-columns: 1fr; gap: 40px; }
             .lab-aside { position: static; }
-            .lab-included-grid { grid-template-columns: 1fr; gap: 36px; }
-            .lab-steps { grid-template-columns: 1fr; gap: 22px; }
-            .lab-steps::before { display: none; }
+            .seq-track { height: auto; }
+            .seq-stick { position: static; height: auto; display: block; padding: 96px 20px 40px; }
+            .seq-stage { position: static; min-height: 0; display: grid; gap: 64px; }
+            .seq-beat { position: static; }
+            .seq-num { position: static; display: block; font-size: clamp(4rem, 15vw, 6rem); transform: none; margin-bottom: -0.1em; }
+            .seq-rail { display: none; }
+            .seq-close { padding-bottom: 84px; }
+            .sv-veil {
+                background:
+                    linear-gradient(180deg, rgba(15, 20, 25, 0.94) 0%, rgba(15, 20, 25, 0.66) 12%,
+                                            rgba(15, 20, 25, 0.66) 88%, rgba(15, 20, 25, 0.94) 100%);
+            }
         }
 
+        @media (max-width: 768px) {
+            .lab-hero { min-height: 40vh; padding: 116px 20px 50px; }
+            .lab-request { padding: 56px 20px 70px; }
+            .lab-form-card { padding: 28px 22px 26px; }
+        }
+
+        /* Short viewports: trim the hero so the form still starts near the
+           fold rather than being pushed a full screen down. */
+        @media (min-width: 769px) and (max-height: 720px) {
+            .lab-hero { min-height: 0; padding: 112px 20px 46px; }
+            .lab-hero h1 { font-size: clamp(2rem, 4.2vw, 2.9rem); }
+            .lab-strip { margin-top: 20px; padding-top: 15px; }
+            .seq-stick { padding: 76px 20px 44px; }
+        }
+
+        /* The scrub itself is a scroll POSITION, not an animation, so it is
+           left alone here; only the choreography is switched off. */
         @media (prefers-reduced-motion: reduce) {
-            .lab-scroll-cue span { animation: none; }
+            .seq-beat,
+            .seq-copy > * { opacity: 1 !important; transform: none !important; filter: none !important; transition: none !important; }
+            .seq-num { transform: none !important; }
         }
     </style>
 </head>
@@ -164,59 +340,54 @@
         </div>
     </header>
 
-    <!-- ===== HERO ===== -->
-    <section class="page-hero">
-        <img class="page-hero-media" src="assets/service-install.jpg" alt="Professional install crew assembling a trade show booth on the show floor" fetchpriority="high" decoding="async">
+    <main>
+
+    <!-- ===== 1. HERO ===== -->
+    <section class="page-hero lab-hero">
+        <img class="page-hero-media" src="assets/service-install.jpg" alt="Install crew assembling a custom trade show exhibit on the show floor" fetchpriority="high" decoding="async">
         <div class="page-hero-overlay"></div>
-        <div class="lab-hero-grid" data-parallax="0.18"></div>
-        <div class="lab-hero-orb" data-parallax="0.3"></div>
 
         <div class="page-hero-inner">
-            <div class="breadcrumb"><a href="index.html">Home</a><span>/</span>I&amp;D Labor Request</div>
-            <span class="eyebrow">I&amp;D LABOR</span>
-            <h1>Request Your Install Crew</h1>
-            <p class="lead">Vetted, insured, on-time crews who understand booth structures &mdash; from structural builds to final staging and dismantle. Tell us your show and we&rsquo;ll confirm the right team for your call time.</p>
+            <div class="breadcrumb"><a href="index.html">Home</a><span>&rsaquo;</span>I&amp;D Labor Request</div>
+            <span class="eyebrow">Installation &amp; Dismantle</span>
+            <h1>Request your <em>crew</em>.</h1>
+            <p class="lead">Send us your show and dates. We'll confirm the crew and your call time within one business day.</p>
 
-            <div class="lab-hero-price">
-                <span class="lab-amt">$129</span><span class="lab-per">/hr</span>
-                <span class="lab-price-meta">per installer <span class="lab-dot">&bull;</span> volume discounts for larger crews &amp; multi-day events</span>
-            </div>
-
-            <div class="lab-hero-cta">
-                <a href="#request" class="cta-button">Request Your Crew</a>
-                <a href="tel:+17024838279" class="cta-button secondary">Call 702-483-8279</a>
-            </div>
+            <ul class="lab-strip">
+                <li><b>20+</b> Years On The Floor</li>
+                <li><b>$2M</b> Liability Insured</li>
+                <li>Rush &amp; Same-Day Crews</li>
+            </ul>
         </div>
-
-        <a class="lab-scroll-cue" href="#request" aria-label="Scroll to the request form"><span></span></a>
     </section>
 
-    <!-- ===== REQUEST FORM ===== -->
-    <section class="section" id="request">
+    <!-- ===== 2. REQUEST FORM ===== -->
+    <section class="lab-request" id="request">
+        <div class="lab-request-bg" data-parallax="0.09" aria-hidden="true"></div>
+        <div class="lab-request-ov" aria-hidden="true"></div>
+
         <div class="lab-request-grid">
             <!-- Aside -->
             <div class="lab-aside" data-reveal="left">
-                <span class="eyebrow">BOOK A CREW</span>
-                <h2>Tell us what you&rsquo;re building</h2>
-                <p>Share your show, venue, dates and crew size. We&rsquo;ll match you with experienced installers and lock in your schedule &mdash; fast.</p>
+                <span class="eyebrow gold">Book A Crew</span>
+                <h2>Tell us what you're <em>building</em>.</h2>
+                <p>Your show, venue, dates and crew size &mdash; that's all we need to get started.</p>
 
-                <div class="lab-price-recap">
-                    <span class="lab-amt">$129</span><span class="lab-per">/hr</span>
-                    <span class="lab-recap-note">per installer &middot; volume discounts for larger crews &amp; multi-day events</span>
-                </div>
-
-                <ul class="lab-aside-list">
-                    <li><strong>Insured &amp; badged</strong> &mdash; $2M liability, ready for the dock</li>
-                    <li><strong>On-time guarantee</strong> &mdash; late arrival = first hour free</li>
-                    <li><strong>All tools provided</strong> &mdash; no equipment rental fees</li>
-                    <li><strong>Rush &amp; same-day</strong> &mdash; evenings and weekends welcome</li>
+                <ul class="lab-assure">
+                    <li><strong>Answer within one business day</strong> &mdash; usually the same afternoon</li>
+                    <li><strong>Written confirmation</strong> &mdash; crew, call time and scope</li>
+                    <li><strong>No obligation</strong> &mdash; a request is not a booking</li>
                 </ul>
 
-                <p class="lab-aside-phone">Prefer to talk it through? <a href="tel:+17024838279">702-483-8279</a></p>
+                <p class="lab-aside-phone">Prefer to talk it through?<br><a href="tel:+17024838279">702-483-8279</a></p>
             </div>
 
             <!-- Form -->
-            <div class="form-wrap" data-reveal="right">
+            <div data-reveal="right">
+              <div class="lab-form-card">
+                <h3 class="lab-form-title">Labor request</h3>
+                <p class="lab-form-sub">Takes about two minutes</p>
+
                 <!-- OWNER TODO: replace YOUR_FORM_ID below with your real Formspree form ID
                      (e.g. action="https://formspree.io/f/abcdwxyz"). Until then the form
                      posts to the placeholder endpoint and the AJAX success message is skipped. -->
@@ -287,159 +458,101 @@
                         </div>
                         <div class="field full">
                             <label for="requirements">Special Requirements</label>
-                            <textarea id="requirements" name="special_requirements" placeholder="Rigging, forklift, tools, drawings, union coordination, target set/strike times, anything else we should know…"></textarea>
-                        </div>
-
-                        <div class="field full lab-actions">
-                            <button type="submit" class="cta-button lab-submit">Request My Crew</button>
-                            <p class="lab-fineprint">We&rsquo;ll confirm crew availability within one business day. No obligation.</p>
+                            <textarea id="requirements" name="special_requirements" placeholder="Rigging, forklift, drawings, union coordination, target set/strike times…"></textarea>
                         </div>
                     </div>
+
+                    <button type="submit" class="cta-button lab-submit">Request My Crew</button>
+                    <p class="lab-fineprint">We'll confirm crew availability within one business day. No obligation.</p>
                 </form>
 
-                <div class="form-success">Request received &mdash; we&rsquo;ll confirm crew availability within one business day.</div>
+                <div class="form-success">Request received &mdash; we'll confirm crew availability within one business day.</div>
+              </div>
             </div>
         </div>
     </section>
 
-    <!-- ===== WHAT'S INCLUDED AT $129/HR ===== -->
-    <section class="section alt" id="included">
-        <div class="section-head" data-reveal>
-            <span class="eyebrow">TRANSPARENT PRICING</span>
-            <h2>What&rsquo;s included at $129/hr</h2>
-            <p>One clear rate per installer. No hidden fees, no surprise line items &mdash; just skilled hands and honest hours.</p>
+    <!-- ===== 3. CLOSER — scroll-scrubbed stage =====
+         assets/scroll-video.js binds the clip's playhead to scroll: down
+         runs it forward, up runs it backward, stopping holds a frame.
+
+         data-scroll-start="50": the scrub begins the moment this block's
+         top edge reaches the middle of the viewport.
+         ================================================================ -->
+    <div class="sv" id="sequence" data-scroll-video data-scroll-start="50">
+      <div class="sv-track">
+
+        <div class="sv-pin">
+            <video class="sv-video"
+                   data-src="assets/labor-request-scroll.mp4"
+                   poster="assets/labor-request-scroll-poster.jpg"
+                   preload="none"
+                   muted
+                   playsinline
+                   webkit-playsinline
+                   disablepictureinpicture
+                   aria-hidden="true"></video>
+            <div class="sv-veil"></div>
+            <div class="sv-bar"><div class="sv-bar-fill"></div></div>
         </div>
 
-        <div class="lab-included-grid">
-            <!-- Left: price + supporting image -->
-            <div data-reveal="left">
-                <div class="lab-bigprice">
-                    <span class="lab-amt">$129</span><span class="lab-per">/hr</span>
-                </div>
-                <p class="lab-price-note-gold">Per installer &middot; volume discounts for larger crews &amp; multi-day events.</p>
-                <div class="lab-price-eg">
-                    <strong>Example:</strong> a 4-person crew for a 16-hour install &amp; dismantle is quoted at your discounted crew rate &mdash; ask us for the exact number when you submit your request.
-                </div>
-                <figure class="lab-frame">
-                    <img src="assets/service-installation.jpg" alt="Install crew staging a custom booth before show open" loading="lazy" decoding="async">
-                    <figcaption class="lab-frame-cap"><span>On the floor</span> &mdash; crews that build clean and strike fast.</figcaption>
-                </figure>
-            </div>
+        <div class="sv-content">
+          <section class="seq-track" aria-label="What your crew does">
+            <div class="seq-stick">
+              <div class="seq-inner">
 
-            <!-- Right: 3D tilt checklist card -->
-            <div data-reveal="right">
-                <div class="tilt lab-include-card" data-tilt-max="6">
-                    <div class="tilt-glare"></div>
-                    <div class="tilt-inner">
-                        <h3 class="lab-inc-h">Every crew, every job</h3>
-                        <p class="lab-inc-sub">What your rate always covers</p>
-                        <ul class="lab-check">
-                            <li><strong>Experienced crews</strong> 10+ years of trade show expertise on the floor.</li>
-                            <li><strong>$2M liability insured</strong> Full coverage on every job, every installer.</li>
-                            <li><strong>All tools provided</strong> Complete kit on hand &mdash; no equipment rental fees.</li>
-                            <li><strong>Flexible scheduling</strong> Evenings, weekends and rush jobs welcome.</li>
-                            <li><strong>On-time guarantee</strong> Late arrival = your first hour is free.</li>
-                            <li><strong>Same-day emergency availability</strong> Crews on standby when you need them most.</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+                <div class="seq-stage">
 
-    <!-- ===== HOW IT WORKS ===== -->
-    <section class="section" id="how">
-        <div class="section-head" data-reveal>
-            <span class="eyebrow">HOW IT WORKS</span>
-            <h2>From request to show-ready in three steps</h2>
-            <p>A streamlined booking process built for exhibit managers on a deadline.</p>
-        </div>
+                    <article class="seq-beat is-on">
+                        <span class="seq-num" aria-hidden="true">01</span>
+                        <div class="seq-copy">
+                            <span class="seq-tag" style="--i:1">Install</span>
+                            <h2 class="seq-title" style="--i:2">Built to plan, <em>not to guess</em>.</h2>
+                            <p class="seq-body" style="--i:3">Drawings reviewed and dock time booked before move-in. Structure up, graphics tensioned, lighting aimed, floor clean.</p>
+                        </div>
+                    </article>
 
-        <div class="lab-steps reveal-group">
-            <div class="lab-step">
-                <div class="lab-step-num">1</div>
-                <span class="lab-step-tag">Request</span>
-                <h3>Send your details</h3>
-                <p>Tell us your show, venue, dates, booth size and crew count. The form takes about two minutes &mdash; attach drawings if you have them.</p>
-            </div>
-            <div class="lab-step">
-                <div class="lab-step-num">2</div>
-                <span class="lab-step-tag">Confirm</span>
-                <h3>We confirm crew &amp; schedule</h3>
-                <p>We match you with vetted installers, lock your call time, and send written confirmation within one business day &mdash; with your exact crew rate.</p>
-            </div>
-            <div class="lab-step">
-                <div class="lab-step-num">3</div>
-                <span class="lab-step-tag">Build</span>
-                <h3>Crew arrives show-ready</h3>
-                <p>Insured, badged and briefed, your crew builds to plan and strikes on schedule. You approve the set; we handle the dismantle.</p>
-            </div>
-        </div>
-    </section>
+                    <article class="seq-beat">
+                        <span class="seq-num" aria-hidden="true">02</span>
+                        <div class="seq-copy">
+                            <span class="seq-tag" style="--i:1">Show Days</span>
+                            <h2 class="seq-title" style="--i:2">On call while the floor is <em>live</em>.</h2>
+                            <p class="seq-body" style="--i:3">A blown lamp, a torn graphic, a monitor that walked. Crews stay reachable for the length of your run.</p>
+                        </div>
+                    </article>
 
-    <!-- ===== STATS + TRUST ===== -->
-    <section class="section alt">
-        <div class="container">
-            <div class="section-head" data-reveal>
-                <span class="eyebrow">BY THE NUMBERS</span>
-                <h2>Crews that show up &mdash; and show off</h2>
-                <p>Two decades installing on the busiest floors in Las Vegas.</p>
-            </div>
+                    <article class="seq-beat">
+                        <span class="seq-num" aria-hidden="true">03</span>
+                        <div class="seq-copy">
+                            <span class="seq-tag" style="--i:1">Dismantle</span>
+                            <h2 class="seq-title" style="--i:2">Struck and crated <em>on time</em>.</h2>
+                            <p class="seq-body" style="--i:3">Everything back in the right crate, inventoried and released to your carrier before the hall goes dark.</p>
+                        </div>
+                    </article>
 
-            <div class="stats-row reveal-group">
-                <div class="stat-box lab-stat" data-count="1000" data-suffix="+">
-                    <div class="stat-num">0</div>
-                    <div class="stat-label">Installs Completed</div>
-                </div>
-                <div class="stat-box lab-stat" data-count="100" data-suffix="%">
-                    <div class="stat-num">0</div>
-                    <div class="stat-label">On-Time Rate</div>
-                </div>
-                <div class="stat-box lab-stat" data-count="20" data-suffix="+">
-                    <div class="stat-num">0</div>
-                    <div class="stat-label">Years Experience</div>
-                </div>
-                <div class="stat-box lab-stat">
-                    <div class="stat-num">24/7</div>
-                    <div class="stat-label">Show-Floor Support</div>
-                </div>
-            </div>
+                </div><!-- /.seq-stage -->
 
-            <div class="lab-trust" data-reveal>
-                <h3 class="lab-trust-title">Trusted on the floor at</h3>
-                <div class="event-logos">
-                    <div class="event-logos-track">
-                        <div class="logo-item"><img src="assets/ces-logo.png" alt="CES - Consumer Electronics Show" class="event-logo" loading="lazy"></div>
-                        <div class="logo-item"><img src="assets/sema-logo.png" alt="SEMA - Specialty Equipment Market Association" class="event-logo" loading="lazy"></div>
-                        <div class="logo-item"><img src="assets/magic-logo.png" alt="MAGIC Fashion Trade Show" class="event-logo" loading="lazy"></div>
-                        <div class="logo-item"><img src="assets/nab-logo.png" alt="NAB - National Association of Broadcasters" class="event-logo" loading="lazy"></div>
-                        <div class="logo-item"><img src="assets/CONEXPO.png" alt="CONEXPO - Construction Equipment Exposition" class="event-logo" loading="lazy"></div>
-                        <!-- Duplicate set for seamless marquee loop -->
-                        <div class="logo-item"><img src="assets/ces-logo.png" alt="" class="event-logo" loading="lazy" aria-hidden="true"></div>
-                        <div class="logo-item"><img src="assets/sema-logo.png" alt="" class="event-logo" loading="lazy" aria-hidden="true"></div>
-                        <div class="logo-item"><img src="assets/magic-logo.png" alt="" class="event-logo" loading="lazy" aria-hidden="true"></div>
-                        <div class="logo-item"><img src="assets/nab-logo.png" alt="" class="event-logo" loading="lazy" aria-hidden="true"></div>
-                        <div class="logo-item"><img src="assets/CONEXPO.png" alt="" class="event-logo" loading="lazy" aria-hidden="true"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+                <ol class="seq-rail" aria-hidden="true">
+                    <li class="seq-tick is-on">Install</li>
+                    <li class="seq-tick">Show Days</li>
+                    <li class="seq-tick">Dismantle</li>
+                </ol>
 
-    <!-- ===== CTA BAND ===== -->
-    <section class="cta-band">
-        <div class="cta-bg" style="background-image: url('assets/final-cta-bg.jpg');"></div>
-        <div class="cta-ov"></div>
-        <div class="container" data-reveal>
-            <h2>Ready to book your install crew?</h2>
-            <p>Lock in vetted, insured installers at $129/hr &mdash; with volume discounts for larger crews and multi-day shows. Submit a request or call and we&rsquo;ll confirm availability today.</p>
-            <div class="cta-group">
-                <a href="#request" class="cta-button">Request Your Crew</a>
-                <a href="tel:+17024838279" class="cta-button secondary">Call 702-483-8279</a>
+              </div>
             </div>
-            <div class="urgency-text">Crews book fast during CES, SEMA &amp; MAGIC season &mdash; reserve early.</div>
-        </div>
-    </section>
+          </section>
+
+          <section class="seq-close">
+            <p>Send your dates. We'll handle the rest.</p>
+            <a href="#request" class="cta-button">Request Your Crew</a>
+            <a href="tel:+17024838279" class="cta-button secondary">Call 702-483-8279</a>
+          </section>
+        </div><!-- /.sv-content -->
+
+      </div><!-- /.sv-track -->
+    </div><!-- /.sv -->
+
+    </main>
 
     <!-- ===== FOOTER ===== -->
     <footer class="site-footer">
@@ -473,13 +586,143 @@
     </footer>
 
     <script src="assets/site.js" defer></script>
+    <!-- Binds the closer clip's playhead to scroll. Same engine as index /
+         about-us / what-we-do; this page has its own clip.
+         assets/labor-request-scroll.mp4 is re-encoded ALL-INTRA (-g 1): the
+         source had a single keyframe across 241 frames, so every backward
+         seek decoded most of the clip. Re-encode it the same way if it is
+         ever replaced. -->
+    <script src="assets/scroll-video.js" defer></script>
+
+    <!-- ============================================================
+         PAGE CONTROLLER
+
+         1. The closing stage, in two modes:
+              "pin"  — stuck to the viewport, the three beats swapping in
+                       place. One rAF loop reads one number, the block's
+                       scroll progress, and publishes it as --p (the
+                       numeral parallaxes on it) and as the active index.
+              "flow" — below 1000px, or under reduced motion, nothing is
+                       pinned; the beats are a normal column that reveal
+                       as they come into view.
+            The loop only runs while the stage is on screen and reads
+            layout inside rAF, so it never forces a reflow mid-scroll.
+         2. Sensible date bounds on the move-in / move-out fields.
+         ============================================================ -->
     <script>
-        /* Page-specific niceties: sensible date bounds on the move-in/move-out fields.
-           Null-guarded; does not conflict with site.js. */
+    (function () {
+        'use strict';
+
+        var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+
+        /* ---------- 1. Closing stage ---------- */
         (function () {
-            var movein = document.getElementById('movein');
-            var moveout = document.getElementById('moveout');
-            if (!movein || !moveout) return;
+            var stage = document.getElementById('sequence');
+            if (!stage) return;
+
+            var track = stage.querySelector('.seq-track');
+            var beats = Array.prototype.slice.call(stage.querySelectorAll('.seq-beat'));
+            var ticks = Array.prototype.slice.call(stage.querySelectorAll('.seq-tick'));
+            if (!track || !beats.length) return;
+
+            var active = 0;
+            function setActive(i) {
+                if (i === active) return;
+                active = i;
+                for (var n = 0; n < beats.length; n++) beats[n].classList.toggle('is-on', n === i);
+                for (var s = 0; s < ticks.length; s++) ticks[s].classList.toggle('is-on', s === i);
+            }
+
+            var running = false, raf = 0;
+
+            function frame() {
+                if (!running) return;
+                raf = window.requestAnimationFrame(frame);
+
+                /* Distance the sticky holder is stuck for: the track's height
+                   less the one viewport it occupies while stuck. */
+                var span = Math.max(1, track.offsetHeight - window.innerHeight);
+                var p = clamp01(-track.getBoundingClientRect().top / span);
+
+                stage.style.setProperty('--p', p.toFixed(4));
+
+                /* A short lead-in and tail, so the first beat is readable before
+                   it advances and the last one holds rather than flashing past
+                   as the stage releases. */
+                var q = clamp01((p - 0.05) / 0.86);
+                setActive(Math.min(beats.length - 1, Math.floor(q * beats.length)));
+            }
+
+            function run(on) {
+                if (on === running) return;
+                running = on;
+                if (on) raf = window.requestAnimationFrame(frame);
+                else if (raf) window.cancelAnimationFrame(raf);
+            }
+
+            var mode = '', stageIO = null, beatIO = null;
+
+            function teardown() {
+                run(false);
+                if (stageIO) { stageIO.disconnect(); stageIO = null; }
+                if (beatIO) { beatIO.disconnect(); beatIO = null; }
+            }
+
+            function setup() {
+                var want = (reduce || !window.matchMedia('(min-width: 1001px)').matches ||
+                            !('IntersectionObserver' in window)) ? 'flow' : 'pin';
+                if (want === mode) return;
+                teardown();
+                mode = want;
+
+                if (mode === 'pin') {
+                    beats.forEach(function (el, n) { el.classList.toggle('is-on', n === 0); });
+                    ticks.forEach(function (el, n) { el.classList.toggle('is-on', n === 0); });
+                    active = 0;
+                    stageIO = new IntersectionObserver(function (entries) {
+                        run(entries[0].isIntersecting);
+                    }, { rootMargin: '20% 0px' });
+                    stageIO.observe(track);
+                    return;
+                }
+
+                /* flow: every beat is in the document flow, so each reveals on
+                   its own. --p is parked at 1 so nothing driven by it is left
+                   sitting at its start value. */
+                stage.style.setProperty('--p', '1');
+
+                if (reduce || !('IntersectionObserver' in window)) {
+                    beats.forEach(function (el) { el.classList.add('is-on'); });
+                    return;
+                }
+                beatIO = new IntersectionObserver(function (entries) {
+                    entries.forEach(function (en) {
+                        /* `top < 0` catches beats the visitor has already passed —
+                           a restored scroll position or an anchor jump skips over
+                           them without ever reporting them as intersecting. */
+                        if (en.isIntersecting || en.boundingClientRect.top < 0) {
+                            en.target.classList.add('is-on');
+                            beatIO.unobserve(en.target);
+                        }
+                    });
+                }, { threshold: 0.25, rootMargin: '0px 0px -10% 0px' });
+                beats.forEach(function (el) { beatIO.observe(el); });
+            }
+
+            var resizeTimer = 0;
+            window.addEventListener('resize', function () {
+                window.clearTimeout(resizeTimer);
+                resizeTimer = window.setTimeout(setup, 150);
+            }, { passive: true });
+
+            setup();
+        })();
+
+        /* ---------- 2. Date bounds ---------- */
+        var movein = document.getElementById('movein');
+        var moveout = document.getElementById('moveout');
+        if (movein && moveout) {
             var today = new Date().toISOString().split('T')[0];
             movein.min = today;
             moveout.min = today;
@@ -489,7 +732,8 @@
                     if (moveout.value && moveout.value < movein.value) moveout.value = movein.value;
                 }
             });
-        })();
+        }
+    })();
     </script>
 </body>
 </html>
