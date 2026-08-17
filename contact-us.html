@@ -97,7 +97,7 @@
         .con-form .field.con-filled label { color: var(--accent-teal); }
         .con-submit { width: 100%; margin: 8px 0 0; }
 
-        /* ---------- Right column: info + map ---------- */
+        /* ---------- Right column: contact info ---------- */
         .con-aside { display: flex; flex-direction: column; gap: 26px; }
 
         .con-info {
@@ -113,131 +113,7 @@
         .con-info .info-list h4 { letter-spacing: 0.3px; }
         .con-info .info-note { font-size: 0.85rem; line-height: 1.6; color: #8b94a3 !important; margin-top: 4px; }
 
-        /* ---------- CSS-drawn stylized map ---------- */
-        .con-map {
-            position: relative; overflow: hidden;
-            height: clamp(300px, 44vw, 380px); border-radius: 10px;
-            border: 1px solid var(--border-subtle);
-            background: radial-gradient(130% 130% at 32% 18%, #16233a 0%, #0c1119 72%);
-            box-shadow: var(--shadow-lg);
-        }
-        .con-map-streets {
-            position: absolute; inset: -2px; transform: translateZ(0);
-            background-image:
-                linear-gradient(rgba(45, 156, 202, 0.08) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(45, 156, 202, 0.08) 1px, transparent 1px);
-            background-size: 32px 32px;
-        }
-        .con-road { position: absolute; }
-        .con-road::after { content: ''; position: absolute; }
-        .con-road-strip {
-            top: -12%; left: 24%; width: 58px; height: 130%;
-            transform: rotate(20deg) translateZ(6px);
-            background: linear-gradient(90deg, rgba(184, 165, 115, 0.04), rgba(184, 165, 115, 0.20), rgba(184, 165, 115, 0.04));
-        }
-        .con-road-strip::after {
-            left: 50%; top: 0; width: 2px; height: 100%; margin-left: -1px;
-            background: repeating-linear-gradient(180deg, rgba(212, 192, 138, 0.6) 0 10px, transparent 10px 22px);
-        }
-        .con-road-v {
-            top: 0; left: 55%; width: 30px; height: 100%; transform: translateZ(6px);
-            background: linear-gradient(90deg, rgba(45, 156, 202, 0.04), rgba(45, 156, 202, 0.16), rgba(45, 156, 202, 0.04));
-        }
-        .con-road-v::after {
-            left: 50%; top: 0; width: 2px; height: 100%; margin-left: -1px;
-            background: repeating-linear-gradient(180deg, rgba(120, 200, 235, 0.5) 0 10px, transparent 10px 22px);
-        }
-        .con-road-h {
-            top: 46%; left: 0; width: 100%; height: 28px; transform: translateZ(6px);
-            background: linear-gradient(180deg, rgba(45, 156, 202, 0.04), rgba(45, 156, 202, 0.14), rgba(45, 156, 202, 0.04));
-        }
-        .con-road-h::after {
-            top: 50%; left: 0; height: 2px; width: 100%; margin-top: -1px;
-            background: repeating-linear-gradient(90deg, rgba(120, 200, 235, 0.5) 0 10px, transparent 10px 22px);
-        }
-        .con-block {
-            position: absolute; border-radius: 4px;
-            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .con-block-a { left: 13%; top: 18%; width: 82px; height: 56px; transform: translateZ(8px); }
-        .con-block-b { left: 72%; top: 64%; width: 74px; height: 66px; transform: translateZ(8px); }
-        .con-block-lvcc {
-            left: 55%; top: 46%; width: 152px; height: 106px;
-            transform: translate(-50%, -50%) translateZ(16px);
-            background: rgba(45, 156, 202, 0.12); border: 1px solid rgba(45, 156, 202, 0.4);
-            box-shadow: 0 0 40px rgba(45, 156, 202, 0.25), inset 0 0 20px rgba(45, 156, 202, 0.10);
-        }
-        .con-maptag {
-            position: absolute; font-size: 0.62rem; letter-spacing: 1px; text-transform: uppercase;
-            color: rgba(240, 239, 244, 0.62); background: rgba(12, 17, 25, 0.55);
-            padding: 3px 8px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.08);
-            transform: translateZ(30px); white-space: nowrap;
-        }
-        .con-maptag-strip { top: 15%; left: 17%; }
-        .con-maptag-paradise { top: 71%; left: 50%; }
-        .con-map-compass {
-            position: absolute; top: 12px; right: 12px; width: 26px; height: 26px;
-            border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.18);
-            color: rgba(240, 239, 244, 0.7); font-size: 0.6rem; font-weight: 700;
-            display: grid; place-items: center; letter-spacing: 0.5px; transform: translateZ(30px);
-        }
-        .con-map-vignette {
-            position: absolute; inset: 0; pointer-events: none;
-            background:
-                radial-gradient(58% 58% at 55% 46%, rgba(45, 156, 202, 0.18), transparent 60%),
-                radial-gradient(120% 100% at 50% 122%, rgba(0, 0, 0, 0.55), transparent 60%);
-        }
-        .con-pinwrap {
-            position: absolute; left: 55%; top: 47%;
-            transform: translate(-50%, -100%) translateZ(55px);
-            display: flex; flex-direction: column; align-items: center; gap: 9px; z-index: 5;
-        }
-        .con-pin-label {
-            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.3px; text-align: center;
-            color: #eaf6fc; background: rgba(12, 17, 25, 0.82);
-            border: 1px solid rgba(45, 156, 202, 0.5); padding: 6px 12px; border-radius: 8px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5); max-width: 208px; line-height: 1.3;
-            -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
-        }
-        .con-pin-mark { position: relative; width: 26px; height: 26px; }
-        .con-pin {
-            position: absolute; left: 50%; top: 0; width: 24px; height: 24px; margin-left: -12px;
-            background: linear-gradient(135deg, #5cc4ee, #2d9cca);
-            border-radius: 50% 50% 50% 0; transform: rotate(45deg);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.55), 0 0 18px rgba(45, 156, 202, 0.8);
-        }
-        .con-pin::after {
-            content: ''; position: absolute; left: 50%; top: 50%; width: 9px; height: 9px;
-            margin: -4.5px 0 0 -4.5px; background: #0c1119; border-radius: 50%; transform: rotate(-45deg);
-        }
-        .con-ping {
-            position: absolute; left: 50%; top: 12px; width: 24px; height: 24px; margin: -12px 0 0 -12px;
-            border-radius: 50%; background: rgba(45, 156, 202, 0.5); animation: con-ping 2.4s ease-out infinite;
-        }
-        @keyframes con-ping {
-            0% { transform: scale(0.5); opacity: 0.85; }
-            100% { transform: scale(2.8); opacity: 0; }
-        }
-
-        /* ---------- Trust strip + marquee ---------- */
-        .con-trust {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 54px;
-        }
-        .con-trust-item {
-            background: linear-gradient(135deg, var(--surface-2) 0%, #2a3442 100%);
-            border: 1px solid var(--border-subtle); border-radius: 6px; padding: 30px 28px;
-            transition: transform 0.35s var(--ease), border-color 0.35s ease, box-shadow 0.35s ease;
-        }
-        .con-trust-item:hover {
-            transform: translateY(-6px); border-color: var(--accent-teal); box-shadow: var(--shadow-teal);
-        }
-        .con-trust-ic {
-            width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center;
-            font-size: 1.5rem; margin-bottom: 18px;
-            background: rgba(45, 156, 202, 0.12); border: 1px solid rgba(45, 156, 202, 0.3);
-        }
-        .con-trust-item h3 { font-size: 1.15rem; color: #fff; margin-bottom: 8px; }
-        .con-trust-item p { color: var(--text-secondary); font-size: 0.96rem; line-height: 1.7; }
+        /* ---------- Show-logo marquee ---------- */
         .con-marquee-head {
             text-align: center; text-transform: uppercase; letter-spacing: 2px;
             font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin: 0 0 26px;
@@ -250,12 +126,8 @@
         @media (max-width: 960px) {
             .con-grid { grid-template-columns: 1fr; gap: 34px; }
         }
-        @media (max-width: 820px) {
-            .con-trust { grid-template-columns: 1fr; }
-        }
         @media (max-width: 520px) {
             .con-chip { font-size: 0.82rem; padding: 9px 13px; }
-            .con-pin-label { max-width: 168px; font-size: 0.66rem; }
         }
     </style>
 </head>
@@ -438,59 +310,15 @@
                         </div>
                     </div>
 
-                    <!-- Pure-CSS stylized map (no external map / iframe) -->
-                    <div class="con-map tilt" data-tilt-max="5" role="img" aria-label="Stylized map of the Las Vegas Convention Center district">
-                        <div class="con-map-streets"></div>
-                        <span class="con-road con-road-strip"></span>
-                        <span class="con-road con-road-v"></span>
-                        <span class="con-road con-road-h"></span>
-                        <span class="con-block con-block-a"></span>
-                        <span class="con-block con-block-b"></span>
-                        <span class="con-block con-block-lvcc"></span>
-                        <span class="con-maptag con-maptag-strip">The Strip</span>
-                        <span class="con-maptag con-maptag-paradise">Paradise Rd</span>
-                        <span class="con-map-compass">N</span>
-                        <div class="con-map-vignette"></div>
-                        <div class="con-pinwrap">
-                            <span class="con-pin-label">Las Vegas Convention Center District</span>
-                            <span class="con-pin-mark"><span class="con-ping"></span><span class="con-pin"></span></span>
-                        </div>
-                        <div class="tilt-glare"></div>
-                    </div>
-
                 </aside>
 
             </div>
         </div>
     </section>
 
-    <!-- ===== TRUST STRIP + SHOW LOGOS ===== -->
+    <!-- ===== SHOW LOGOS ===== -->
     <section class="section alt con-proof">
         <div class="container">
-            <div class="section-head" data-reveal>
-                <span class="eyebrow">Trusted On The Show Floor</span>
-                <h2>Corporate exhibitors count on us</h2>
-                <p>Two decades installing for the industry's biggest stages — delivered on budget, and on time, every show.</p>
-            </div>
-
-            <div class="con-trust reveal-group">
-                <div class="con-trust-item">
-                    <div class="con-trust-ic">🛡️</div>
-                    <h3>Fully Insured &amp; Bonded</h3>
-                    <p>Certificates of insurance issued fast for any Las Vegas venue or show management requirement.</p>
-                </div>
-                <div class="con-trust-item">
-                    <div class="con-trust-ic">🏆</div>
-                    <h3>20+ Years On the Floor</h3>
-                    <p>Seasoned crews who know CES, SEMA, MAGIC, NAB &amp; CONEXPO — and the halls they run in.</p>
-                </div>
-                <div class="con-trust-item">
-                    <div class="con-trust-ic">⏱️</div>
-                    <h3>100% On-Time Record</h3>
-                    <p>Meticulous logistics and vetted I&amp;D crews mean your booth is show-ready before doors open.</p>
-                </div>
-            </div>
-
             <p class="con-marquee-head">Built for the biggest shows in Las Vegas</p>
             <div class="event-logos" data-reveal>
                 <div class="event-logos-track">
