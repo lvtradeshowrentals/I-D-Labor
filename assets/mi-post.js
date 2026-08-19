@@ -102,10 +102,53 @@ const UP_FS = /* glsl */`
     gl_FragColor = vec4(c / 16.0, 1.0);
   }`;
 
+/* half-res AO: 8-tap golden-angle spiral on reconstructed view positions.
+   The world matrix carries a negative determinant (the CSS y-flip), so the
+   normal cross order is swapped relative to textbook. */
+const AO_FS = /* glsl */`
+  uniform sampler2D tDepth;
+  uniform mat4 uInvProj;
+  uniform vec2 uTexel;
+  in vec2 vUv;
+  out vec4 fragColor;
+  vec3 getP(vec2 uv) {
+    float d = texture(tDepth, uv).x * 2.0 - 1.0;
+    vec4 p = uInvProj * vec4(uv * 2.0 - 1.0, d, 1.0);
+    return p.xyz / p.w;
+  }
+  float h21(vec2 p) {
+    p = fract(p * vec2(123.34, 345.45));
+    p += dot(p, p + 34.345);
+    return fract(p.x * p.y);
+  }
+  void main() {
+    vec3 P = getP(vUv);
+    vec3 N = normalize(cross(dFdy(P), dFdx(P)));
+    float rot = h21(gl_FragCoord.xy) * 6.2832;
+    float dist = length(P);
+    /* screen radius shrinks with distance so AO reads world-constant */
+    float rpx = clamp(9000.0 / max(dist, 40.0), 4.0, 26.0);
+    float occ = 0.0;
+    for (int i = 0; i < 6; i++) {
+      float a = rot + float(i) * 2.3999;
+      float r = (float(i) + 0.7) / 8.0;
+      vec2 off = vec2(cos(a), sin(a)) * r * rpx * uTexel;
+      vec3 Ps = getP(vUv + off);
+      vec3 dv = Ps - P;
+      float dl = length(dv);
+      float nd = max(0.0, dot(N, dv / max(dl, 1e-4)) - 0.06);
+      occ += nd * clamp(1.0 - dl / 260.0, 0.0, 1.0);
+    }
+    float ao = clamp(1.0 - occ / 6.0 * 1.9, 0.0, 1.0);
+    fragColor = vec4(ao, ao, ao, 1.0);
+  }`;
+
 const COMPOSITE_FS = /* glsl */`
-  uniform sampler2D tScene, tBloom;
+  uniform sampler2D tScene, tBloom, tAO, tDepth;
   uniform float uExposure, uBloomStrength, uBloomAlpha;
-  uniform float uGrain, uTime, uCA;
+  uniform float uGrain, uTime, uCA, uAOAmt;
+  uniform vec3 uFogCol, uSlope;
+  uniform float uFogK, uFogC, uFogNear, uFogFar, uSat, uVig, uHal;
   varying vec2 vUv;
   ${'' /* AGX inserted below */}
   __AGX__
@@ -126,6 +169,15 @@ const COMPOSITE_FS = /* glsl */`
       col.r = texture2D(tScene, vUv - off).r;
       col.b = texture2D(tScene, vUv + off).b;
     }
+    /* AO on the ambient term only — never on emitters */
+    float ao = texture2D(tAO, vUv).r;
+    col *= mix(1.0, mix(ao, 1.0, smoothstep(0.5, 1.3, luma(col))), uAOAmt);
+    /* aerial perspective: distant structure desaturates and lifts toward
+       the haze — the depth cue that separates a hall from a backdrop */
+    float dRaw = texture2D(tDepth, vUv).x * 2.0 - 1.0;
+    float dist = uFogC / (dRaw + uFogK);
+    float aer = smoothstep(uFogNear, uFogFar, dist) * 0.42;
+    col = mix(col, mix(vec3(luma(col)), uFogCol, 0.6) * max(a, 0.001), aer * a);
     vec3 bloom = texture2D(tBloom, vUv).rgb;
     col += bloom * uBloomStrength;
     /* the spill: glow raises coverage, so booth light lands ON the plan */
@@ -138,12 +190,22 @@ const COMPOSITE_FS = /* glsl */`
     col += g * uGrain * smoothstep(0.012, 0.06, gl2)
          * (1.0 - smoothstep(0.28, 0.65, gl2)) * a;
     col = max(col, 0.0);
+    /* halation: hot light bleeds warm into its surroundings — the single
+       cheapest "shot on film" tell */
+    col += texture2D(tBloom, vUv).rgb * vec3(1.0, 0.45, 0.22)
+         * uHal * (1.0 - smoothstep(0.1, 0.9, luma(col)));
     /* transfer: exposure -> AgX -> sRGB (premultiplied throughout) */
     col = agx(col * uExposure);
-    /* AgX trades saturation for range — buy the punch back, then a gentle
-       crush so the darks sit down instead of floating grey */
+    /* per-beat grade: slope (color balance) + saturation — the DaVinci
+       pass. Each chapter owns a look; the script lerps between them. */
+    col = clamp(col * uSlope, 0.0, 1.4);
     float tl = luma(col);
-    col = clamp(mix(vec3(tl), col, 1.22) * 1.05 - 0.006, 0.0, 1.0);
+    /* steepened toe: blacks PIN (75% of a night frame belongs under 10%) */
+    col = clamp(mix(vec3(tl), col, uSat) * 1.06 - 0.012, 0.0, 1.0);
+    col = pow(col, vec3(1.07));
+    /* per-beat vignette, gentle, multiplied under the DOM's plan vignette */
+    float vd = length(vUv - vec2(0.5, 0.47));
+    col *= 1.0 - uVig * smoothstep(0.42, 0.85, vd);
     col = lin2srgb(col);
     /* TPDF dither kills the navy banding */
     col += (h21(gl_FragCoord.xy) - h21(gl_FragCoord.xy + vec2(37.13, 91.71))) * (1.0 / 255.0);
@@ -153,6 +215,16 @@ const COMPOSITE_FS = /* glsl */`
 function passMat(fs, uniforms) {
   return new THREE.RawShaderMaterial({
     vertexShader: 'precision highp float;\nattribute vec3 position;\n' + VS,
+    fragmentShader: 'precision highp float;\n' + fs,
+    uniforms, depthTest: false, depthWrite: false,
+  });
+}
+/* GLSL ES 3.00 variant — needed for derivative built-ins (the AO pass) */
+function passMat3(fs, uniforms) {
+  return new THREE.RawShaderMaterial({
+    glslVersion: THREE.GLSL3,
+    vertexShader: 'precision highp float;\nin vec3 position;\n' +
+      VS.replace('varying vec2 vUv;', 'out vec2 vUv;'),
     fragmentShader: 'precision highp float;\n' + fs,
     uniforms, depthTest: false, depthWrite: false,
   });
@@ -179,7 +251,7 @@ export class MiPost {
       uBloomAlpha: { value: 0.6 },
       uGrain: { value: 0.012 },
       uTime: { value: 0 },
-      uCA: { value: 0.0006 },
+      uCA: { value: 0.00035 },
       uRadius: { value: 1.0 },
     };
     this.mPre = passMat(PREFILTER_FS, {
@@ -191,12 +263,34 @@ export class MiPost {
       uScale: { value: 1.0 } });
     this.mUp.blending = THREE.AdditiveBlending;
     this.mUp.transparent = true;
+    Object.assign(this.u, {
+      uAOAmt: { value: 0.85 },
+      uFogCol: { value: new THREE.Color(0x14263a) },
+      uFogK: { value: -1 }, uFogC: { value: -80 },
+      uFogNear: { value: 2000 }, uFogFar: { value: 5600 },
+      uSlope: { value: new THREE.Vector3(1, 1, 1) },
+      uSat: { value: 1.15 }, uVig: { value: 0.22 }, uHal: { value: 0.1 },
+    });
     this.mComp = passMat(COMPOSITE_FS.replace('__AGX__', AGX), {
       tScene: { value: null }, tBloom: { value: null },
+      tAO: { value: null }, tDepth: { value: null },
       uExposure: this.u.uExposure, uBloomStrength: this.u.uBloomStrength,
       uBloomAlpha: this.u.uBloomAlpha, uGrain: this.u.uGrain,
-      uTime: this.u.uTime, uCA: this.u.uCA });
+      uTime: this.u.uTime, uCA: this.u.uCA,
+      uAOAmt: this.u.uAOAmt, uFogCol: this.u.uFogCol,
+      uFogK: this.u.uFogK, uFogC: this.u.uFogC,
+      uFogNear: this.u.uFogNear, uFogFar: this.u.uFogFar,
+      uSlope: this.u.uSlope, uSat: this.u.uSat,
+      uVig: this.u.uVig, uHal: this.u.uHal });
+    this.mAO = passMat3(AO_FS, {
+      tDepth: { value: null }, uInvProj: { value: new THREE.Matrix4() },
+      uTexel: { value: new THREE.Vector2() } });
+    this.depthOverride = new THREE.MeshBasicMaterial({ colorWrite: false });
+    this.enableDepth = true;
     this.sceneRT = null;
+    this.depthRT = null;
+    this.aoRT = null;
+    this.reflRT = null;
     this.mips = [];
   }
 
@@ -209,8 +303,38 @@ export class MiPost {
       type: THREE.HalfFloatType, format: THREE.RGBAFormat,
       colorSpace: THREE.LinearSRGBColorSpace,
       minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter,
-      depthBuffer: true, stencilBuffer: false, samples: 4,
+      depthBuffer: true, stencilBuffer: false,
+      samples: (this.lite || location.search.includes('q_nomsaa')) ? 0 : 2,
     });
+    if (this.enableDepth) {
+      const dt = new THREE.DepthTexture(w, h, THREE.UnsignedIntType);
+      this.depthRT = new THREE.WebGLRenderTarget(w, h, {
+        minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter,
+        depthBuffer: true, stencilBuffer: false, depthTexture: dt,
+      });
+      this.aoRT = new THREE.WebGLRenderTarget(
+        Math.max(2, w >> 2), Math.max(2, h >> 2), {
+          minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter,
+          depthBuffer: false, stencilBuffer: false,
+        });
+      /* the wet floor's mirror world — half res, HDR so LED reflections
+         still feed the bloom through the floor */
+      this.reflRT = new THREE.WebGLRenderTarget(
+        Math.max(2, w >> 1), Math.max(2, h >> 1), {
+          type: THREE.HalfFloatType, format: THREE.RGBAFormat,
+          minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter,
+          depthBuffer: true, stencilBuffer: false,
+        });
+      /* one glossy mip: a 13-tap downsample of the mirror world. The floor
+         samples THIS — raw half-res reflections of thin emissives alias
+         into dashed garbage; one blur reads as wet concrete gloss */
+      this.reflBlur = new THREE.WebGLRenderTarget(
+        Math.max(2, w >> 2), Math.max(2, h >> 2), {
+          type: THREE.HalfFloatType, format: THREE.RGBAFormat,
+          minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter,
+          depthBuffer: false, stencilBuffer: false,
+        });
+    }
     this.mips = [];
     let mw = Math.max(2, w >> 1), mh = Math.max(2, h >> 1);
     for (let i = 0; i < MIPS; i++) {
@@ -226,9 +350,26 @@ export class MiPost {
 
   dispose() {
     if (this.sceneRT) this.sceneRT.dispose();
+    if (this.depthRT) this.depthRT.dispose();
+    if (this.aoRT) this.aoRT.dispose();
+    if (this.reflRT) this.reflRT.dispose();
+    if (this.reflBlur) this.reflBlur.dispose();
     for (const m of this.mips) m.dispose();
     this.mips = [];
-    this.sceneRT = null;
+    this.sceneRT = null; this.depthRT = null; this.aoRT = null;
+    this.reflRT = null; this.reflBlur = null;
+  }
+
+  /* blur the freshly rendered mirror world into the glossy mip; returns
+     the texture the wet floor should sample */
+  blurRefl() {
+    if (!this.reflRT) return null;
+    if (!this.reflBlur) return this.reflRT.texture;
+    this.mDown.uniforms.tSrc.value = this.reflRT.texture;
+    this.mDown.uniforms.uTexel.value.set(1 / this.reflRT.width, 1 / this.reflRT.height);
+    this.pass(this.mDown, this.reflBlur);
+    this.renderer.setRenderTarget(null);
+    return this.reflBlur.texture;
   }
 
   pass(mat, target) {
@@ -239,8 +380,25 @@ export class MiPost {
 
   render(scene, camera) {
     const r = this.renderer;
+    if (location.search.includes('q_direct')) { r.setRenderTarget(null); r.render(scene, camera); return; }
     if (!this.sceneRT) this.resize();
     this.u.uTime.value = performance.now() / 1000;
+
+    /* 0 — depth prepass (opaque set, layer 1) for AO + aerial perspective */
+    if (this.enableDepth && this.depthRT) {
+      const prevMask = camera.layers.mask;
+      camera.layers.set(1);
+      scene.overrideMaterial = this.depthOverride;
+      r.setRenderTarget(this.depthRT);
+      r.clear();
+      r.render(scene, camera);
+      scene.overrideMaterial = null;
+      camera.layers.mask = prevMask;
+      this.mAO.uniforms.tDepth.value = this.depthRT.depthTexture;
+      this.mAO.uniforms.uInvProj.value.copy(camera.projectionMatrixInverse);
+      this.mAO.uniforms.uTexel.value.set(1 / this.depthRT.width, 1 / this.depthRT.height);
+      this.pass(this.mAO, this.aoRT);
+    }
 
     /* 1 — scene, HDR, MSAA, alpha 0 */
     r.setRenderTarget(this.sceneRT);
@@ -269,6 +427,10 @@ export class MiPost {
     /* 4 — composite to canvas */
     this.mComp.uniforms.tScene.value = this.sceneRT.texture;
     this.mComp.uniforms.tBloom.value = this.mips[0].texture;
+    if (this.enableDepth && this.aoRT) {
+      this.mComp.uniforms.tAO.value = this.aoRT.texture;
+      this.mComp.uniforms.tDepth.value = this.depthRT.depthTexture;
+    }
     this.pass(this.mComp, null);
     r.setRenderTarget(null);
   }

@@ -517,10 +517,52 @@
         .mi-cam {
             position: absolute; inset: 0;
             z-index: 0;
-
-            perspective: 650px;
-            perspective-origin: 50% 56%;
+            /* THE LENS IS A VARIABLE. --D is focal depth in px (650 = the
+               old fixed lens): 1400 reads telephoto-flat, 480 reads wide
+               and violent. The GL projection consumes the same number. */
+            perspective: calc(var(--D, 650) * 1px);
+            perspective-origin: 50% calc(var(--poy, 0.56) * 100%);
         }
+        /* THE THEATER: 2.39:1 mattes carry the whole sequence. The HUD
+           docks inside the bottom matte like a film slate; captions sit
+           just below the top matte. Released only at the CTA. */
+        .mi-stage { --matte: clamp(0px, calc((100svh - 41.8vw) / 2), 20svh); }
+        .mi-matte {
+            position: absolute; left: 0; right: 0; height: var(--matte);
+            background: #000; z-index: 6; pointer-events: none;
+            transform: translateZ(0);       /* own compositor layer — the GL
+                                               canvas paints over it otherwise */
+            transition: transform .6s cubic-bezier(.22,1,.36,1);
+        }
+        .mi-matte-t { top: 0; }
+        .mi-matte-b { bottom: 0; }
+        
+        .mi-stage.is-hud-out .mi-matte-t { transform: translateY(-101%); }
+        .mi-stage.is-hud-out .mi-matte-b { transform: translateY(101%); }
+        .navbar.mi-dim { opacity: 0.28; transition: opacity .4s ease; }
+        .navbar.mi-dim:hover, .navbar.mi-dim:focus-within { opacity: 1; }
+        /* near-lens air: two turbulence sheets drifting at different rates —
+           the camera stops feeling like it floats in vacuum */
+        .mi-air {
+            position: absolute; inset: -20%; z-index: 3; pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012' numOctaves='3' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0.6  0 0 0 0 0.7  0 0 0 0 0.8  0 0 0 0.5 0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)'/%3E%3C/svg%3E");
+            background-size: 900px 900px;
+            mix-blend-mode: screen; opacity: 0.05;
+            animation: miAir 44s linear infinite alternate;
+        }
+        .mi-air2 {
+            background-size: 1500px 1500px;
+            opacity: 0.035;
+            animation-duration: 67s; animation-direction: alternate-reverse;
+        }
+        @keyframes miAir {
+            from { transform: translate3d(-3%, -2%, 0) scale(1.04); }
+            to   { transform: translate3d(3%, 2%, 0) scale(1.1); }
+        }
+        @media (prefers-reduced-motion: reduce) { .mi-air { animation: none; } }
+        .mi-lite .mi-air { display: none; }
+        .mi-lite .mi-ticket, .mi-lite .mi-tb, .mi-lite .mi-skip {
+            -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
 
         .mi-world {
             position: absolute; inset: 0;
@@ -535,7 +577,7 @@
             display: block;
             overflow: visible;
 
-            opacity: calc(1 - 0.35 * var(--plandim, 0));
+            opacity: calc(1 - 0.42 * var(--plandim, 0));
         }
 
         .fp-stand { transition: opacity .45s ease; }
@@ -702,11 +744,11 @@
         }
         .mi-probe.is-on { opacity: 1; }
 
-        .mi-flat { position: absolute; inset: 0; pointer-events: none; z-index: 4; }
+        .mi-flat { position: absolute; inset: 0; pointer-events: none; z-index: 7; transform: translateZ(0); }
         .mi-flat a, .mi-flat button { pointer-events: auto; }
 
         .mi-ticket {
-            position: absolute; bottom: 9%; left: 4%;
+            position: absolute; bottom: calc(var(--matte) + 16px); left: 4%;
             width: min(31ch, 38%);
             background: linear-gradient(180deg, rgba(9,15,21,.82), rgba(6,11,16,.78));
             -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
@@ -717,13 +759,9 @@
             box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
 
             visibility: hidden;
-            transition: opacity .45s ease, transform .55s cubic-bezier(.22,1,.36,1),
-                        visibility 0s linear .45s;
         }
         .mi-ticket.is-on { opacity: 1; transform: rotate(-0.6deg);
-                           visibility: visible;
-                           transition: opacity .45s ease, transform .55s cubic-bezier(.22,1,.36,1),
-                                       visibility 0s; }
+                           visibility: visible; }
 
         .mi-ticket.is-right {
             left: auto; right: 3%; bottom: auto; top: 88px;
@@ -810,7 +848,8 @@
             border-color: var(--accent-gold); }
         .mi-tb-k { font-size: 0.54rem; font-weight: 800; letter-spacing: .2em;
                    color: rgba(160, 200, 225, 0.55); }
-        .mi-clock { font-size: clamp(1.6rem, 3.6vw, 2.4rem); font-weight: 800;
+        .mi-stage.is-16 .mi-clock { transform: scale(1.22); color: #ffe9c4; }
+        .mi-clock { transform-origin: left center; transition: transform .35s cubic-bezier(.2,1.6,.4,1), color .3s ease; font-size: clamp(1.6rem, 3.6vw, 2.4rem); font-weight: 800;
                     letter-spacing: .04em; line-height: 1; margin: 2px 0 4px;
 
                     color: #ccd9e6; }
@@ -823,15 +862,15 @@
                          color: rgba(160, 200, 225, 0.55); }
         .mi-tally b { color: #fff; font-weight: 800; }
 
-        .mi-say {
+        .mi-say { top: calc(var(--matte) + 26px) !important;
             position: absolute; left: 5%; top: 16%; right: 5%;
             font-size: clamp(1.5rem, 5.2vw, 3.4rem); font-weight: 800;
             letter-spacing: -0.02em; line-height: 1.02;
             color: rgba(240, 239, 244, 0.94);
             text-wrap: balance; opacity: 0;
         }
-        .mi-say { transition: opacity .55s ease; }
         .mi-say.is-on { opacity: 1; }
+        .mi-say em { display: inline-block; }
 
         .sr-live {
             position: absolute; width: 1px; height: 1px; padding: 0;
@@ -857,17 +896,27 @@
                           transition: opacity .5s ease, visibility 0s; }
         .mi-sheet-h { font-size: clamp(1.4rem, 4.4vw, 2.6rem); font-weight: 800;
                       text-align: center; margin-bottom: 4px; }
-        .mi-cards { display: grid; gap: 10px;
+        /* THE MARSHALLING BOARD — the CTA lives inside the hall: a tilted
+           work-order board catching practical light, not a web modal */
+        .mi-cards { display: grid; gap: 12px;
                     grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-                    max-width: 940px; }
+                    max-width: 960px;
+                    perspective: 900px; }
         .mi-card {
-            display: block; text-decoration: none;
-            background: linear-gradient(180deg, rgba(58,47,22,.9), rgba(16,24,32,.9));
-            border: 1px solid rgba(184,165,115,.6);
-            padding: 12px 14px; transform: rotate(-1deg);
-            box-shadow: 0 14px 34px rgba(0,0,0,.5);
+            display: block; text-decoration: none; position: relative;
+            background: linear-gradient(172deg, rgba(52,42,20,.94), rgba(12,18,26,.96) 55%);
+            border: 1px solid rgba(184,165,115,.55);
+            border-top: 3px solid var(--accent-gold);
+            padding: 13px 15px 14px; transform: rotateX(4deg) rotate(-0.5deg);
+            box-shadow: 0 18px 40px rgba(0,0,0,.6),
+                        inset 0 14px 26px rgba(255, 216, 150, 0.07);
         }
-        .mi-card:nth-child(even) { transform: rotate(1.2deg); }
+        .mi-card::before {
+            content: ''; position: absolute; left: 8%; right: 8%; top: -3px;
+            height: 10px; pointer-events: none;
+            background: radial-gradient(50% 100% at 50% 0, rgba(255,220,160,.35), transparent 75%);
+        }
+        .mi-card:nth-child(even) { transform: rotateX(4deg) rotate(0.7deg); }
         .mi-card b { display: block; color: var(--gold-l); font-size: 0.58rem;
                      font-weight: 800; letter-spacing: .2em; margin-bottom: 5px; }
         .mi-card strong { display: block; color: #fff; font-size: 0.94rem;
@@ -887,13 +936,27 @@
 
         @media (max-width: 760px) {
             .mi-track { height: 420vh; }
-            .mi-ticket { left: 10px; right: 10px; width: auto;
-                         bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
-            .mi-tb { right: 10px; top: 72px; bottom: auto; min-width: 0; padding: 7px 10px 8px; }
+            /* one column of chrome, never two: HUD top-right, skip chip
+               top-left, captions BELOW both, tickets pinned to the bottom —
+               on a phone nothing may ever share a band */
+            .mi-ticket, .mi-ticket.is-right {
+                left: 10px; right: 10px; width: auto; top: auto;
+                bottom: calc(var(--matte) + 8px);
+                max-height: 46svh; overflow: hidden;
+                transform: rotate(0deg) translateY(12px);
+            }
+            .mi-ticket.is-on, .mi-ticket.is-right.is-on { transform: rotate(0deg); }
+            .mi-tb { right: 10px; top: 64px; bottom: auto; min-width: 0; padding: 7px 10px 8px; }
+            .mi-tb-k { display: none; }
+            .mi-stage { --matte: 9svh; }
             .mi-skip { top: 64px; left: 10px; }
             .mi-tally { display: none; }
-            .mi-say { top: 12%; }
+            .mi-say { top: 172px; left: 6%; right: 6%; }
             .mi-cards { grid-template-columns: 1fr; }
+            /* the CTA sheet owns the frame — the HUD yields */
+            .mi-stage.is-hud-out .mi-tb,
+            .mi-stage.is-hud-out .mi-skip { opacity: 0; pointer-events: none;
+                transition: opacity .3s ease; }
 
             .fp-tb, .fp-dim, .fp-scale, .fp-north, .fp-cols { display: none; }
             .fp-aisle text { display: none; }
@@ -1735,6 +1798,10 @@
                 <div class="mi-haze" aria-hidden="true"></div>
                 <div class="mi-fog" aria-hidden="true"></div>
 
+                <div class="mi-air" aria-hidden="true"></div>
+                <div class="mi-air mi-air2" aria-hidden="true"></div>
+                <div class="mi-matte mi-matte-t" aria-hidden="true"></div>
+                <div class="mi-matte mi-matte-b" aria-hidden="true"></div>
                 <div class="mi-flat">
                     <a class="mi-skip" href="#labor-stats">SKIP TO BOOKING &darr;</a>
                     <p class="mi-say"></p>
@@ -2105,24 +2172,24 @@
             var YAW  = narrow.matches ? -14 : -20;
 
             var SHOT = [
-                { dRake: -1, yaw: -26, k: 0.86 },
-                { dRake:-10, yaw:  14, k: 0.85 },
-                { dRake:-12, yaw: -18, k: 0.58 },
-                { dRake: -2, yaw:  30, k: 0.95 }
+                { dRake: -1, yaw: -26, k: 0.86, D: 650, poy: 0.56 },
+                { dRake:-10, yaw:  14, k: 0.85, D: 700, poy: 0.52 },
+                { dRake:-12, yaw: -18, k: 0.58, D: 500, poy: 0.58 },
+                { dRake: -2, yaw:  30, k: 0.80, D: 700, poy: 0.58 }
             ];
             function camOf(i) {
                 var w = WO[i], r = w.rect, sh = SHOT[i];
 
                 return { s: ZOOM * sh.k, cx: r[0]+r[2]/2, cy: r[1]+r[3]/2,
-                         rake: RAKE + sh.dRake,
+                         rake: RAKE + sh.dRake, D: sh.D, poy: sh.poy,
                          yaw: sh.yaw * (narrow.matches ? 0.55 : 1) };
             }
-            var WIDE = { s: 1, cx: VBW/2, cy: VBH/2, rake: 0, yaw: 0 };
+            var WIDE = { s: 1, cx: VBW/2, cy: VBH/2, rake: 0, yaw: 0, D: 1400, poy: 0.50 };
             /* the payoff is a MOVE, not a frame: crane back off the last
                finished stand and look down the hall with all four stands
                stacked in depth */
-            var DOORS_A = { s: 3.6, cx: 1300, cy: 1140, rake: 64, yaw: -18 };
-            var DOORS_B = { s: 1.85, cx: 1000, cy: 862, rake: 60, yaw: -32 };
+            var DOORS_A = { s: 3.6, cx: 1300, cy: 1140, rake: 64, yaw: -18, D: 620, poy: 0.56 };
+            var DOORS_B = { s: 2.0, cx: 920, cy: 820, rake: 60, yaw: -32, D: 760, poy: 0.54 };
             function doorsCam(cp) {
                 var t = ss(.04, .70, cp);
                 /* slow push continues through the tail so the climax never freezes */
@@ -2131,7 +2198,8 @@
                          cx: lerp(DOORS_A.cx, DOORS_B.cx, t),
                          cy: lerp(DOORS_A.cy, DOORS_B.cy, t),
                          rake: lerp(DOORS_A.rake, DOORS_B.rake, t),
-                         yaw: lerp(DOORS_A.yaw, DOORS_B.yaw, t) };
+                         yaw: lerp(DOORS_A.yaw, DOORS_B.yaw, t),
+                         D: lerp(DOORS_A.D, DOORS_B.D, t), poy: lerp(DOORS_A.poy, DOORS_B.poy, t) };
             }
             /* WO3's 60ft canyon: the camera dollies along the slot while the
                booth prints, so the reveal front stays put in screen space
@@ -2141,6 +2209,26 @@
                 c.cx += -70 + 150 * ss(.30, .85, cp);
                 return c;
             }
+            /* THE GOLD-INK SHOT: while the stand exists only as burning
+               gold drawing on black glass, the camera drops near the floor
+               — long lens, horizon low — so the ink towers and doubles in
+               the wet mirror. It cranes back up as the gantry prints. */
+            function inkCam(i) {
+                return function (cp) {
+                    var c = (i === 2) ? canyonCam(cp) : camOf(i);
+                    var low = ss(.14, .24, cp) * (1 - ss(.42, .58, cp));
+                    if (low <= 0.001) return c;
+                    return {
+                        s: c.s * lerp(1, 1.16, low),
+                        cx: c.cx,
+                        cy: c.cy + 36 * low,
+                        rake: lerp(c.rake, 81, low),
+                        yaw: c.yaw * lerp(1, 0.72, low),
+                        D: lerp(c.D, 1550, low),
+                        poy: lerp(c.poy, 0.44, low)
+                    };
+                };
+            }
 
             /* tempo follows the work orders: the 52h double-deck is slow and
                establishes the grammar, the 17h coordination job is short and
@@ -2148,14 +2236,14 @@
                the empty afternoon honestly, and the 3h rescue SNAPS. */
             var CH = [
                 { a:0,    b:.055, t0:300, cam:WIDE, kind:'cold' },
-                { a:.055, b:.135, t0:330, cam:{ s:1.14, cx:VBW/2, cy:VBH/2, rake:RAKE, yaw:0 }, kind:'rise' },
-                { a:.135, b:.345, t0:360, cam:camOf(0), kind:'wo', i:0 },
+                { a:.055, b:.135, t0:330, cam:{ s:1.14, cx:VBW/2, cy:VBH/2, rake:RAKE, yaw:0, D:650, poy:0.62 }, kind:'rise' },
+                { a:.135, b:.345, t0:360, cam:camOf(0), camFn:inkCam(0), kind:'wo', i:0 },
                 { a:.345, b:.455, t0:450, cam:camOf(1), kind:'wo', i:1 },
-                { a:.455, b:.635, t0:540, cam:camOf(2), camFn:canyonCam, kind:'wo', i:2 },
-                { a:.635, b:.675, t0:760, cam:{ s:1.42, cx:830, cy:800, rake:56, yaw:-12 }, kind:'lapse' },
+                { a:.455, b:.635, t0:540, cam:camOf(2), camFn:inkCam(2), kind:'wo', i:2 },
+                { a:.635, b:.675, t0:760, cam:{ s:1.85, cx:800, cy:860, rake:58, yaw:-12, D:950, poy:0.50 }, kind:'lapse' },
                 { a:.675, b:.755, t0:887, cam:camOf(3), kind:'wo', i:3 },
                 { a:.755, b:.925, t0:960, cam:DOORS_B, camFn:doorsCam, kind:'doors' },
-                { a:.925, b:1,    t0:960, cam:DOORS_B, kind:'sheet' }
+                { a:.925, b:1,    t0:960, cam:{ s:1.4, cx:940, cy:800, rake:52, yaw:-24, D:1600, poy:0.50 }, kind:'sheet' }
             ];
             var WOCH = [2, 3, 4, 6];   /* chapter index of each work order */
             function chCam(ci, cp) {
@@ -2184,7 +2272,9 @@
                             cx: lerp(A.cx, B.cx, k),
                             cy: lerp(A.cy, B.cy, k),
                             rake: lerp(A.rake, B.rake, k),
-                            yaw: lerp(A.yaw || 0, B.yaw || 0, k)
+                            yaw: lerp(A.yaw || 0, B.yaw || 0, k),
+                            D: lerp(A.D || 650, B.D || 650, k),
+                            poy: lerp(A.poy || 0.56, B.poy || 0.56, k)
                         };
                     }
                 }
@@ -2267,6 +2357,8 @@
             var liveOn = false, raf = 0, last = 0, pPrev = 0, pVel = 0;
 
             var curCh = -1, shownMin = -1, noteN = -1;
+            var navEl = document.querySelector('.navbar');
+            var fpsN = 0, fpsT0 = 0, fpsDone = false;
 
             function setChapter(ci) {
                 var c = CH[ci];
@@ -2289,6 +2381,7 @@
                 } else if (c.kind === 'sheet') {
                     sheet.classList.add('is-on');
                 }
+                stage.classList.toggle('is-hud-out', c.kind === 'sheet');
 
                 var handed = c.kind === 'doors' || c.kind === 'sheet';
                 if (probe) probe.classList.toggle('is-on', handed);
@@ -2358,9 +2451,14 @@
                 if (ci !== curCh) { curCh = ci; setChapter(ci); }
 
                 var camNow = camAt(pCam);
+                var lensD = camNow.D || 650, lensPoy = camNow.poy || 0.56;
+                wProp(stage, 'lD', '--D', lensD.toFixed(0));
+                wProp(stage, 'lPy', '--poy', lensPoy.toFixed(3));
+                if (navEl) navEl.classList.toggle('mi-dim', p > 0.004 && p < 0.996);
                 /* idle drift: the camera breathes when the reader stops —
                    amplitude collapses the moment scroll velocity returns */
-                var idle = 1 - clamp01(Math.abs(pVel) * 6);
+                var idle = window.__miLite ? 0 : 1 - clamp01(Math.abs(pVel) * 6);
+                if (window.__miLite && !stage.classList.contains('mi-lite')) stage.classList.add('mi-lite');
                 var tnow = performance.now() / 1000;
                 var s  = camNow.s * (1 + 0.005 * idle * Math.sin(tnow * 0.449)),
                     cx = camNow.cx,
@@ -2406,7 +2504,7 @@
                        itself up as gold ink -> a light bar sweeps matter in
                        behind it -> dress, crew, coves. The rescue stand
                        skips the drawing: no time — it SNAPS in. */
-                    var sb = fast ? ss(.16, .26, cp) : ss(.24, .32, cp);
+                    var sb = fast ? ss(.12, .20, cp) : ss(.14, .24, cp);
                     var L = lasers[c.i];
                     wAttr(L.trail, 'ltr' + c.i, 'stroke-dashoffset', (100 - sb*100).toFixed(1));
                     wAttr(L.burn, 'lbu' + c.i, 'stroke-dashoffset', (100 - sb*100).toFixed(1));
@@ -2420,38 +2518,41 @@
                         p >= sc2.a + (sc2.b - sc2.a) * 0.33);
                 }
                 if (c.kind === 'wo') {
-                    var b, flat, fill, strike;
+                    /* THE GANTRY IS THE CLOCK: b drives the print front;
+                       the ink drawing is CONSUMED by the front (never faded
+                       out from under itself), dying fully only at dress */
+                    /* OWNER RETIME (2026-08-19): the print is a fast reveal,
+                       the FINISHED stand owns the back ~38% of every chapter
+                       — nobody dwells on scaffolding */
+                    var b, flat, strike;
                     if (fast) {
-                        strike = ss(.24, .36, cp);
-                        b = ss(.30, .58, cp);
-                        flat = 0;
-                        fill = ss(.30, .42, cp);
+                        strike = ss(.20, .30, cp);
+                        b = ss(.26, .54, cp);
+                        flat = 1 - ss(.44, .54, cp);
                     } else {
-                        strike = ss(.32, .42, cp);
-                        b = ss(.36, .88, cp);
-                        flat = 1 - ss(.58, .68, cp);
-                        var fu = ss(.48, .68, cp);
-                        /* fill holds a beat at the fascia line, then finishes hot */
-                        fill = fu < .5 ? easeOutCubic(fu * 2) * 0.65
-                                       : 0.65 + 0.35 * Math.pow((fu - .5) * 2, 3);
+                        strike = ss(.20, .30, cp);
+                        b = ss(.30, .62, cp);
+                        flat = 1 - ss(.56, .66, cp);
                     }
+                    window.__dbg = { p: p, cp: cp, b: b, ci: ci, fast: fast };
                     if (window.MIGL) {
                         MIGL.setB(c.i, b);
-                        MIGL.setReveal(c.i, { flat: flat, fill: fill, strike: strike });
+                        MIGL.setReveal(c.i, { flat: flat, fill: b, strike: strike,
+                            ink: fast ? 1.2 : ss(.26, .36, cp) * 1.25 });
                     }
 
                     /* notes land on structural events: the strike, the solid,
                        the coves — not on arbitrary scroll marks */
                     /* the card is never empty: note 1 is the status line */
-                    var nn = fast ? (cp < .44 ? 1 : cp < .56 ? 2 : 3)
-                                  : (cp < .68 ? 1 : cp < .82 ? 2 : 3);
+                    var nn = fast ? (cp < .38 ? 1 : cp < .50 ? 2 : 3)
+                                  : (cp < .48 ? 1 : cp < .64 ? 2 : 3);
                     if (nn !== noteN) {
                         noteN = nn;
                         ticket.classList.remove('n1','n2','n3');
                         if (nn) ticket.classList.add('n' + nn);
                     }
                     /* the stamp COMMITS — outBack slam as the coves ignite */
-                    var stp = cp < .82 ? 0.9 : 0.9 + 0.1 * outBack(ss(.82, .88, cp));
+                    var stp = cp < .64 ? 0.9 : 0.9 + 0.1 * outBack(ss(.64, .70, cp));
                     wProp(stamp, 'stp', '--st', stp.toFixed(3));
                 }
 
@@ -2489,12 +2590,39 @@
                     dimT = ss(0, .07, cp) * (1 - ss(.09, .17, cp));
                     var su = ss(.10, .30, cp);
                     showT = su >= 1 ? 1 : 1 - Math.pow(2, -10 * su);
-                    say.classList.toggle('is-on', cp >= .17);
+                    stage.classList.toggle('is-16', cp >= .14 && cp < .8);
                 } else if (c.kind === 'sheet') showT = 1;
+
+                /* TYPE IS PRINTED ON THE FILM. Every caption and ticket is a
+                   pure function of scroll — scrub backward and it un-prints.
+                   No wall-clock transition ever moves type again. */
+                var sayO = 0, saySc = 1;
+                if (c.kind === 'cold') sayO = ss(.06, .20, cp) * (1 - ss(.72, .92, cp));
+                else if (c.kind === 'rise') sayO = ss(.08, .22, cp) * (1 - ss(.80, .96, cp));
+                else if (c.kind === 'lapse') sayO = ss(.06, .20, cp) * (1 - ss(.82, .96, cp));
+                else if (c.kind === 'doors') {
+                    sayO = ss(.17, .23, cp);
+                    saySc = 0.9 + 0.1 * outBack(ss(.17, .30, cp));
+                }
+                wStyle(say, 'syO', 'opacity', sayO.toFixed(3));
+                wStyle(say, 'syT', 'transform',
+                    saySc === 1 ? 'none' : 'scale(' + saySc.toFixed(3) + ')');
+                var tickO = 0, tickY = 18;
+                if (c.kind === 'wo') {
+                    var ten = (w.kind === 'rush') ? ss(.26, .38, cp) : ss(.42, .54, cp);
+                    tickO = ten * (1 - ss(.86, .94, cp));
+                    tickY = (1 - ten) * 18;
+                }
+                wStyle(ticket, 'tkO', 'opacity', tickO.toFixed(3));
+                wStyle(ticket, 'tkV', 'visibility', tickO > 0.01 ? 'visible' : 'hidden');
+                wStyle(ticket, 'tkT', 'transform',
+                    'rotate(' + ((c.kind === 'wo' && c.i % 2 === 1) ? '0.6' : '-0.6') +
+                    'deg) translateY(' + tickY.toFixed(1) + 'px)');
                 if (window.MIGL) MIGL.paint({
                     rectW: rectW, rectH: rectH, fit: fit,
                     s: s, tx: tx, ty: ty, rake: rk, yaw: ywEff,
-
+                    D: lensD, poy: lensPoy,
+                    beat: ci, beatT: cp,
                     show: showT,
                     dim: dimT,
                     idle: idle,
@@ -2502,7 +2630,16 @@
                     day: clamp01((mins - 300) / 660)
                 });
 
-                wProp(world, 'pd', '--plandim', showT.toFixed(3));
+                /* the drawing itself obeys the lighting script: near-black
+                   under security light, waking with the dock light */
+                /* the gold-ink beat burns against darkness: while the
+                   subject stand is a flat drawing, the rest of the plan
+                   drops away (pdim > 1 leans on the 0.42 CSS factor) */
+                var pdim = Math.max(showT,
+                    c.kind === 'cold' ? 1.15 :
+                    c.kind === 'rise' ? 0.42 * (1 - cp * 0.6) :
+                    c.kind === 'wo' ? 1.6 * flat : 0);
+                wProp(world, 'pd', '--plandim', pdim.toFixed(3));
 
                 var dq = Math.round(clamp01((mins - 300) / 660) * 24) / 24;
                 var dsh = Math.round(showT * 12) / 12;
@@ -2512,10 +2649,21 @@
                     Math.round(10 + 22 * dq + 26 * dsh) + ')');
             }
 
+            var SNAP = location.search.indexOf('q_snap') >= 0;
             function frame(now) {
                 if (!liveOn) { raf = 0; return; }
                 raf = requestAnimationFrame(frame);
+                if (SNAP) { var rp = progress(); sp.x = rp; spCam.x = rp; paint(rp, rp); last = now; return; }
                 var dt = last ? Math.min((now - last) / 1000, .064) : 1/60; last = now;
+                if (!fpsDone && window.MIGL && !SNAP) {
+                    if (!fpsT0) fpsT0 = now;
+                    fpsN++;
+                    if (now - fpsT0 > 2600) {
+                        fpsDone = true;
+                        var fps = fpsN / ((now - fpsT0) / 1000);
+                        if (fps < 22 && MIGL.setQuality) MIGL.setQuality('lite');
+                    }
+                }
 
                 var raw = progress();
 
