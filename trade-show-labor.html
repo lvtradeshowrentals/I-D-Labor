@@ -59,7 +59,6 @@
             overflow-x: hidden;
         }
 
-        /* ===== NAVIGATION HEADER ===== */
         .navbar {
             position: fixed;
             top: 0;
@@ -170,7 +169,6 @@
             transform: rotate(-45deg) translate(7px, -7px);
         }
 
-        /* Mobile menu overlay */
         .menu-overlay {
             display: none;
             position: fixed;
@@ -189,7 +187,6 @@
             opacity: 1;
         }
 
-        /* ===== HERO SECTION ===== */
         .hero {
             position: relative;
             height: 100vh;
@@ -341,310 +338,586 @@
             justify-content: center;
         }
 
-        /* ===== INTRO SECTION ===== */
-        .intro-section {
-            background: #ffffff;
-            padding: 80px 20px;
+        .ap,
+        .fp {
             position: relative;
-            overflow: hidden;
+            background: #080d12;
+            color: var(--text-primary);
+            scroll-margin-top: 88px;
         }
 
-        /* Top right - Diagonal stripes pattern */
-        .intro-section::before {
-            content: '';
-            position: absolute;
-            top: -150px;
-            right: -100px;
-            width: 600px;
-            height: 600px;
-            background: repeating-linear-gradient(
-                45deg,
-                rgba(45, 156, 202, 0.18),
-                rgba(45, 156, 202, 0.18) 20px,
-                transparent 20px,
-                transparent 40px
-            );
-            clip-path: polygon(30% 0%, 100% 0%, 100% 70%, 0% 100%);
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        /* Bottom left - Abstract blob shape with hexagon pattern */
-        .intro-section::after {
-            content: '';
-            position: absolute;
-            bottom: -180px;
-            left: -120px;
-            width: 550px;
-            height: 550px;
-            background:
-                radial-gradient(circle at 50% 50%, rgba(26, 95, 122, 0.2) 0%, rgba(26, 95, 122, 0.08) 40%, transparent 70%);
-            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-            pointer-events: none;
-            z-index: 0;
-            transform: rotate(15deg);
-        }
-
-        .intro-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-            position: relative;
-            z-index: 10;
-        }
-
-        /* Center-left triangle accent */
-        .intro-content::before {
-            content: '';
-            position: absolute;
-            left: -50px;
-            top: 50%;
-            transform: translateY(-50%) rotate(30deg);
-            width: 200px;
-            height: 200px;
-            background: linear-gradient(135deg, rgba(45, 156, 202, 0.15) 0%, rgba(26, 95, 122, 0.1) 100%);
-            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        /* Right-center small hexagons cluster */
-        .intro-content::after {
-            content: '';
-            position: absolute;
-            right: -30px;
-            top: 60%;
-            width: 150px;
-            height: 150px;
-            background-image:
-                radial-gradient(circle at 30% 30%, rgba(45, 156, 202, 0.25) 15px, transparent 15px),
-                radial-gradient(circle at 70% 50%, rgba(26, 95, 122, 0.2) 20px, transparent 20px),
-                radial-gradient(circle at 50% 75%, rgba(45, 156, 202, 0.15) 12px, transparent 12px);
-            clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
-            pointer-events: none;
-            z-index: -1;
-            transform: rotate(-20deg);
-        }
-
-        .intro-headline {
-            font-size: 2rem;
+        .fl-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.72rem;
             font-weight: 700;
-            color: #1a5f7a;
-            margin-bottom: 25px;
-            line-height: 1.3;
-            text-align: center;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--accent-gold);
         }
 
-        .intro-text {
-            font-size: 1.15rem;
-            line-height: 1.8;
-            color: #2a3442;
-            margin: 0 auto;
-            max-width: 900px;
-            text-align: center;
+        .fl-eyebrow::before {
+            content: '';
+            width: clamp(24px, 4vw, 52px);
+            height: 1px;
+            background: currentColor;
+            opacity: 0.55;
         }
 
-        /* Additional decorative elements for intro section */
-        /* Corner accent - top left triangle */
-        .intro-decor-corner-tl {
+        .ap {
+            overflow: hidden;
+            padding: clamp(92px, 12vh, 156px) 20px clamp(52px, 7vh, 88px);
+        }
+
+        .ap::before,
+        .ap::after {
+            content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 0;
-            height: 0;
-            border-left: 80px solid rgba(45, 156, 202, 0.2);
-            border-bottom: 80px solid transparent;
-            pointer-events: none;
-            z-index: 5;
-        }
-
-        /* Corner accent - bottom right rotated square */
-        .intro-decor-corner-br {
-            position: absolute;
-            bottom: 40px;
-            right: 40px;
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(184, 165, 115, 0.25);
-            transform: rotate(45deg);
-            pointer-events: none;
-            z-index: 5;
-            animation: rotatePulse 6s ease-in-out infinite;
-        }
-
-        @keyframes rotatePulse {
-            0%, 100% {
-                transform: rotate(45deg) scale(1);
-                opacity: 0.25;
-            }
-            50% {
-                transform: rotate(45deg) scale(1.1);
-                opacity: 0.4;
-            }
-        }
-
-        /* Decorative dots pattern - top right */
-        .intro-decor-dots-pattern {
-            position: absolute;
-            top: 20%;
-            right: 10%;
-            width: 120px;
-            height: 120px;
-            background-image:
-                radial-gradient(circle, rgba(26, 95, 122, 0.2) 2px, transparent 2px);
-            background-size: 18px 18px;
-            pointer-events: none;
-            z-index: 2;
-            opacity: 0.7;
-        }
-
-        /* Diagonal line accent - top right */
-        .intro-decor-line-tr {
-            position: absolute;
-            top: 15%;
-            right: 5%;
-            width: 180px;
-            height: 3px;
-            background: linear-gradient(90deg,
-                transparent 0%,
-                rgba(45, 156, 202, 0.4) 30%,
-                rgba(45, 156, 202, 0.6) 50%,
-                rgba(45, 156, 202, 0.4) 70%,
-                transparent 100%);
-            transform: rotate(-35deg);
-            pointer-events: none;
-            z-index: 3;
-        }
-
-        /* Diagonal line accent - bottom left */
-        .intro-decor-line-bl {
-            position: absolute;
-            bottom: 20%;
-            left: 5%;
-            width: 150px;
-            height: 2px;
-            background: linear-gradient(90deg,
-                transparent 0%,
-                rgba(184, 165, 115, 0.4) 30%,
-                rgba(184, 165, 115, 0.6) 50%,
-                rgba(184, 165, 115, 0.4) 70%,
-                transparent 100%);
-            transform: rotate(40deg);
-            pointer-events: none;
-            z-index: 3;
-        }
-
-        /* Small accent circles with animations */
-        .intro-decor-circle-1 {
-            position: absolute;
-            top: 35%;
-            left: 12%;
-            width: 10px;
-            height: 10px;
-            background: rgba(45, 156, 202, 0.5);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 6;
-            animation: pulseGrow 3s ease-in-out infinite;
-        }
-
-        .intro-decor-circle-2 {
-            position: absolute;
-            top: 65%;
-            right: 18%;
-            width: 14px;
-            height: 14px;
-            background: rgba(184, 165, 115, 0.5);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 6;
-            animation: pulseGrow 3s ease-in-out infinite 0.7s;
-        }
-
-        .intro-decor-circle-3 {
-            position: absolute;
-            top: 28%;
-            right: 25%;
-            width: 8px;
-            height: 8px;
-            background: rgba(26, 95, 122, 0.6);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 6;
-            animation: pulseGrow 3s ease-in-out infinite 1.4s;
-        }
-
-        @keyframes pulseGrow {
-            0%, 100% {
-                opacity: 0.5;
-                transform: scale(1);
-            }
-            50% {
-                opacity: 0.9;
-                transform: scale(1.3);
-            }
-        }
-
-        /* Gold accent orb with floating animation */
-        .intro-decor-orb-gold {
-            position: absolute;
-            top: 25%;
-            left: 8%;
-            width: 220px;
-            height: 220px;
-            background: radial-gradient(circle,
-                rgba(184, 165, 115, 0.15) 0%,
-                rgba(184, 165, 115, 0.08) 50%,
-                transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 1;
-            animation: floatSlow 10s ease-in-out infinite;
-        }
-
-        /* Blue accent orb with floating animation */
-        .intro-decor-orb-blue {
-            position: absolute;
-            top: 55%;
-            right: 12%;
-            width: 180px;
-            height: 180px;
-            background: radial-gradient(circle,
-                rgba(45, 156, 202, 0.12) 0%,
-                rgba(45, 156, 202, 0.06) 50%,
-                transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 1;
-            animation: floatSlow 8s ease-in-out infinite 1s;
-        }
-
-        @keyframes floatSlow {
-            0%, 100% {
-                transform: translateY(0px) translateX(0px);
-            }
-            33% {
-                transform: translateY(-15px) translateX(8px);
-            }
-            66% {
-                transform: translateY(-8px) translateX(-12px);
-            }
-        }
-
-        /* Subtle grid overlay */
-        .intro-decor-grid {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image:
-                linear-gradient(rgba(45, 156, 202, 0.04) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(45, 156, 202, 0.04) 1px, transparent 1px);
-            background-size: 60px 60px;
-            pointer-events: none;
+            inset: 0;
             z-index: 0;
-            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .ap::before {
+            background:
+                radial-gradient(120% 90% at 14% 6%, rgba(45, 156, 202, 0.16), transparent 60%),
+                radial-gradient(95% 85% at 90% 94%, rgba(184, 165, 115, 0.1), transparent 64%),
+                linear-gradient(168deg, #101a23 0%, #080d12 60%);
+        }
+
+        .ap::after {
+            opacity: 0.4;
+            background-image:
+                linear-gradient(rgba(45, 156, 202, 0.13) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(45, 156, 202, 0.13) 1px, transparent 1px);
+            background-size: 49.87px 49.87px;
+            -webkit-mask-image: radial-gradient(100% 84% at 50% 38%, #000 18%, transparent 78%);
+                    mask-image: radial-gradient(100% 84% at 50% 38%, #000 18%, transparent 78%);
+        }
+
+        .ap-wrap {
+            position: relative;
+            z-index: 1;
+            max-width: 1240px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            gap: clamp(24px, 4vw, 56px);
+        }
+
+        .ap-h {
+            margin: 20px 0 0;
+            text-align: left;
+            font-size: clamp(2.3rem, 5.2vw, 4.2rem);
+            font-weight: 800;
+            line-height: 1.05;
+            letter-spacing: -0.032em;
+            color: #ffffff;
+        }
+
+        .ap-h em { font-style: normal; color: var(--accent-teal); }
+
+        .ap-copy {
+            font-size: clamp(1.02rem, 1.35vw, 1.14rem);
+            line-height: 1.85;
+            color: var(--text-secondary);
+            max-width: 62ch;
+        }
+
+        .ap-copy strong { color: var(--text-primary); font-weight: 600; }
+
+        .ap-facts {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 26px;
+            margin: 22px 0 0;
+            padding: 16px 0 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+            list-style: none;
+        }
+
+        .ap-facts li {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+        }
+
+        .ap-facts b { color: var(--accent-gold); font-weight: 700; }
+
+        @media (min-width: 940px) {
+            .ap-wrap { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: end; }
+        }
+
+        .ap-sheet {
+            position: relative;
+            z-index: 1;
+            max-width: 1240px;
+            margin: clamp(46px, 6vw, 82px) auto calc(clamp(52px, 7vh, 88px) * -1);
+            padding-top: 26px;
+            border-top: 2px solid rgba(155, 205, 230, 0.5);
+        }
+
+        .ap-sheet::before,
+        .ap-sheet::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            width: 1px;
+            height: 13px;
+            background: rgba(155, 205, 230, 0.5);
+        }
+
+        .ap-sheet::before { left: 0; }
+        .ap-sheet::after { right: 0; }
+
+        .ap-sheet-dim {
+            position: absolute;
+            top: -13px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 0 12px;
+            background: #080d12;
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 0.26em;
+            color: rgba(186, 198, 208, 0.7);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .ap-sheet-dim i { font-style: normal; }
+
+        @property --rake { syntax: "<angle>";  inherits: true; initial-value: 0deg; }
+        @property --yaw  { syntax: "<angle>";  inherits: true; initial-value: 0deg; }
+        @property --wall { syntax: "<number>"; inherits: true; initial-value: 0; }
+
+        .mi {
+            position: relative;
+            background: #05090d;
+            color: var(--text-primary);
+            scroll-margin-top: 88px;
+            --gold-l: #d4bc7d;
+            --teal-h: #96d6f5;
+            --upf: 5;
+        }
+
+        .mi-track { position: relative; height: 560vh; }
+
+        .mi-stage {
+            position: sticky; top: 0;
+            height: 100vh; height: 100svh;
+            overflow: hidden;
+
+            background: var(--daybg, #05090d);
+            isolation: isolate;
+        }
+
+        .mi-cam {
+            position: absolute; inset: 0;
+            z-index: 0;
+
+            perspective: 650px;
+            perspective-origin: 50% 56%;
+        }
+
+        .mi-world {
+            position: absolute; inset: 0;
+            transform-style: preserve-3d;
+            transform: rotateX(var(--rake)) rotateZ(var(--yaw, 0deg));
+            transform-origin: 50% 62%;
+        }
+
+        .mi-plan {
+            position: absolute; inset: 0;
+            width: 100%; height: 100%;
+            display: block;
+            overflow: visible;
+
+            opacity: calc(1 - 0.35 * var(--plandim, 0));
+        }
+
+        .fp-stand { transition: opacity .45s ease; }
+        .fp-stand.is-dim { opacity: 0.22; }
+
+        .fp-floor { fill: #0a1219; }
+        .fp-shell { fill: none; stroke: rgba(155, 205, 230, 0.5); stroke-width: 2.5; }
+        .fp-shell-in { fill: none; stroke: rgba(155, 205, 230, 0.14); stroke-width: 1; }
+        .fp-shell, .fp-shell-in, .fp-b rect, .fp-aisle line, .fp-stand-r, .fp-stand-g,
+        .fp-zone rect, .fp-dim line, .fp-scale line, .fp-north-r,
+
+        .fp-b rect {
+            fill: rgba(45, 156, 202, 0.10);
+            stroke: rgba(125, 195, 228, 0.30);
+            stroke-width: 1;
+        }
+        .fp-col { fill: rgba(155, 205, 230, 0.30); }
+        .fp-col-in { fill: rgba(184, 165, 115, 0.7); }
+
+        .fp-aisle line { stroke: rgba(125, 195, 228, 0.16); stroke-width: 1; stroke-dasharray: 7 11; }
+        .fp-aisle text, .fp-lbl, .fp-zone-t {
+
+            fill: rgba(160, 200, 225, 0.28);
+            font-size: 13px; font-weight: 700; letter-spacing: 2.4px;
+        }
+        .fp-mid { text-anchor: middle; }
+        .fp-zone-t { text-anchor: middle; font-size: 17px; letter-spacing: 1.6px; }
+        .fp-zone rect { fill: rgba(45, 156, 202, 0.04); stroke: rgba(125, 195, 228, 0.22);
+                        stroke-width: 1; stroke-dasharray: 5 6; }
+
+        .fp-dock rect { fill: var(--accent-gold); opacity: 0.8; }
+        .fp-door rect { fill: rgba(155, 205, 230, 0.5); }
+        .fp-dim line, .fp-scale line { stroke: rgba(186, 198, 208, 0.4); stroke-width: 1; }
+        .fp-north-r { fill: none; stroke: rgba(186, 198, 208, 0.32); stroke-width: 1; }
+        .fp-north-a { fill: var(--accent-gold); opacity: 0.85; }
+
+        .fp-tb-box { fill: rgba(6, 11, 16, 0.8); stroke: rgba(186, 198, 208, 0.4); stroke-width: 1.4; }
+        .fp-tb-rule { stroke: rgba(186, 198, 208, 0.24); stroke-width: 1; }
+        .fp-tb-gold { stroke: var(--accent-gold); stroke-width: 2.4; }
+        .fp-tb-h { fill: rgba(226, 236, 244, 0.9); font-size: 22px; font-weight: 800; letter-spacing: 2px; }
+        .fp-tb-k { fill: rgba(160, 200, 225, 0.55); font-size: 15px; font-weight: 700; letter-spacing: 2px; }
+        .fp-tb-v { fill: rgba(226, 236, 244, 0.85); font-size: 18px; font-weight: 700; letter-spacing: 1px; }
+        .fp-tb-rev { fill: var(--accent-gold); }
+        .fp-tb-n { fill: rgba(160, 200, 225, 0.4); font-size: 12px; font-weight: 700; letter-spacing: 1.6px; }
+
+        .fp-truss line { stroke: rgba(150, 214, 245, 0.5); stroke-width: 1.4; }
+        .fp-hoist rect { fill: rgba(184, 165, 115, 0.45); }
+
+        .fp-lay-truss { opacity: calc(var(--wall) * 0.30); }
+
+        .fpx-wall {
+            fill: rgba(10, 21, 30, 0.95);
+            stroke: rgba(125, 195, 228, 0.26);
+            stroke-width: 0.7;
+        }
+        .fp-ext { opacity: var(--wall); }
+        .fp-ext-stands .fpx-wall { fill: rgba(74, 60, 28, 0.95); stroke: rgba(184, 165, 115, 0.5); }
+        .fp-ext-stands .fpx-wall.is-on { fill: rgba(102, 82, 36, 0.96); stroke: var(--accent-gold); }
+
+        .fp-stand-bg { fill: #0a1219; }
+        .fp-stand-r { fill: rgba(184, 165, 115, 0.07); stroke: var(--accent-gold);
+                      stroke-width: 1.6; }
+        .fp-stand-g { fill: none; stroke: rgba(184, 165, 115, 0.3); stroke-width: 1;
+                      stroke-dasharray: 4 4; }
+        .fp-stand-n { fill: var(--gold-l); font-size: 26px; font-weight: 800; letter-spacing: 1px; }
+        .fp-stand-c { fill: rgba(212, 188, 125, 0.7); font-size: 15px; font-weight: 700; letter-spacing: 2px; }
+
+        .fp-bn { fill: rgba(150, 200, 228, 0.5); font-size: 15px; font-weight: 700;
+                 text-anchor: middle; opacity: 0; }
+
+        .mi-field { opacity: var(--field, 1); }
+
+        .mi-laser g { opacity: 0; }
+        .mi-laser g.is-live { opacity: 1; }
+        .mi-laser rect { fill: none; }
+        .mi-trail { stroke: rgba(125, 195, 228, 0.55); stroke-width: 2; }
+        .mi-head  { stroke: var(--teal-h); stroke-width: 3.4; stroke-linecap: round; }
+        .mi-burn  { stroke: var(--gold-l); stroke-width: 10; opacity: 0.30; filter: blur(6px); }
+        .mi-survey { stroke: var(--accent-gold); stroke-width: 1.6; opacity: 0; }
+        .mi-survey.is-on { opacity: 0.85; }
+
+        .mi-gl { position: absolute; inset: 0; z-index: 0;
+                 pointer-events: none; display: block;
+                 width: 100%; height: 100%; }
+
+        .mi-fog {
+            position: absolute; inset: 0; pointer-events: none; z-index: 2;
+
+            background: linear-gradient(to top,
+                transparent 34%,
+                rgba(5, 9, 13, 0.42) 76%,
+                rgba(5, 9, 13, 0.88) 98%);
+        }
+
+        .mi-stage::after {
+            content: ''; position: absolute; left: 0; right: 0; top: 0;
+            height: 122px; pointer-events: none; z-index: 3;
+            background: linear-gradient(to bottom, rgba(4, 8, 14, 0.94),
+                rgba(4, 8, 14, 0.4) 60%, transparent);
+        }
+
+        .mi-vig {
+            position: absolute; inset: 0; pointer-events: none; z-index: 1;
+            background: radial-gradient(120% 90% at 50% 46%,
+                transparent 38%, rgba(5, 9, 13, 0.72) 100%);
+        }
+
+        .mi-haze {
+            position: absolute; inset: 0; pointer-events: none; z-index: 1;
+            opacity: var(--haze, 0);
+            transition: opacity .6s ease;
+            background:
+                radial-gradient(90% 62% at 50% 62%,
+                    rgba(96, 168, 220, .34) 0%,
+                    rgba(46, 104, 156, .20) 34%,
+                    rgba(16, 40, 66, .10) 62%,
+                    transparent 82%),
+                radial-gradient(46% 30% at 50% 70%,
+                    rgba(198, 236, 255, .22), transparent 70%);
+        }
+
+        .mi-js .fp-b { pointer-events: auto; cursor: pointer; }
+        .mi-js .fp-b:hover .fp-bn { opacity: 1; }
+        .mi-js .fp-b rect { transition: fill .16s ease, stroke .16s ease; }
+        .mi-js .fp-b:hover rect,
+        .mi-js .fp-b.is-picked rect {
+            fill: rgba(184, 165, 115, 0.30);
+            stroke: var(--gold-l);
+        }
+        .mi-js .fp-b:focus-visible rect { stroke: var(--accent-teal); stroke-width: 2; }
+
+        .mi-quote {
+            position: absolute; left: 50%; bottom: 12%;
+            transform: translate(-50%, 8px);
+            background: rgba(6, 11, 16, 0.94);
+            border: 1px solid rgba(212, 188, 125, 0.55);
+            border-top: 2px solid var(--accent-gold);
+            padding: 11px 16px 12px; min-width: 268px;
+            opacity: 0; pointer-events: none;
+            box-shadow: 0 18px 44px rgba(0,0,0,.6);
+            transition: opacity .2s ease, transform .28s cubic-bezier(.22,1,.36,1);
+            font-variant-numeric: tabular-nums;
+        }
+        .mi-quote.is-on { opacity: 1; transform: translate(-50%, 0); }
+        .mi-quote b { display: block; font-size: 0.62rem; font-weight: 800;
+                      letter-spacing: .2em; color: rgba(160,200,225,.6);
+                      margin-bottom: 6px; }
+        .mi-quote strong { display: block; color: #fff; font-size: 1.02rem;
+                           font-weight: 800; margin-bottom: 7px; letter-spacing: -.01em; }
+        .mi-quote span { display: block; font-size: 0.66rem; font-weight: 700;
+                         letter-spacing: .13em; color: rgba(226,236,244,.8);
+                         text-transform: uppercase; }
+        .mi-quote em { font-style: normal; color: var(--gold-l); }
+        .mi-quote i { display: block; margin-top: 8px; font-style: normal;
+                      font-size: 0.5rem; letter-spacing: .16em;
+                      color: rgba(160,200,225,.45); text-transform: uppercase; }
+
+        .mi-probe {
+            position: absolute; left: 50%; transform: translateX(-50%);
+            bottom: 5%; font-size: 0.54rem; font-weight: 800;
+            letter-spacing: .22em; text-transform: uppercase;
+            color: rgba(160, 200, 225, 0.45);
+            opacity: 0; transition: opacity .4s ease;
+        }
+        .mi-probe.is-on { opacity: 1; }
+
+        .mi-flat { position: absolute; inset: 0; pointer-events: none; z-index: 4; }
+        .mi-flat a, .mi-flat button { pointer-events: auto; }
+
+        .mi-ticket {
+            position: absolute; bottom: 9%; left: 4%;
+            width: min(31ch, 38%);
+            background: linear-gradient(180deg, rgba(9,15,21,.82), rgba(6,11,16,.78));
+            -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+            border: 1px solid rgba(125, 195, 228, 0.26);
+            border-top: 2px solid var(--accent-gold);
+            padding: 13px 16px 15px;
+            opacity: 0; transform: rotate(-0.6deg) translateY(12px);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+
+            visibility: hidden;
+            transition: opacity .45s ease, transform .55s cubic-bezier(.22,1,.36,1),
+                        visibility 0s linear .45s;
+        }
+        .mi-ticket.is-on { opacity: 1; transform: rotate(-0.6deg);
+                           visibility: visible;
+                           transition: opacity .45s ease, transform .55s cubic-bezier(.22,1,.36,1),
+                                       visibility 0s; }
+
+        .mi-ticket.is-right {
+            left: auto; right: 3%; bottom: auto; top: 88px;
+            max-height: calc(100svh - 88px - 27svh);
+            overflow: hidden;
+            transform: rotate(0.6deg) translateY(12px);
+        }
+        .mi-ticket.is-right.is-on { transform: rotate(0.6deg); }
+
+        .mi-ticket.is-right::after {
+            bottom: auto; top: 100%;
+            background: linear-gradient(to bottom, rgba(212,188,125,.8), transparent);
+        }
+
+        .mi-ticket::after {
+            content: ''; position: absolute; bottom: 100%; left: 28px;
+            width: 1px; height: 0;
+            background: linear-gradient(to top, rgba(212,188,125,.8), transparent);
+            transition: height .6s cubic-bezier(.22,1,.36,1);
+        }
+        .mi-ticket.is-on::after { height: 13vh; }
+        .mi-ticket.is-right::after { left: auto; right: 28px; }
+
+        .mi-ticket::before {
+            content: ''; position: absolute; top: -8px; left: -10px;
+            width: 48px; height: 16px;
+            background: rgba(212, 188, 125, 0.14);
+            border: 1px solid rgba(212, 188, 125, 0.28);
+            transform: rotate(-8deg);
+        }
+        .mi-ticket.is-right::before { left: auto; right: -10px; transform: rotate(8deg); }
+        .mi-wo { display: block; font-size: 0.6rem; font-weight: 800; letter-spacing: .22em;
+                 color: rgba(160, 200, 225, 0.6); margin-bottom: 8px; }
+        .mi-ticket h3 { font-size: clamp(1.05rem, 2.3vw, 1.5rem); font-weight: 800;
+                        letter-spacing: -0.01em; margin: 0 0 10px; text-align: left; }
+        .mi-notes { list-style: none; margin: 0 0 14px; padding: 0;
+                    counter-reset: n; }
+        .mi-notes li {
+            counter-increment: n;
+            position: relative; padding-left: 22px; margin-bottom: 6px;
+            font-size: 0.74rem; line-height: 1.55; letter-spacing: .03em;
+            color: rgba(226, 236, 244, 0.82); text-transform: uppercase;
+            opacity: 0;
+        }
+        .mi-notes li::before {
+            content: counter(n) "."; position: absolute; left: 0;
+            color: var(--accent-gold); font-weight: 800;
+        }
+        .mi-ticket.n1 li:nth-child(1), .mi-ticket.n2 li:nth-child(-n+2),
+        .mi-ticket.n3 li { opacity: 1; }
+
+        .mi-stamp {
+            display: inline-block; transform: rotate(-6deg) scale(var(--st, 0.9));
+            border: 2px double var(--accent-gold); padding: 6px 12px 5px;
+            color: var(--gold-l); text-decoration: none;
+            font-size: 0.72rem; font-weight: 800; letter-spacing: .16em;
+            text-transform: uppercase; line-height: 1.25;
+        }
+        .mi-stamp small { display: block; font-size: 0.52rem; letter-spacing: .2em;
+                          color: rgba(212,188,125,.6); font-weight: 700; }
+        .mi-stamp:hover { background: rgba(184, 165, 115, 0.12); }
+        .mi-stamp:focus-visible { outline: 2px solid var(--accent-teal); outline-offset: 3px; }
+
+        .mi-tb {
+            position: absolute; right: 3%; bottom: 7%;
+            border: 1px solid rgba(186, 198, 208, 0.28);
+            border-top: 2px solid var(--accent-gold);
+
+            background: rgba(6, 11, 16, 0.80);
+            -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, .7);
+            padding: 10px 14px 12px; min-width: 208px;
+            font-variant-numeric: tabular-nums;
+        }
+        .mi-skip {
+            position: absolute; left: 20px; top: 74px; z-index: 6;
+            font-size: 0.56rem; font-weight: 800; letter-spacing: .18em;
+            color: rgba(200, 220, 235, 0.55); text-decoration: none;
+            border: 1px solid rgba(125, 195, 228, 0.22);
+            padding: 6px 10px; background: rgba(6, 11, 16, 0.6);
+            -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+        }
+        .mi-skip:hover, .mi-skip:focus-visible { color: var(--gold-l);
+            border-color: var(--accent-gold); }
+        .mi-tb-k { font-size: 0.54rem; font-weight: 800; letter-spacing: .2em;
+                   color: rgba(160, 200, 225, 0.55); }
+        .mi-clock { font-size: clamp(1.6rem, 3.6vw, 2.4rem); font-weight: 800;
+                    letter-spacing: .04em; line-height: 1; margin: 2px 0 4px;
+
+                    color: #ccd9e6; }
+        .mi-float { font-size: 0.62rem; font-weight: 800; letter-spacing: .16em;
+                    color: rgba(160, 200, 225, 0.7); }
+        .mi-float.is-hot { color: #e0a44f; }
+        .mi-tally { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 10px;
+                    padding-top: 9px; border-top: 1px solid rgba(186, 198, 208, 0.16); }
+        .mi-tally span { font-size: 0.54rem; font-weight: 700; letter-spacing: .14em;
+                         color: rgba(160, 200, 225, 0.55); }
+        .mi-tally b { color: #fff; font-weight: 800; }
+
+        .mi-say {
+            position: absolute; left: 5%; top: 16%; right: 5%;
+            font-size: clamp(1.5rem, 5.2vw, 3.4rem); font-weight: 800;
+            letter-spacing: -0.02em; line-height: 1.02;
+            color: rgba(240, 239, 244, 0.94);
+            text-wrap: balance; opacity: 0;
+        }
+        .mi-say { transition: opacity .55s ease; }
+        .mi-say.is-on { opacity: 1; }
+
+        .sr-live {
+            position: absolute; width: 1px; height: 1px; padding: 0;
+            margin: -1px; overflow: hidden; clip: rect(0 0 0 0);
+            white-space: nowrap; border: 0;
+        }
+        .mi-say em { font-style: normal; color: var(--gold-l); }
+        .mi-say small { display: block; margin-top: 10px;
+                        font-size: 0.28em; font-weight: 800; letter-spacing: .22em;
+                        color: rgba(160, 200, 225, 0.6); }
+
+        .mi-sheet { position: absolute; inset: 0; display: grid; place-content: center;
+                    gap: 12px; padding: 6vh 5vw; opacity: 0;
+                    visibility: hidden;
+                    transition: opacity .5s ease, visibility 0s linear .5s; }
+
+        .mi-sheet::before {
+            content: ''; position: absolute; inset: 0; z-index: -1;
+            background: radial-gradient(64% 58% at 50% 50%,
+                rgba(3, 6, 10, 0.88) 0%, rgba(3, 6, 10, 0.62) 62%, rgba(3, 6, 10, 0.2) 100%);
+        }
+        .mi-sheet.is-on { opacity: 1; visibility: visible;
+                          transition: opacity .5s ease, visibility 0s; }
+        .mi-sheet-h { font-size: clamp(1.4rem, 4.4vw, 2.6rem); font-weight: 800;
+                      text-align: center; margin-bottom: 4px; }
+        .mi-cards { display: grid; gap: 10px;
+                    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+                    max-width: 940px; }
+        .mi-card {
+            display: block; text-decoration: none;
+            background: linear-gradient(180deg, rgba(58,47,22,.9), rgba(16,24,32,.9));
+            border: 1px solid rgba(184,165,115,.6);
+            padding: 12px 14px; transform: rotate(-1deg);
+            box-shadow: 0 14px 34px rgba(0,0,0,.5);
+        }
+        .mi-card:nth-child(even) { transform: rotate(1.2deg); }
+        .mi-card b { display: block; color: var(--gold-l); font-size: 0.58rem;
+                     font-weight: 800; letter-spacing: .2em; margin-bottom: 5px; }
+        .mi-card strong { display: block; color: #fff; font-size: 0.94rem;
+                          font-weight: 800; margin-bottom: 6px; }
+        .mi-card span { display: block; font-size: 0.6rem; font-weight: 700;
+                        letter-spacing: .14em; color: rgba(160, 200, 225, 0.65); }
+        .mi-card:hover { border-color: var(--gold-l); }
+        .mi-card:focus-visible { outline: 2px solid var(--accent-teal); outline-offset: 3px; }
+        .mi-final { text-align: center; font-size: 0.6rem; font-weight: 800;
+                    letter-spacing: .18em; color: rgba(190, 220, 240, 0.85);
+                    margin-top: 4px; }
+
+        .mi-base { max-width: 1100px; margin: 0 auto; padding: 0 20px 80px; }
+        .mi-base img { max-width: 100%; height: auto; }
+        .mi-js .mi-base { position: absolute; width: 1px; height: 1px; padding: 0;
+                          overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+        @media (max-width: 760px) {
+            .mi-track { height: 420vh; }
+            .mi-ticket { left: 10px; right: 10px; width: auto;
+                         bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
+            .mi-tb { right: 10px; top: 72px; bottom: auto; min-width: 0; padding: 7px 10px 8px; }
+            .mi-skip { top: 64px; left: 10px; }
+            .mi-tally { display: none; }
+            .mi-say { top: 12%; }
+            .mi-cards { grid-template-columns: 1fr; }
+
+            .fp-tb, .fp-dim, .fp-scale, .fp-north, .fp-cols { display: none; }
+            .fp-aisle text { display: none; }
+            .mi-tag { display: none; }
+            .mi-burn { display: none; }
+        }
+
+        @media (max-width: 420px) {
+            .mi-ticket { padding: 10px 12px 12px; }
+            .mi-notes li { font-size: 0.68rem; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .mi-track { height: auto; }
+            .mi-stage { position: static; height: auto; overflow: visible; }
+            .mi-cam, .mi-flat { display: none; }
+            .mi-js .mi-base { position: static; width: auto; height: auto;
+                              clip: auto; overflow: visible; white-space: normal; }
+        }
+
+        .sr-only {
+            position: absolute; width: 1px; height: 1px; padding: 0;
+            margin: -1px; overflow: hidden; clip: rect(0 0 0 0);
+            white-space: nowrap; border: 0;
         }
 
         h2 {
@@ -664,13 +937,11 @@
             margin-right: auto;
         }
 
-        /* ===== STATS SECTION ===== */
         .stat-label {
             font-size: 1.1rem;
             color: var(--text-secondary);
         }
 
-        /* ===== FINAL CTA SECTION ===== */
         .final-cta {
             position: relative;
             border-top: 2px solid var(--accent-teal);
@@ -733,11 +1004,6 @@
             margin-top: 30px;
         }
 
-        /* ===== FOOTER =====
-           Mirrors the shared four-column footer the five kit pages get from
-           assets/site.css (.site-footer / .footer-grid / .footer-col). This page
-           does not load site.css, so the rules are duplicated here on purpose —
-           keep the two in step if either is edited. */
         .site-footer {
             background: var(--primary-dark);
             border-top: 1px solid var(--border-subtle);
@@ -747,9 +1013,7 @@
         .footer-grid {
             max-width: 1200px;
             margin: 0 auto;
-            /* The kit pages put .container on this element, which is where their
-               20px side padding comes from. Matched here so the four columns
-               compute to identical widths on both. */
+
             padding: 0 20px;
             display: grid;
             grid-template-columns: 2fr 1fr 1fr 1.2fr;
@@ -820,168 +1084,6 @@
             font-size: 0.9rem;
         }
 
-        /* ===== SERVICES GRID SECTION ===== */
-        .services-grid-section {
-            background: #ffffff;
-            padding: 50px 0 0 0;
-        }
-
-        .services-grid-section h2 {
-            font-size: clamp(2rem, 5vw, 2.5rem);
-            margin-bottom: 60px;
-            text-align: center;
-            padding: 0 20px;
-            color: #1a5f7a;
-            overflow: hidden;
-            white-space: nowrap;
-            opacity: 0;
-            display: inline-block;
-            max-width: 100%;
-        }
-
-        .services-grid-section {
-            text-align: center;
-        }
-
-        .services-grid-section h2.typing {
-            animation: typeIn 1.5s steps(17) forwards;
-            opacity: 1;
-        }
-
-        @keyframes typeIn {
-            from {
-                max-width: 0;
-            }
-            to {
-                max-width: 100%;
-            }
-        }
-
-        .services-color-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 0;
-        }
-
-        .service-color-card {
-            padding: 60px 40px;
-            text-align: center;
-            position: relative;
-            transition: all 0.3s ease;
-            background-size: cover;
-            background-position: center;
-            overflow: hidden;
-            min-height: 320px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transform: translateY(30px);
-        }
-
-        /* Revealed/animated state with fade-in effect */
-        .service-color-card.card-visible {
-            animation: fadeInUpCard 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-        }
-
-        /* Staggered animation delays for each card (0s, 0.2s, 0.4s, 0.6s) */
-        .service-color-card:nth-child(1).card-visible {
-            animation-delay: 0s;
-        }
-
-        .service-color-card:nth-child(2).card-visible {
-            animation-delay: 0.2s;
-        }
-
-        .service-color-card:nth-child(3).card-visible {
-            animation-delay: 0.4s;
-        }
-
-        .service-color-card:nth-child(4).card-visible {
-            animation-delay: 0.6s;
-        }
-
-        @keyframes fadeInUpCard {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .service-color-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            transition: opacity 0.3s ease;
-            z-index: 1;
-        }
-
-        .service-color-card:hover::before {
-            opacity: 0.85;
-        }
-
-        .service-color-card-content {
-            position: relative;
-            z-index: 2;
-        }
-
-        .service-color-card h3 {
-            font-size: 2.2rem;
-            font-weight: 700;
-            color: #ffffff;
-            margin-bottom: 20px;
-            line-height: 1.2;
-        }
-
-        .service-color-card p {
-            font-size: 1.15rem;
-            font-weight: 300;
-            line-height: 1.9;
-            color: rgba(255, 255, 255, 0.92);
-            max-width: 500px;
-            margin: 0 auto;
-            letter-spacing: 0.3px;
-        }
-
-        /* Different color overlays for each card - left to right gradient */
-        .service-color-card:nth-child(1)::before {
-            background: linear-gradient(to right, rgba(15, 50, 75, 1) 0%, rgba(15, 50, 75, 0.92) 50%, rgba(15, 50, 75, 0.5) 100%);
-        }
-
-        .service-color-card:nth-child(2)::before {
-            background: linear-gradient(to right, rgba(45, 52, 84, 1) 0%, rgba(45, 52, 84, 0.85) 50%, rgba(45, 52, 84, 0.4) 100%);
-        }
-
-        .service-color-card:nth-child(3)::before {
-            background: linear-gradient(to right, rgba(15, 60, 75, 1) 0%, rgba(15, 60, 75, 0.85) 50%, rgba(15, 60, 75, 0.4) 100%);
-        }
-
-        .service-color-card:nth-child(4)::before {
-            background: linear-gradient(to right, rgba(45, 52, 64, 1) 0%, rgba(45, 52, 64, 0.85) 50%, rgba(45, 52, 64, 0.4) 100%);
-        }
-
-        /* Tablet: 2 columns */
-        @media (min-width: 768px) {
-            .services-color-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        /* Desktop: 4 columns */
-        @media (min-width: 1200px) {
-            .services-color-grid {
-                grid-template-columns: repeat(4, 1fr);
-            }
-        }
-
-        /* ===== STATS + SOCIAL PROOF ===== */
         .stats-new {
             background: var(--primary-bg);
             padding: 80px 20px;
@@ -1040,7 +1142,6 @@
             max-width: 90%;
         }
 
-        /* Logo track container for seamless infinite scroll */
         .event-logos::before,
         .event-logos::after {
             content: '';
@@ -1052,7 +1153,6 @@
             pointer-events: none;
         }
 
-        /* Fade edges for smooth visual effect */
         .event-logos::before {
             left: 0;
             background: linear-gradient(to right, #ffffff 0%, transparent 100%);
@@ -1063,7 +1163,6 @@
             background: linear-gradient(to left, #ffffff 0%, transparent 100%);
         }
 
-        /* Logo track wrapper */
         .event-logos-track {
             display: flex;
             align-items: center;
@@ -1072,12 +1171,10 @@
             width: max-content;
         }
 
-        /* Pause animation on hover */
         .event-logos:hover .event-logos-track {
             animation-play-state: paused;
         }
 
-        /* Individual logo item container */
         .logo-item {
             flex-shrink: 0;
             display: flex;
@@ -1087,7 +1184,6 @@
             transition: all 0.4s ease;
         }
 
-        /* Logo image styling */
         .event-logo {
             height: 60px;
             width: auto;
@@ -1096,7 +1192,6 @@
             transition: all 0.4s ease;
         }
 
-        /* Seamless infinite scroll animation */
         @keyframes scroll-logos {
             from {
                 transform: translateX(0);
@@ -1106,7 +1201,6 @@
             }
         }
 
-        /* Responsive adjustments for mobile */
         @media (max-width: 768px) {
             .event-logos {
                 max-width: 95%;
@@ -1133,7 +1227,6 @@
             }
         }
 
-        /* Tablet and up: horizontal stats */
         @media (min-width: 768px) {
             .stats-row {
                 grid-template-columns: repeat(3, 1fr);
@@ -1145,7 +1238,6 @@
             }
         }
 
-        /* ===== PRICING REIMAGINED ===== */
         .pricing-new {
             background: var(--primary-dark);
             padding: 80px 20px;
@@ -1244,7 +1336,6 @@
             font-weight: 700;
         }
 
-        /* Testimonial Carousel */
         .pricing-testimonial-carousel {
             max-width: 900px;
             margin: 50px auto 0 auto;
@@ -1293,7 +1384,6 @@
             font-weight: 700;
         }
 
-        /* Desktop: Side by side */
         @media (min-width: 1024px) {
             .pricing-content {
                 flex-direction: row;
@@ -1311,7 +1401,6 @@
             }
         }
 
-        /* Mobile testimonial */
         @media (max-width: 768px) {
             .testimonial-slide {
                 padding: 20px 25px;
@@ -1322,7 +1411,6 @@
             }
         }
 
-        /* ===== TABLET OPTIMIZATION ===== */
         @media (max-width: 1024px) and (min-width: 769px) {
             .navbar-phone a {
                 font-size: 0.8rem;
@@ -1342,7 +1430,6 @@
             }
         }
 
-        /* ===== MOBILE OPTIMIZATION ===== */
         @media (max-width: 768px) {
             .hamburger {
                 display: flex;
@@ -1424,7 +1511,6 @@
                 gap: 15px;
             }
 
-            /* Same two-up collapse the kit pages get from assets/site.css. */
             .footer-grid {
                 grid-template-columns: 1fr 1fr;
                 gap: 30px;
@@ -1442,45 +1528,8 @@
                 margin: 10px 0;
             }
 
-            .intro-section {
-                padding: 50px 20px;
-            }
-
-            /* Make diagonal patterns more transparent on mobile only */
-            .intro-section::before,
-            .intro-section::after {
-                opacity: 0.4;
-            }
-
-            .intro-headline {
-                font-size: 1.5rem;
-            }
-
-            .intro-text {
-                font-size: 1rem;
-                line-height: 1.8;
-            }
-
-            .services-grid-section h2 {
-                white-space: normal;
-            }
-
-            .services-grid-section h2.typing {
-                animation: fadeIn 0.8s ease-in forwards;
-            }
-
-            @keyframes fadeIn {
-                from {
-                    opacity: 0;
-                }
-                to {
-                    opacity: 1;
-                }
-            }
         }
 
-        /* ===== ACCESSIBILITY ===== */
-        /* Single column on phones, matching assets/site.css. */
         @media (max-width: 480px) {
             .footer-grid {
                 grid-template-columns: 1fr;
@@ -1493,7 +1542,6 @@
                 transition: none !important;
             }
 
-            .service-color-card,
             .pricing-testimonial-carousel {
                 opacity: 1;
                 transform: none;
@@ -1501,7 +1549,7 @@
         }</style>
 </head>
 <body>
-    <!-- Mobile menu overlay -->
+
     <div class="menu-overlay" id="menu-overlay"></div>
 
     <!-- ===== NAVIGATION HEADER ===== -->
@@ -1542,8 +1590,6 @@
         <div class="hero-content">
             <h1>Your Booth. Flawless. On Time. Every Time.</h1>
 
-            <!-- Credential line. Was a rate callout; the site no longer
-                 publishes pricing, so it carries trust marks instead. -->
             <div class="hero-pricing">
                 <span class="pricing-context">Vetted &amp; Insured Crews</span> <span class="pricing-divider">|</span> <span class="pricing-context">Install &amp; Dismantle</span> <span class="pricing-divider">|</span> <span class="pricing-context">Rush &amp; Same-Day</span>
             </div>
@@ -1560,66 +1606,210 @@
         </div>
     </section>
 
-    <!-- ===== SERVICES INTRO SECTION ===== -->
-    <section class="intro-section">
-        <!-- Additional decorative elements -->
-        <div class="intro-decor-corner-tl"></div>
-        <div class="intro-decor-corner-br"></div>
-        <div class="intro-decor-dots-pattern"></div>
-        <div class="intro-decor-line-tr"></div>
-        <div class="intro-decor-line-bl"></div>
-        <div class="intro-decor-circle-1"></div>
-        <div class="intro-decor-circle-2"></div>
-        <div class="intro-decor-circle-3"></div>
-        <div class="intro-decor-orb-gold"></div>
-        <div class="intro-decor-orb-blue"></div>
-        <div class="intro-decor-grid"></div>
+    <!-- ===== THE APPROACH ===== -->
+    <section class="ap" id="labor-intro" aria-labelledby="ap-h">
+        <div class="ap-wrap">
+            <div>
+                <span class="fl-eyebrow">Las Vegas &middot; I&amp;D Labor</span>
+                <h2 class="ap-h" id="ap-h">Professional<br>Trade Show <em>Labor</em></h2>
+            </div>
+            <div>
+                <p class="ap-copy">
+                    <strong>LVTSR provides skilled labor crews for every phase of your event.</strong> From complete booth installation and dismantle to on-site coordination, custom display setup, and emergency response&mdash;our experienced technicians handle the heavy lifting so you can focus on your business. Trusted labor partner for CES, SEMA, MAGIC, and every major Las Vegas trade show.
+                </p>
+                <ul class="ap-facts">
+                    <li><b>Vetted</b> &amp; Insured Crews</li>
+                    <li><b>Same-Day</b> Response</li>
+                    <li><b>20+</b> Years On The Floor</li>
+                </ul>
+            </div>
+        </div>
 
-        <div class="intro-content">
-            <h2 class="intro-headline">Professional Trade Show Labor</h2>
-            <p class="intro-text">
-                LVTSR provides skilled labor crews for every phase of your event. From complete booth installation and dismantle to on-site coordination, custom display setup, and emergency response—our experienced technicians handle the heavy lifting so you can focus on your business. Trusted labor partner for CES, SEMA, MAGIC, and every major Las Vegas trade show.
-            </p>
+        <div class="ap-sheet" aria-hidden="true">
+            <span class="ap-sheet-dim"><i>300 FT</i></span>
         </div>
     </section>
 
-    <!-- ===== SERVICES GRID SECTION ===== -->
-    <section class="services-grid-section">
-        <h2>What We Do Best</h2>
+    <!-- ===== MOVE-IN — the scroll bar is the show clock ===== -->
+    <section class="mi" id="what-we-do-best" aria-labelledby="mi-h">
+        <h2 id="mi-h" class="sr-only">Four trades, out on the floor</h2>
 
-        <div class="services-color-grid">
-            <div class="service-color-card" style="background-image: url('assets/service-install.jpg');">
-                <div class="service-color-card-content">
-                    <h3>Installation & Dismantle</h3>
-                    <p>Professional booth assembly from structural builds to final staging. Our crews handle complex setups with precision and speed.</p>
+        <noscript>
+            <style>
+                .mi-track { height: auto; }
+                .mi-stage { position: static; height: auto; overflow: visible; }
+                .mi-cam, .mi-flat { display: none; }
+            </style>
+        </noscript>
+
+        <div class="mi-track">
+            <div class="mi-stage">
+                <div class="mi-cam">
+                    <div class="mi-world">
+                        <svg class="mi-plan" viewBox="0 0 1600 1520"
+                             preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+                        <defs>
+
+                            <pattern id="fpWeaveA" width="19" height="19" patternUnits="userSpaceOnUse" patternTransform="rotate(23)">
+                                <circle cx="1.4" cy="1.4" r=".85" fill="rgba(150,200,226,.055)"/>
+                                <circle cx="10.9" cy="10.9" r=".85" fill="rgba(150,200,226,.038)"/>
+                            </pattern>
+                            <pattern id="fpWeaveB" width="47" height="47" patternUnits="userSpaceOnUse" patternTransform="rotate(-11)">
+                                <path d="M0 23.5 H47 M23.5 0 V47" stroke="rgba(45,156,202,.05)" stroke-width=".6"/>
+                            </pattern>
+                            <pattern id="fpGridFine" width="32" height="32" patternUnits="userSpaceOnUse">
+                                <path d="M32 0 V32 M0 32 H32" stroke="rgba(150,200,226,.075)" stroke-width=".5"/>
+                            </pattern>
+                        </defs>
+                        <g class="fp-lay fp-lay-plan">
+                            <rect class="fp-floor" x="52" y="52" width="1496" height="1296.5"/>
+                            <rect x="66" y="66" width="1468" height="1268.5" fill="url(#fpGridFine)"/>
+                            <rect x="66" y="66" width="1468" height="1268.5" fill="url(#fpWeaveB)"/>
+                            <rect x="66" y="66" width="1468" height="1268.5" fill="url(#fpWeaveA)"/>
+                            <rect class="fp-shell" x="52" y="52" width="1496" height="1296.5" rx="2"/>
+                            <rect class="fp-shell-in" x="66" y="66" width="1468" height="1268.5" rx="2"/>
+                            <g class="fp-cols"><rect class="fp-col" x="146" y="96" width="12" height="12"/><rect class="fp-col fp-col-in" x="146" y="395" width="12" height="12"/><rect class="fp-col fp-col-in" x="146" y="694" width="12" height="12"/><rect class="fp-col fp-col-in" x="146" y="993" width="12" height="12"/><rect class="fp-col" x="146" y="1293" width="12" height="12"/><rect class="fp-col" x="445" y="96" width="12" height="12"/><rect class="fp-col fp-col-in" x="445" y="395" width="12" height="12"/><rect class="fp-col fp-col-in" x="445" y="694" width="12" height="12"/><rect class="fp-col fp-col-in" x="445" y="993" width="12" height="12"/><rect class="fp-col" x="445" y="1293" width="12" height="12"/><rect class="fp-col" x="744" y="96" width="12" height="12"/><rect class="fp-col fp-col-in" x="744" y="395" width="12" height="12"/><rect class="fp-col fp-col-in" x="744" y="694" width="12" height="12"/><rect class="fp-col fp-col-in" x="744" y="993" width="12" height="12"/><rect class="fp-col" x="744" y="1293" width="12" height="12"/><rect class="fp-col" x="1043" y="96" width="12" height="12"/><rect class="fp-col fp-col-in" x="1043" y="395" width="12" height="12"/><rect class="fp-col" x="1043" y="694" width="12" height="12"/><rect class="fp-col fp-col-in" x="1043" y="993" width="12" height="12"/><rect class="fp-col" x="1043" y="1293" width="12" height="12"/><rect class="fp-col" x="1343" y="96" width="12" height="12"/><rect class="fp-col fp-col-in" x="1343" y="395" width="12" height="12"/><rect class="fp-col fp-col-in" x="1343" y="694" width="12" height="12"/><rect class="fp-col fp-col-in" x="1343" y="993" width="12" height="12"/><rect class="fp-col" x="1343" y="1293" width="12" height="12"/></g>
+                            <g class="fp-ext" aria-hidden="true"><path class="fpx-wall" d="M102 202 H202 V187 H102 Z"/><path class="fpx-wall" d="M501 202 H601 V187 H501 Z"/><path class="fpx-wall" d="M601 202 H700 V187 H601 Z"/><path class="fpx-wall" d="M700 202 H800 V187 H700 Z"/><path class="fpx-wall" d="M800 202 H850 V187 H800 Z"/><path class="fpx-wall" d="M900 202 H999 V187 H900 Z"/><path class="fpx-wall" d="M999 202 H1099 V187 H999 Z"/><path class="fpx-wall" d="M1099 202 H1199 V187 H1099 Z"/><path class="fpx-wall" d="M1199 202 H1349 V187 H1199 Z"/><path class="fpx-wall" d="M1349 202 H1498 V187 H1349 Z"/><path class="fpx-wall" d="M102 251 H202 V236 H102 Z"/><path class="fpx-wall" d="M401 251 H501 V236 H401 Z"/><path class="fpx-wall" d="M501 251 H650 V236 H501 Z"/><path class="fpx-wall" d="M650 251 H850 V236 H650 Z"/><path class="fpx-wall" d="M900 251 H950 V236 H900 Z"/><path class="fpx-wall" d="M950 251 H1049 V236 H950 Z"/><path class="fpx-wall" d="M1049 251 H1099 V236 H1049 Z"/><path class="fpx-wall" d="M1099 251 H1149 V236 H1099 Z"/><path class="fpx-wall" d="M1149 251 H1199 V236 H1149 Z"/><path class="fpx-wall" d="M1199 251 H1249 V236 H1199 Z"/><path class="fpx-wall" d="M1299 251 H1349 V236 H1299 Z"/><path class="fpx-wall" d="M1349 251 H1398 V236 H1349 Z"/><path class="fpx-wall" d="M1398 251 H1448 V236 H1398 Z"/><path class="fpx-wall" d="M102 401 H202 V386 H102 Z"/><path class="fpx-wall" d="M202 401 H301 V386 H202 Z"/><path class="fpx-wall" d="M301 401 H401 V386 H301 Z"/><path class="fpx-wall" d="M401 401 H601 V386 H401 Z"/><path class="fpx-wall" d="M601 401 H700 V386 H601 Z"/><path class="fpx-wall" d="M700 401 H750 V386 H700 Z"/><path class="fpx-wall" d="M750 401 H900 V386 H750 Z"/><path class="fpx-wall" d="M900 401 H950 V386 H900 Z"/><path class="fpx-wall" d="M950 401 H1049 V386 H950 Z"/><path class="fpx-wall" d="M1049 401 H1149 V386 H1049 Z"/><path class="fpx-wall" d="M1149 401 H1249 V386 H1149 Z"/><path class="fpx-wall" d="M1299 401 H1448 V386 H1299 Z"/><path class="fpx-wall" d="M1448 401 H1498 V386 H1448 Z"/><path class="fpx-wall" d="M102 551 H301 V536 H102 Z"/><path class="fpx-wall" d="M301 551 H351 V536 H301 Z"/><path class="fpx-wall" d="M351 551 H451 V536 H351 Z"/><path class="fpx-wall" d="M501 551 H601 V536 H501 Z"/><path class="fpx-wall" d="M601 551 H750 V536 H601 Z"/><path class="fpx-wall" d="M750 551 H850 V536 H750 Z"/><path class="fpx-wall" d="M900 551 H1049 V536 H900 Z"/><path class="fpx-wall" d="M1349 551 H1398 V536 H1349 Z"/><path class="fpx-wall" d="M102 601 H301 V586 H102 Z"/><path class="fpx-wall" d="M301 601 H351 V586 H301 Z"/><path class="fpx-wall" d="M351 601 H451 V586 H351 Z"/><path class="fpx-wall" d="M501 601 H650 V586 H501 Z"/><path class="fpx-wall" d="M650 601 H700 V586 H650 Z"/><path class="fpx-wall" d="M700 601 H900 V586 H700 Z"/><path class="fpx-wall" d="M900 601 H999 V586 H900 Z"/><path class="fpx-wall" d="M999 601 H1099 V586 H999 Z"/><path class="fpx-wall" d="M1299 601 H1498 V586 H1299 Z"/><path class="fpx-wall" d="M102 750 H251 V735 H102 Z"/><path class="fpx-wall" d="M251 750 H351 V735 H251 Z"/><path class="fpx-wall" d="M351 750 H401 V735 H351 Z"/><path class="fpx-wall" d="M401 750 H551 V735 H401 Z"/><path class="fpx-wall" d="M551 750 H700 V735 H551 Z"/><path class="fpx-wall" d="M700 750 H800 V735 H700 Z"/><path class="fpx-wall" d="M1199 750 H1249 V735 H1199 Z"/><path class="fpx-wall" d="M1299 750 H1448 V735 H1299 Z"/><path class="fpx-wall" d="M102 850 H202 V835 H102 Z"/><path class="fpx-wall" d="M202 850 H351 V835 H202 Z"/><path class="fpx-wall" d="M351 850 H451 V835 H351 Z"/><path class="fpx-wall" d="M900 850 H999 V835 H900 Z"/><path class="fpx-wall" d="M999 850 H1149 V835 H999 Z"/><path class="fpx-wall" d="M1149 850 H1199 V835 H1149 Z"/><path class="fpx-wall" d="M1199 850 H1299 V835 H1199 Z"/><path class="fpx-wall" d="M1299 850 H1398 V835 H1299 Z"/><path class="fpx-wall" d="M1398 850 H1498 V835 H1398 Z"/><path class="fpx-wall" d="M102 900 H152 V885 H102 Z"/><path class="fpx-wall" d="M152 900 H251 V885 H152 Z"/><path class="fpx-wall" d="M251 900 H351 V885 H251 Z"/><path class="fpx-wall" d="M351 900 H401 V885 H351 Z"/><path class="fpx-wall" d="M401 900 H501 V885 H401 Z"/><path class="fpx-wall" d="M900 900 H1099 V885 H900 Z"/><path class="fpx-wall" d="M1099 900 H1199 V885 H1099 Z"/><path class="fpx-wall" d="M1199 900 H1249 V885 H1199 Z"/><path class="fpx-wall" d="M1299 900 H1398 V885 H1299 Z"/><path class="fpx-wall" d="M1398 900 H1498 V885 H1398 Z"/><path class="fpx-wall" d="M102 1099 H251 V1084 H102 Z"/><path class="fpx-wall" d="M251 1099 H301 V1084 H251 Z"/><path class="fpx-wall" d="M301 1099 H401 V1084 H301 Z"/><path class="fpx-wall" d="M401 1099 H551 V1084 H401 Z"/><path class="fpx-wall" d="M551 1099 H750 V1084 H551 Z"/><path class="fpx-wall" d="M750 1099 H850 V1084 H750 Z"/><path class="fpx-wall" d="M900 1099 H999 V1084 H900 Z"/><path class="fpx-wall" d="M999 1099 H1049 V1084 H999 Z"/><path class="fpx-wall" d="M1049 1099 H1199 V1084 H1049 Z"/><path class="fpx-wall" d="M1199 1099 H1299 V1084 H1199 Z"/><path class="fpx-wall" d="M1299 1099 H1448 V1084 H1299 Z"/><path class="fpx-wall" d="M102 1199 H301 V1184 H102 Z"/><path class="fpx-wall" d="M301 1199 H501 V1184 H301 Z"/><path class="fpx-wall" d="M501 1199 H551 V1184 H501 Z"/><path class="fpx-wall" d="M551 1199 H601 V1184 H551 Z"/><path class="fpx-wall" d="M601 1199 H700 V1184 H601 Z"/><path class="fpx-wall" d="M700 1199 H800 V1184 H700 Z"/><path class="fpx-wall" d="M800 1199 H999 V1184 H800 Z"/><path class="fpx-wall" d="M999 1199 H1149 V1184 H999 Z"/><path class="fpx-wall" d="M1149 1199 H1249 V1184 H1149 Z"/><path class="fpx-wall" d="M102 1249 H301 V1234 H102 Z"/><path class="fpx-wall" d="M301 1249 H351 V1234 H301 Z"/><path class="fpx-wall" d="M351 1249 H451 V1234 H351 Z"/><path class="fpx-wall" d="M501 1249 H601 V1234 H501 Z"/><path class="fpx-wall" d="M601 1249 H700 V1234 H601 Z"/><path class="fpx-wall" d="M700 1249 H800 V1234 H700 Z"/><path class="fpx-wall" d="M800 1249 H850 V1234 H800 Z"/><path class="fpx-wall" d="M900 1249 H950 V1234 H900 Z"/><path class="fpx-wall" d="M950 1249 H999 V1234 H950 Z"/><path class="fpx-wall" d="M999 1249 H1199 V1234 H999 Z"/><path class="fpx-wall" d="M1199 1249 H1249 V1234 H1199 Z"/></g>
+                            <g class="fp-booths"><g class="fp-b" data-n="1002" data-size="20×10"><rect x="102" y="152" width="100" height="50" rx="1"/><text class="fp-bn" x="152" y="183">1002</text></g><g class="fp-b" data-n="1018" data-size="20×10"><rect x="501" y="152" width="100" height="50" rx="1"/><text class="fp-bn" x="551" y="183">1018</text></g><g class="fp-b" data-n="1022" data-size="20×10"><rect x="601" y="152" width="99" height="50" rx="1"/><text class="fp-bn" x="650.5" y="183">1022</text></g><g class="fp-b" data-n="1026" data-size="20×10"><rect x="700" y="152" width="100" height="50" rx="1"/><text class="fp-bn" x="750" y="183">1026</text></g><g class="fp-b" data-n="1030" data-size="10×10"><rect x="800" y="152" width="50" height="50" rx="1"/><text class="fp-bn" x="825" y="183">1030</text></g><g class="fp-b" data-n="1034" data-size="20×10"><rect x="900" y="152" width="99" height="50" rx="1"/><text class="fp-bn" x="949.5" y="183">1034</text></g><g class="fp-b" data-n="1038" data-size="20×10"><rect x="999" y="152" width="100" height="50" rx="1"/><text class="fp-bn" x="1049" y="183">1038</text></g><g class="fp-b" data-n="1042" data-size="20×10"><rect x="1099" y="152" width="100" height="50" rx="1"/><text class="fp-bn" x="1149" y="183">1042</text></g><g class="fp-b" data-n="1046" data-size="30×10"><rect x="1199" y="152" width="150" height="50" rx="1"/><text class="fp-bn" x="1274" y="183">1046</text></g><g class="fp-b" data-n="1052" data-size="30×10"><rect x="1349" y="152" width="149" height="50" rx="1"/><text class="fp-bn" x="1423.5" y="183">1052</text></g><g class="fp-b" data-n="1001" data-size="20×10"><rect x="102" y="202" width="100" height="49" rx="1"/><text class="fp-bn" x="152" y="232.5">1001</text></g><g class="fp-b" data-n="1013" data-size="20×10"><rect x="401" y="202" width="100" height="49" rx="1"/><text class="fp-bn" x="451" y="232.5">1013</text></g><g class="fp-b" data-n="1017" data-size="30×10"><rect x="501" y="202" width="149" height="49" rx="1"/><text class="fp-bn" x="575.5" y="232.5">1017</text></g><g class="fp-b" data-n="1023" data-size="40×10"><rect x="650" y="202" width="200" height="49" rx="1"/><text class="fp-bn" x="750" y="232.5">1023</text></g><g class="fp-b" data-n="1033" data-size="10×10"><rect x="900" y="202" width="50" height="49" rx="1"/><text class="fp-bn" x="925" y="232.5">1033</text></g><g class="fp-b" data-n="1035" data-size="20×10"><rect x="950" y="202" width="99" height="49" rx="1"/><text class="fp-bn" x="999.5" y="232.5">1035</text></g><g class="fp-b" data-n="1039" data-size="10×10"><rect x="1049" y="202" width="50" height="49" rx="1"/><text class="fp-bn" x="1074" y="232.5">1039</text></g><g class="fp-b" data-n="1041" data-size="10×10"><rect x="1099" y="202" width="50" height="49" rx="1"/><text class="fp-bn" x="1124" y="232.5">1041</text></g><g class="fp-b" data-n="1043" data-size="10×10"><rect x="1149" y="202" width="50" height="49" rx="1"/><text class="fp-bn" x="1174" y="232.5">1043</text></g><g class="fp-b" data-n="1045" data-size="10×10"><rect x="1199" y="202" width="50" height="49" rx="1"/><text class="fp-bn" x="1224" y="232.5">1045</text></g><g class="fp-b" data-n="1049" data-size="10×10"><rect x="1299" y="202" width="50" height="49" rx="1"/><text class="fp-bn" x="1324" y="232.5">1049</text></g><g class="fp-b" data-n="1051" data-size="10×10"><rect x="1349" y="202" width="49" height="49" rx="1"/><text class="fp-bn" x="1373.5" y="232.5">1051</text></g><g class="fp-b" data-n="1053" data-size="10×10"><rect x="1398" y="202" width="50" height="49" rx="1"/><text class="fp-bn" x="1423" y="232.5">1053</text></g><g class="fp-b" data-n="2002" data-size="20×20"><rect x="102" y="301" width="100" height="100" rx="1"/><text class="fp-bn" x="152" y="357">2002</text></g><g class="fp-b" data-n="2006" data-size="20×20"><rect x="202" y="301" width="99" height="100" rx="1"/><text class="fp-bn" x="251.5" y="357">2006</text></g><g class="fp-b" data-n="2010" data-size="20×20"><rect x="301" y="301" width="100" height="100" rx="1"/><text class="fp-bn" x="351" y="357">2010</text></g><g class="fp-b" data-n="2014" data-size="40×20"><rect x="401" y="301" width="200" height="100" rx="1"/><text class="fp-bn" x="501" y="357">2014</text></g><g class="fp-b" data-n="2022" data-size="20×20"><rect x="601" y="301" width="99" height="100" rx="1"/><text class="fp-bn" x="650.5" y="357">2022</text></g><g class="fp-b" data-n="2026" data-size="10×20"><rect x="700" y="301" width="50" height="100" rx="1"/><text class="fp-bn" x="725" y="357">2026</text></g><g class="fp-b" data-n="2028" data-size="30×20"><rect x="750" y="301" width="150" height="100" rx="1"/><text class="fp-bn" x="825" y="357">2028</text></g><g class="fp-b" data-n="2034" data-size="10×20"><rect x="900" y="301" width="50" height="100" rx="1"/><text class="fp-bn" x="925" y="357">2034</text></g><g class="fp-b" data-n="2036" data-size="20×20"><rect x="950" y="301" width="99" height="100" rx="1"/><text class="fp-bn" x="999.5" y="357">2036</text></g><g class="fp-b" data-n="2040" data-size="20×20"><rect x="1049" y="301" width="100" height="100" rx="1"/><text class="fp-bn" x="1099" y="357">2040</text></g><g class="fp-b" data-n="2044" data-size="20×20"><rect x="1149" y="301" width="100" height="100" rx="1"/><text class="fp-bn" x="1199" y="357">2044</text></g><g class="fp-b" data-n="2050" data-size="30×20"><rect x="1299" y="301" width="149" height="100" rx="1"/><text class="fp-bn" x="1373.5" y="357">2050</text></g><g class="fp-b" data-n="2056" data-size="10×20"><rect x="1448" y="301" width="50" height="100" rx="1"/><text class="fp-bn" x="1473" y="357">2056</text></g><g class="fp-b" data-n="3002" data-size="40×10"><rect x="102" y="501" width="199" height="50" rx="1"/><text class="fp-bn" x="201.5" y="532">3002</text></g><g class="fp-b" data-n="3010" data-size="10×10"><rect x="301" y="501" width="50" height="50" rx="1"/><text class="fp-bn" x="326" y="532">3010</text></g><g class="fp-b" data-n="3012" data-size="20×10"><rect x="351" y="501" width="100" height="50" rx="1"/><text class="fp-bn" x="401" y="532">3012</text></g><g class="fp-b" data-n="3018" data-size="20×10"><rect x="501" y="501" width="100" height="50" rx="1"/><text class="fp-bn" x="551" y="532">3018</text></g><g class="fp-b" data-n="3022" data-size="30×10"><rect x="601" y="501" width="149" height="50" rx="1"/><text class="fp-bn" x="675.5" y="532">3022</text></g><g class="fp-b" data-n="3028" data-size="20×10"><rect x="750" y="501" width="100" height="50" rx="1"/><text class="fp-bn" x="800" y="532">3028</text></g><g class="fp-b" data-n="3034" data-size="30×10"><rect x="900" y="501" width="149" height="50" rx="1"/><text class="fp-bn" x="974.5" y="532">3034</text></g><g class="fp-b" data-n="3052" data-size="10×10"><rect x="1349" y="501" width="49" height="50" rx="1"/><text class="fp-bn" x="1373.5" y="532">3052</text></g><g class="fp-b" data-n="3001" data-size="40×10"><rect x="102" y="551" width="199" height="50" rx="1"/><text class="fp-bn" x="201.5" y="582">3001</text></g><g class="fp-b" data-n="3009" data-size="10×10"><rect x="301" y="551" width="50" height="50" rx="1"/><text class="fp-bn" x="326" y="582">3009</text></g><g class="fp-b" data-n="3011" data-size="20×10"><rect x="351" y="551" width="100" height="50" rx="1"/><text class="fp-bn" x="401" y="582">3011</text></g><g class="fp-b" data-n="3017" data-size="30×10"><rect x="501" y="551" width="149" height="50" rx="1"/><text class="fp-bn" x="575.5" y="582">3017</text></g><g class="fp-b" data-n="3023" data-size="10×10"><rect x="650" y="551" width="50" height="50" rx="1"/><text class="fp-bn" x="675" y="582">3023</text></g><g class="fp-b" data-n="3025" data-size="40×10"><rect x="700" y="551" width="200" height="50" rx="1"/><text class="fp-bn" x="800" y="582">3025</text></g><g class="fp-b" data-n="3033" data-size="20×10"><rect x="900" y="551" width="99" height="50" rx="1"/><text class="fp-bn" x="949.5" y="582">3033</text></g><g class="fp-b" data-n="3037" data-size="20×10"><rect x="999" y="551" width="100" height="50" rx="1"/><text class="fp-bn" x="1049" y="582">3037</text></g><g class="fp-b" data-n="3049" data-size="40×10"><rect x="1299" y="551" width="199" height="50" rx="1"/><text class="fp-bn" x="1398.5" y="582">3049</text></g><g class="fp-b" data-n="4002" data-size="30×20"><rect x="102" y="650" width="149" height="100" rx="1"/><text class="fp-bn" x="176.5" y="706">4002</text></g><g class="fp-b" data-n="4008" data-size="20×20"><rect x="251" y="650" width="100" height="100" rx="1"/><text class="fp-bn" x="301" y="706">4008</text></g><g class="fp-b" data-n="4012" data-size="10×20"><rect x="351" y="650" width="50" height="100" rx="1"/><text class="fp-bn" x="376" y="706">4012</text></g><g class="fp-b" data-n="4014" data-size="30×20"><rect x="401" y="650" width="150" height="100" rx="1"/><text class="fp-bn" x="476" y="706">4014</text></g><g class="fp-b" data-n="4020" data-size="30×20"><rect x="551" y="650" width="149" height="100" rx="1"/><text class="fp-bn" x="625.5" y="706">4020</text></g><g class="fp-b" data-n="4026" data-size="20×20"><rect x="700" y="650" width="100" height="100" rx="1"/><text class="fp-bn" x="750" y="706">4026</text></g><g class="fp-b" data-n="4046" data-size="10×20"><rect x="1199" y="650" width="50" height="100" rx="1"/><text class="fp-bn" x="1224" y="706">4046</text></g><g class="fp-b" data-n="4050" data-size="30×20"><rect x="1299" y="650" width="149" height="100" rx="1"/><text class="fp-bn" x="1373.5" y="706">4050</text></g><g class="fp-b" data-n="5002" data-size="20×10"><rect x="102" y="800" width="100" height="50" rx="1"/><text class="fp-bn" x="152" y="831">5002</text></g><g class="fp-b" data-n="5006" data-size="30×10"><rect x="202" y="800" width="149" height="50" rx="1"/><text class="fp-bn" x="276.5" y="831">5006</text></g><g class="fp-b" data-n="5012" data-size="20×10"><rect x="351" y="800" width="100" height="50" rx="1"/><text class="fp-bn" x="401" y="831">5012</text></g><g class="fp-b" data-n="5034" data-size="20×10"><rect x="900" y="800" width="99" height="50" rx="1"/><text class="fp-bn" x="949.5" y="831">5034</text></g><g class="fp-b" data-n="5038" data-size="30×10"><rect x="999" y="800" width="150" height="50" rx="1"/><text class="fp-bn" x="1074" y="831">5038</text></g><g class="fp-b" data-n="5044" data-size="10×10"><rect x="1149" y="800" width="50" height="50" rx="1"/><text class="fp-bn" x="1174" y="831">5044</text></g><g class="fp-b" data-n="5046" data-size="20×10"><rect x="1199" y="800" width="100" height="50" rx="1"/><text class="fp-bn" x="1249" y="831">5046</text></g><g class="fp-b" data-n="5050" data-size="20×10"><rect x="1299" y="800" width="99" height="50" rx="1"/><text class="fp-bn" x="1348.5" y="831">5050</text></g><g class="fp-b" data-n="5054" data-size="20×10"><rect x="1398" y="800" width="100" height="50" rx="1"/><text class="fp-bn" x="1448" y="831">5054</text></g><g class="fp-b" data-n="5001" data-size="10×10"><rect x="102" y="850" width="50" height="50" rx="1"/><text class="fp-bn" x="127" y="881">5001</text></g><g class="fp-b" data-n="5003" data-size="20×10"><rect x="152" y="850" width="99" height="50" rx="1"/><text class="fp-bn" x="201.5" y="881">5003</text></g><g class="fp-b" data-n="5007" data-size="20×10"><rect x="251" y="850" width="100" height="50" rx="1"/><text class="fp-bn" x="301" y="881">5007</text></g><g class="fp-b" data-n="5011" data-size="10×10"><rect x="351" y="850" width="50" height="50" rx="1"/><text class="fp-bn" x="376" y="881">5011</text></g><g class="fp-b" data-n="5013" data-size="20×10"><rect x="401" y="850" width="100" height="50" rx="1"/><text class="fp-bn" x="451" y="881">5013</text></g><g class="fp-b" data-n="5033" data-size="40×10"><rect x="900" y="850" width="199" height="50" rx="1"/><text class="fp-bn" x="999.5" y="881">5033</text></g><g class="fp-b" data-n="5041" data-size="20×10"><rect x="1099" y="850" width="100" height="50" rx="1"/><text class="fp-bn" x="1149" y="881">5041</text></g><g class="fp-b" data-n="5045" data-size="10×10"><rect x="1199" y="850" width="50" height="50" rx="1"/><text class="fp-bn" x="1224" y="881">5045</text></g><g class="fp-b" data-n="5049" data-size="20×10"><rect x="1299" y="850" width="99" height="50" rx="1"/><text class="fp-bn" x="1348.5" y="881">5049</text></g><g class="fp-b" data-n="5053" data-size="20×10"><rect x="1398" y="850" width="100" height="50" rx="1"/><text class="fp-bn" x="1448" y="881">5053</text></g><g class="fp-b" data-n="6002" data-size="30×20"><rect x="102" y="999" width="149" height="100" rx="1"/><text class="fp-bn" x="176.5" y="1055">6002</text></g><g class="fp-b" data-n="6008" data-size="10×20"><rect x="251" y="999" width="50" height="100" rx="1"/><text class="fp-bn" x="276" y="1055">6008</text></g><g class="fp-b" data-n="6010" data-size="20×20"><rect x="301" y="999" width="100" height="100" rx="1"/><text class="fp-bn" x="351" y="1055">6010</text></g><g class="fp-b" data-n="6014" data-size="30×20"><rect x="401" y="999" width="150" height="100" rx="1"/><text class="fp-bn" x="476" y="1055">6014</text></g><g class="fp-b" data-n="6020" data-size="40×20"><rect x="551" y="999" width="199" height="100" rx="1"/><text class="fp-bn" x="650.5" y="1055">6020</text></g><g class="fp-b" data-n="6028" data-size="20×20"><rect x="750" y="999" width="100" height="100" rx="1"/><text class="fp-bn" x="800" y="1055">6028</text></g><g class="fp-b" data-n="6034" data-size="20×20"><rect x="900" y="999" width="99" height="100" rx="1"/><text class="fp-bn" x="949.5" y="1055">6034</text></g><g class="fp-b" data-n="6038" data-size="10×20"><rect x="999" y="999" width="50" height="100" rx="1"/><text class="fp-bn" x="1024" y="1055">6038</text></g><g class="fp-b" data-n="6040" data-size="30×20"><rect x="1049" y="999" width="150" height="100" rx="1"/><text class="fp-bn" x="1124" y="1055">6040</text></g><g class="fp-b" data-n="6046" data-size="20×20"><rect x="1199" y="999" width="100" height="100" rx="1"/><text class="fp-bn" x="1249" y="1055">6046</text></g><g class="fp-b" data-n="6050" data-size="30×20"><rect x="1299" y="999" width="149" height="100" rx="1"/><text class="fp-bn" x="1373.5" y="1055">6050</text></g><g class="fp-b" data-n="7002" data-size="40×10"><rect x="102" y="1149" width="199" height="50" rx="1"/><text class="fp-bn" x="201.5" y="1180">7002</text></g><g class="fp-b" data-n="7010" data-size="40×10"><rect x="301" y="1149" width="200" height="50" rx="1"/><text class="fp-bn" x="401" y="1180">7010</text></g><g class="fp-b" data-n="7018" data-size="10×10"><rect x="501" y="1149" width="50" height="50" rx="1"/><text class="fp-bn" x="526" y="1180">7018</text></g><g class="fp-b" data-n="7020" data-size="10×10"><rect x="551" y="1149" width="50" height="50" rx="1"/><text class="fp-bn" x="576" y="1180">7020</text></g><g class="fp-b" data-n="7022" data-size="20×10"><rect x="601" y="1149" width="99" height="50" rx="1"/><text class="fp-bn" x="650.5" y="1180">7022</text></g><g class="fp-b" data-n="7026" data-size="20×10"><rect x="700" y="1149" width="100" height="50" rx="1"/><text class="fp-bn" x="750" y="1180">7026</text></g><g class="fp-b" data-n="7030" data-size="40×10"><rect x="800" y="1149" width="199" height="50" rx="1"/><text class="fp-bn" x="899.5" y="1180">7030</text></g><g class="fp-b" data-n="7038" data-size="30×10"><rect x="999" y="1149" width="150" height="50" rx="1"/><text class="fp-bn" x="1074" y="1180">7038</text></g><g class="fp-b" data-n="7044" data-size="20×10"><rect x="1149" y="1149" width="100" height="50" rx="1"/><text class="fp-bn" x="1199" y="1180">7044</text></g><g class="fp-b" data-n="7001" data-size="40×10"><rect x="102" y="1199" width="199" height="50" rx="1"/><text class="fp-bn" x="201.5" y="1230">7001</text></g><g class="fp-b" data-n="7009" data-size="10×10"><rect x="301" y="1199" width="50" height="50" rx="1"/><text class="fp-bn" x="326" y="1230">7009</text></g><g class="fp-b" data-n="7011" data-size="20×10"><rect x="351" y="1199" width="100" height="50" rx="1"/><text class="fp-bn" x="401" y="1230">7011</text></g><g class="fp-b" data-n="7017" data-size="20×10"><rect x="501" y="1199" width="100" height="50" rx="1"/><text class="fp-bn" x="551" y="1230">7017</text></g><g class="fp-b" data-n="7021" data-size="20×10"><rect x="601" y="1199" width="99" height="50" rx="1"/><text class="fp-bn" x="650.5" y="1230">7021</text></g><g class="fp-b" data-n="7025" data-size="20×10"><rect x="700" y="1199" width="100" height="50" rx="1"/><text class="fp-bn" x="750" y="1230">7025</text></g><g class="fp-b" data-n="7029" data-size="10×10"><rect x="800" y="1199" width="50" height="50" rx="1"/><text class="fp-bn" x="825" y="1230">7029</text></g><g class="fp-b" data-n="7033" data-size="10×10"><rect x="900" y="1199" width="50" height="50" rx="1"/><text class="fp-bn" x="925" y="1230">7033</text></g><g class="fp-b" data-n="7035" data-size="10×10"><rect x="950" y="1199" width="49" height="50" rx="1"/><text class="fp-bn" x="974.5" y="1230">7035</text></g><g class="fp-b" data-n="7037" data-size="40×10"><rect x="999" y="1199" width="200" height="50" rx="1"/><text class="fp-bn" x="1099" y="1230">7037</text></g><g class="fp-b" data-n="7045" data-size="10×10"><rect x="1199" y="1199" width="50" height="50" rx="1"/><text class="fp-bn" x="1224" y="1230">7045</text></g></g>
+                            <g class="fp-aisles"><g class="fp-aisle"><line x1="102" y1="127.1" x2="1498" y2="127.1"/><text x="110" y="117.1">AISLE 1200</text><text x="800" y="117.1" text-anchor="middle">AISLE 1200</text><text x="1490" y="117.1" text-anchor="end">AISLE 1200</text></g><g class="fp-aisle"><line x1="102" y1="276.1" x2="1498" y2="276.1"/><text x="110" y="266.1">AISLE 2200</text><text x="800" y="266.1" text-anchor="middle">AISLE 2200</text><text x="1490" y="266.1" text-anchor="end">AISLE 2200</text></g><g class="fp-aisle"><line x1="102" y1="476.1" x2="1498" y2="476.1"/><text x="110" y="466.1">AISLE 3200</text><text x="800" y="466.1" text-anchor="middle">AISLE 3200</text><text x="1490" y="466.1" text-anchor="end">AISLE 3200</text></g><g class="fp-aisle"><line x1="102" y1="625.1" x2="1498" y2="625.1"/><text x="110" y="615.1">AISLE 4200</text><text x="800" y="615.1" text-anchor="middle">AISLE 4200</text><text x="1490" y="615.1" text-anchor="end">AISLE 4200</text></g><g class="fp-aisle"><line x1="102" y1="775.1" x2="1498" y2="775.1"/><text x="110" y="765.1">AISLE 5200</text><text x="800" y="765.1" text-anchor="middle">AISLE 5200</text><text x="1490" y="765.1" text-anchor="end">AISLE 5200</text></g><g class="fp-aisle"><line x1="102" y1="974.1" x2="1498" y2="974.1"/><text x="110" y="964.1">AISLE 6200</text><text x="800" y="964.1" text-anchor="middle">AISLE 6200</text><text x="1490" y="964.1" text-anchor="end">AISLE 6200</text></g><g class="fp-aisle"><line x1="102" y1="1124.1" x2="1498" y2="1124.1"/><text x="110" y="1114.1">AISLE 7200</text><text x="800" y="1114.1" text-anchor="middle">AISLE 7200</text><text x="1490" y="1114.1" text-anchor="end">AISLE 7200</text></g><g class="fp-aisle"><line x1="102" y1="450.9" x2="1498" y2="450.9"/><text x="110" y="440.9">SERVICE CORRIDOR</text><text x="800" y="440.9" text-anchor="middle">SERVICE CORRIDOR</text><text x="1490" y="440.9" text-anchor="end">SERVICE CORRIDOR</text></g><g class="fp-aisle"><line x1="102" y1="949.9" x2="1498" y2="949.9"/><text x="110" y="939.9">SERVICE CORRIDOR</text><text x="800" y="939.9" text-anchor="middle">SERVICE CORRIDOR</text><text x="1490" y="939.9" text-anchor="end">SERVICE CORRIDOR</text></g></g>
+                            <g class="fp-furniture">
+            <g class="fp-zone"><rect x="102" y="1249" width="199" height="100" rx="1"/><text class="fp-zone-t" x="201.5" y="1307">REGISTRATION</text></g><g class="fp-zone"><rect x="301" y="1249" width="150" height="100" rx="1"/><text class="fp-zone-t" x="376" y="1307">RESTROOMS</text></g><g class="fp-zone"><rect x="1099" y="1249" width="200" height="100" rx="1"/><text class="fp-zone-t" x="1199" y="1307">SHOW OFFICE</text></g><g class="fp-zone"><rect x="1299" y="1249" width="199" height="100" rx="1"/><text class="fp-zone-t" x="1398.5" y="1307">CONCESSIONS</text></g><g class="fp-zone"><rect x="1398" y="1149" width="100" height="100" rx="1"/><text class="fp-zone-t" x="1448" y="1207">BULK</text></g><g class="fp-zone"><rect x="950" y="650" width="149" height="100" rx="1"/><text class="fp-zone-t" x="1024.5" y="708">LOUNGE</text></g>
+            <g class="fp-dock">
+                <rect x="52" y="237.9" width="16" height="176"/>
+                <rect x="52" y="586.9" width="16" height="176"/>
+                <rect x="1532" y="586.9" width="16" height="176"/>
+                <text class="fp-lbl" x="88" y="325.9" transform="rotate(-90 88 325.9)">FREIGHT</text>
+                <text class="fp-lbl" x="88" y="674.9" transform="rotate(-90 88 674.9)">FREIGHT</text>
+                <text class="fp-lbl" x="1512" y="674.9" transform="rotate(-90 1512 674.9)" text-anchor="middle">FREIGHT</text>
+            </g>
+            <g class="fp-door">
+                <rect x="560" y="1332.5" width="150" height="16"/><rect x="900" y="1332.5" width="150" height="16"/>
+                <text class="fp-lbl fp-mid" x="620" y="1396.5">MAIN ENTRANCE</text>
+            </g>
+            <g class="fp-dim">
+                <line x1="52" y1="32" x2="1548" y2="32"/><line x1="52" y1="22" x2="52" y2="42"/><line x1="1548" y1="22" x2="1548" y2="42"/>
+                <text class="fp-lbl fp-mid" x="800" y="20">300 FT</text>
+            </g>
+            <g class="fp-scale">
+                <line x1="92" y1="1444" x2="291.5" y2="1444"/><line x1="92" y1="1436" x2="92" y2="1452"/>
+                <line x1="191.7" y1="1438" x2="191.7" y2="1450"/>
+                <line x1="291.5" y1="1436" x2="291.5" y2="1452"/>
+                <text class="fp-lbl fp-mid" x="92" y="1428">0</text><text class="fp-lbl fp-mid" x="191.7" y="1428">20</text>
+                <text class="fp-lbl fp-mid" x="291.5" y="1428">40 FT</text>
+            </g>
+            <g class="fp-tb">
+                <rect class="fp-tb-box" x="962" y="1366" width="586" height="152"/>
+                <line class="fp-tb-rule" x1="962" y1="1408" x2="1548" y2="1408"/>
+                <line class="fp-tb-rule" x1="1272" y1="1408" x2="1272" y2="1488"/>
+                <line class="fp-tb-gold" x1="962" y1="1366" x2="1548" y2="1366"/>
+                <text class="fp-tb-h" x="978" y="1396">LVTSR &#183; SHOW FLOOR PLAN</text>
+                <text class="fp-tb-k" x="978" y="1432">HALL</text>
+                <text class="fp-tb-v" x="978" y="1456">CENTRAL &#183; 300 &#215; 260 FT</text>
+                <text class="fp-tb-k" x="978" y="1478">MODULE</text>
+                <text class="fp-tb-v" x="1082" y="1478">10 FT</text>
+                <text class="fp-tb-k" x="1288" y="1432">SHEET</text>
+                <text class="fp-tb-v fp-tb-rev" x="1288" y="1456">MI-01</text>
+                <text class="fp-tb-k" x="1288" y="1478">DRAWN</text>
+                <text class="fp-tb-v" x="1382" y="1478">LVTSR</text>
+                <text class="fp-tb-n" x="978" y="1508">NOTES: ILLUSTRATIVE MOVE-IN SEQUENCE &#183; NOT FOR CONSTRUCTION</text>
+            </g>
+            <g class="fp-north" transform="translate(880 1424)">
+                <circle class="fp-north-r" r="30"/><path class="fp-north-a" d="M0 -20 L8 10 L0 3 L-8 10 Z"/>
+                <text class="fp-lbl fp-mid" y="-38">N</text>
+            </g>
+                            </g>
+                            <g class="fp-ext fp-ext-stands" aria-hidden="true"><path class="fpx-wall fpx-s" data-ext="0" d="M202 251 H401 V217 H202 Z"/><path class="fpx-wall fpx-s" data-ext="1" d="M1099 601 H1299 V567 H1099 Z"/><path class="fpx-wall fpx-s" data-ext="2" d="M551 900 H850 V866 H551 Z"/><path class="fpx-wall fpx-s" data-ext="3" d="M1299 1249 H1398 V1215 H1299 Z"/></g>
+                            <g class="fp-stands"><g class="fp-stand" data-stand="0"><rect class="fp-stand-bg" x="202" y="152" width="199" height="99" rx="1"/><rect class="fp-stand-r" x="202" y="152" width="199" height="99" rx="1"/><rect class="fp-stand-g" x="208" y="158" width="187" height="87" rx="1"/><text class="fp-stand-n" x="214" y="186">1006</text><text class="fp-stand-c" x="214" y="237">LVTSR &#183; 0600</text></g><g class="fp-stand" data-stand="1"><rect class="fp-stand-bg" x="1099" y="501" width="200" height="100" rx="1"/><rect class="fp-stand-r" x="1099" y="501" width="200" height="100" rx="1"/><rect class="fp-stand-g" x="1105" y="507" width="188" height="88" rx="1"/><text class="fp-stand-n" x="1111" y="535">3042</text><text class="fp-stand-c" x="1111" y="587">LVTSR &#183; 0730</text></g><g class="fp-stand" data-stand="2"><rect class="fp-stand-bg" x="551" y="800" width="299" height="100" rx="1"/><rect class="fp-stand-r" x="551" y="800" width="299" height="100" rx="1"/><rect class="fp-stand-g" x="557" y="806" width="287" height="88" rx="1"/><text class="fp-stand-n" x="563" y="834">5020</text><text class="fp-stand-c" x="563" y="886">LVTSR &#183; 0900</text></g><g class="fp-stand" data-stand="3"><rect class="fp-stand-bg" x="1299" y="1149" width="99" height="100" rx="1"/><rect class="fp-stand-r" x="1299" y="1149" width="99" height="100" rx="1"/><rect class="fp-stand-g" x="1305" y="1155" width="87" height="88" rx="1"/><text class="fp-stand-n" x="1311" y="1183">7050</text><text class="fp-stand-c" x="1311" y="1235">LVTSR &#183; On Call</text></g></g>
+                            <g class="fp-crews" aria-hidden="true"></g>
+                        </g>
+
+                        <g class="fp-lay fp-lay-truss">
+                            <g class="fp-truss"><line x1="240" y1="70" x2="240" y2="1334"/><line x1="472" y1="70" x2="472" y2="1334"/><line x1="704" y1="70" x2="704" y2="1334"/><line x1="936" y1="70" x2="936" y2="1334"/><line x1="1168" y1="70" x2="1168" y2="1334"/><line x1="1400" y1="70" x2="1400" y2="1334"/><line x1="70" y1="250" x2="1530" y2="250"/><line x1="70" y1="510" x2="1530" y2="510"/><line x1="70" y1="770" x2="1530" y2="770"/><line x1="70" y1="1030" x2="1530" y2="1030"/></g>
+                            <g class="fp-hoist"><rect x="236" y="246" width="8" height="8" transform="rotate(45 240 250)"/><rect x="236" y="506" width="8" height="8" transform="rotate(45 240 510)"/><rect x="236" y="766" width="8" height="8" transform="rotate(45 240 770)"/><rect x="236" y="1026" width="8" height="8" transform="rotate(45 240 1030)"/><rect x="468" y="246" width="8" height="8" transform="rotate(45 472 250)"/><rect x="468" y="506" width="8" height="8" transform="rotate(45 472 510)"/><rect x="468" y="766" width="8" height="8" transform="rotate(45 472 770)"/><rect x="468" y="1026" width="8" height="8" transform="rotate(45 472 1030)"/><rect x="700" y="246" width="8" height="8" transform="rotate(45 704 250)"/><rect x="700" y="506" width="8" height="8" transform="rotate(45 704 510)"/><rect x="700" y="766" width="8" height="8" transform="rotate(45 704 770)"/><rect x="700" y="1026" width="8" height="8" transform="rotate(45 704 1030)"/><rect x="932" y="246" width="8" height="8" transform="rotate(45 936 250)"/><rect x="932" y="506" width="8" height="8" transform="rotate(45 936 510)"/><rect x="932" y="766" width="8" height="8" transform="rotate(45 936 770)"/><rect x="932" y="1026" width="8" height="8" transform="rotate(45 936 1030)"/><rect x="1164" y="246" width="8" height="8" transform="rotate(45 1168 250)"/><rect x="1164" y="506" width="8" height="8" transform="rotate(45 1168 510)"/><rect x="1164" y="766" width="8" height="8" transform="rotate(45 1168 770)"/><rect x="1164" y="1026" width="8" height="8" transform="rotate(45 1168 1030)"/><rect x="1396" y="246" width="8" height="8" transform="rotate(45 1400 250)"/><rect x="1396" y="506" width="8" height="8" transform="rotate(45 1400 510)"/><rect x="1396" y="766" width="8" height="8" transform="rotate(45 1400 770)"/><rect x="1396" y="1026" width="8" height="8" transform="rotate(45 1400 1030)"/></g>
+                        </g>
+                        </svg>
+                    </div>
                 </div>
-            </div>
 
-            <div class="service-color-card" style="background-image: url('assets/service-coordination.jpg');">
-                <div class="service-color-card-content">
-                    <h3>On-Site Coordination</h3>
-                    <p>Project management throughout your event. We coordinate with union labor, vendors, and venue staff to keep everything on schedule.</p>
-                </div>
-            </div>
+                <div class="mi-vig" aria-hidden="true"></div>
+                <div class="mi-haze" aria-hidden="true"></div>
+                <div class="mi-fog" aria-hidden="true"></div>
 
-            <div class="service-color-card" style="background-image: url('assets/service-custom.jpg');">
-                <div class="service-color-card-content">
-                    <h3>Custom Display Setup</h3>
-                    <p>Expert installation of graphics, lighting, multimedia, and signage. From simple to complex, we execute your vision flawlessly.</p>
-                </div>
-            </div>
+                <div class="mi-flat">
+                    <a class="mi-skip" href="#labor-stats">SKIP TO BOOKING &darr;</a>
+                    <p class="mi-say"></p>
 
-            <div class="service-color-card" style="background-image: url('assets/service-emergency.jpg');">
-                <div class="service-color-card-content">
-                    <h3>Emergency Response</h3>
-                    <p>Last-minute crew needs? On-site adjustments? We scale quickly with same-day labor solutions when you need them most.</p>
+                    <article class="mi-ticket">
+                        <span class="mi-wo"></span>
+                        <h3></h3>
+                        <ol class="mi-notes"><li></li><li></li><li></li></ol>
+                        <a class="mi-stamp" href="i-d-labor-request.html">
+                            Book this crew &rarr;
+                            <small>LVTSR &middot; Las Vegas NV</small>
+                        </a>
+                    </article>
+
+                    <div class="mi-quote" role="status"></div>
+                    <p class="mi-probe">Tap any booth on the floor for a labor estimate</p>
+
+                    <div class="mi-tb">
+                        <span class="mi-tb-k">MI-01 &middot; NAB &rsquo;26 &middot; LVCC CENTRAL</span>
+                        <p class="mi-clock">05:00</p>
+                        <p class="mi-float">T&minus;11:00 to floor release</p>
+                        <p class="mi-tally">
+                            <span><b class="mi-t-st">0</b> Stands</span>
+                            <span><b class="mi-t-cr">0</b> Crew</span>
+                            <span><b class="mi-t-ph">0</b> Person-Hours</span>
+                        </p>
+                    </div>
+
+                    <div class="mi-sheet">
+                        <h3 class="mi-sheet-h">Pick a call time.</h3>
+                        <div class="mi-cards"></div>
+                        <p class="mi-final">4 Stands &middot; 19 Crew &middot; 135 Person-Hours &middot; Floor Released 16:00</p>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <div class="mi-base">
+            <ol class="mi-list">
+                <li>
+                    <h3>Installation &amp; Dismantle</h3>
+                    <p>Professional booth assembly from structural builds to final staging. Our crews handle complex setups with precision and speed.</p>
+                    <p><b>8-Person Crew</b> &middot; Call 0600 &middot; Stand 1006</p>
+                    <img src="assets/service-install.jpg" alt="LVTSR crew installing booth structure on the show floor" loading="lazy" decoding="async" width="480" height="640">
+                    <a href="i-d-labor-request.html">Book this crew</a>
+                </li>
+                <li>
+                    <h3>On-Site Coordination</h3>
+                    <p>Project management throughout your event. We coordinate with union labor, vendors, and venue staff to keep everything on schedule.</p>
+                    <p><b>Lead + Floor Manager</b> &middot; Call 0730 &middot; Stand 3042</p>
+                    <img src="assets/service-coordination.jpg" alt="LVTSR coordinator directing crews and vendors during move-in" loading="lazy" decoding="async" width="675" height="690">
+                    <a href="i-d-labor-request.html">Book this crew</a>
+                </li>
+                <li>
+                    <h3>Custom Display Setup</h3>
+                    <p>Expert installation of graphics, lighting, multimedia, and signage. From simple to complex, we execute your vision flawlessly.</p>
+                    <p><b>6 Technicians</b> &middot; Call 0900 &middot; Stand 5020</p>
+                    <img src="assets/service-custom.jpg" alt="Technicians installing graphics and lighting on a custom display" loading="lazy" decoding="async" width="784" height="1168">
+                    <a href="i-d-labor-request.html">Book this crew</a>
+                </li>
+                <li>
+                    <h3>Emergency Response</h3>
+                    <p>Last-minute crew needs? On-site adjustments? We scale quickly with same-day labor solutions when you need them most.</p>
+                    <p><b>Rapid Team</b> &middot; On Call &middot; Stand 7050</p>
+                    <img src="assets/service-emergency.jpg" alt="LVTSR crew making a last-minute fix before show open" loading="lazy" decoding="async" width="784" height="1168">
+                    <a href="i-d-labor-request.html">Book this crew</a>
+                </li>
+            </ol>
+        </div>
+
+        <p class="sr-live" aria-live="polite"></p>
     </section>
 
     <!-- ===== STATS + SOCIAL PROOF ===== -->
-    <section class="stats-new">
+    <section class="stats-new" id="labor-stats">
         <div class="container">
             <div class="stats-row">
                 <div class="stat-box" data-count="20">
@@ -1655,7 +1845,7 @@
                         <div class="logo-item">
                             <img src="assets/CONEXPO.png" alt="CONEXPO - Construction Equipment Exposition" class="event-logo">
                         </div>
-                        <!-- Duplicate set for seamless infinite scroll -->
+
                         <div class="logo-item">
                             <img src="assets/ces-logo.png" alt="CES - Consumer Electronics Show" class="event-logo">
                         </div>
@@ -1671,7 +1861,7 @@
                         <div class="logo-item">
                             <img src="assets/CONEXPO.png" alt="CONEXPO - Construction Equipment Exposition" class="event-logo">
                         </div>
-                        <!-- Third duplicate set for smooth buffer -->
+
                         <div class="logo-item">
                             <img src="assets/ces-logo.png" alt="CES - Consumer Electronics Show" class="event-logo">
                         </div>
@@ -1693,11 +1883,7 @@
         </div>
     </section>
 
-    <!-- ===== WHAT YOU GET =====
-         Was the pricing section (a slot-machine rate callout). The site no
-         longer publishes rates, so the left column now sends the visitor to
-         the request form; the "What You Get" list and the testimonial are
-         unchanged. -->
+    <!-- ===== WHAT YOU GET ===== -->
     <section class="pricing-new">
         <div class="container">
             <div class="pricing-content">
@@ -1723,7 +1909,6 @@
                 </div>
             </div>
 
-            <!-- Testimonial Carousel -->
             <div class="pricing-testimonial-carousel">
                 <div class="testimonial-track">
                     <div class="testimonial-slide">
@@ -1784,7 +1969,7 @@
     </footer>
 
     <script>
-        // Hamburger menu toggle
+
         const hamburger = document.getElementById('hamburger');
         const navbarMenu = document.getElementById('navbar-menu');
         const menuOverlay = document.getElementById('menu-overlay');
@@ -1795,14 +1980,12 @@
             menuOverlay.classList.toggle('active');
         });
 
-        // Close menu when overlay is clicked
         menuOverlay.addEventListener('click', () => {
             hamburger.classList.remove('active');
             navbarMenu.classList.remove('active');
             menuOverlay.classList.remove('active');
         });
 
-        // Close menu when a link is clicked
         navbarMenu.querySelectorAll('a').forEach(link => {
             link.addEventListener('click', () => {
                 hamburger.classList.remove('active');
@@ -1811,7 +1994,6 @@
             });
         });
 
-        // Smooth scroll for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 const href = this.getAttribute('href');
@@ -1825,7 +2007,6 @@
             });
         });
 
-        // Parallax effect on scroll (subtle)
         window.addEventListener('scroll', () => {
             const hero = document.querySelector('.hero');
             const scrolled = window.pageYOffset;
@@ -1834,52 +2015,616 @@
             }
         });
 
-        // Track CTA clicks for conversion
         document.querySelectorAll('.cta-button').forEach(button => {
             button.addEventListener('click', function() {
                 console.log('CTA clicked:', this.textContent);
-                // Add your analytics tracking here (GTM, GA, etc.)
+
             });
         });
 
-        // ===== SERVICE CARD FADE-IN ANIMATION =====
-        const serviceCardObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    // Add class to trigger fade-in animation
-                    entry.target.classList.add('card-visible');
-                    // Unobserve so animation only triggers once
-                    serviceCardObserver.unobserve(entry.target);
+        (function initMoveIn() {
+            var sec = document.querySelector('.mi');
+            if (!sec) return;
+
+            var track = sec.querySelector('.mi-track');
+            var stage = sec.querySelector('.mi-stage');
+            var world = sec.querySelector('.mi-world');
+            var haze  = sec.querySelector('.mi-haze');
+            var fogEl = sec.querySelector('.mi-fog');
+            var svg   = sec.querySelector('.mi-plan');
+            var plan  = sec.querySelector('.fp-lay-plan');
+            var truss = sec.querySelector('.fp-lay-truss');
+            var booths= sec.querySelector('.fp-booths');
+            var furn  = sec.querySelector('.fp-furniture');
+            var aisl  = sec.querySelector('.fp-aisles');
+            var say   = sec.querySelector('.mi-say');
+            var ticket= sec.querySelector('.mi-ticket');
+            var tWo   = sec.querySelector('.mi-wo');
+            var tH    = ticket.querySelector('h3');
+            var tNotes= ticket.querySelectorAll('.mi-notes li');
+            var stamp = sec.querySelector('.mi-stamp');
+            var clockEl = sec.querySelector('.mi-clock');
+            var floatEl = sec.querySelector('.mi-float');
+            var tSt = sec.querySelector('.mi-t-st'), tCr = sec.querySelector('.mi-t-cr'),
+                tPh = sec.querySelector('.mi-t-ph');
+            var sheet = sec.querySelector('.mi-sheet');
+            var cards = sec.querySelector('.mi-cards');
+            var live  = sec.querySelector('.sr-live');
+            var NS = 'http://www.w3.org/2000/svg';
+
+            var mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+            var reduce = mq.matches;
+            if (reduce) return;
+
+            if (mq.addEventListener) mq.addEventListener('change', function (e) {
+                if (e.matches) { liveOn = false; }
+            });
+
+            var VBW = 1600, VBH = 1520;
+            var narrow = window.matchMedia('(max-width: 760px)');
+
+            /* Real-world texture: NAB Show 2026, LVCC Central Hall, final
+               full build day. Booth numbers follow the Central Hall C-range;
+               crew sizes, call times and person-hours are calibrated to
+               published Las Vegas I&D practice (Teamsters 631 / IATSE 720 /
+               IBEW 357 jurisdiction, ST 0800-1630). Totals: 19 crew, 135 PH. */
+            var WO = [
+                { n:'01', num:'C1006', name:'Installation &amp; Dismantle',
+                  rect:[202,152,199,99], call:'0600', crew:'8 &middot; Local 631', figs:8,
+                  hours:64,
+                  notes:['Day 3 of 3 &mdash; deck rails and stair treads; empties tagged by 1400.',
+                         '1 foreman + 7 journeymen &middot; call 0600 &middot; stand C1006.',
+                         'Stamped engineering plans in booth per Clark Co. FPB.'] },
+                { n:'02', num:'C3042', name:'On-Site Coordination',
+                  rect:[1099,501,200,100], call:'0730', crew:'Lead + Floor Mgr', figs:2,
+                  hours:17, kind:'coord',
+                  notes:['EAC credentials and COI on file with show management.',
+                         'Lead + floor manager &middot; call 0730 &middot; stand C3042.',
+                         'Coordinating Freeman freight, IBEW 357 power, IATSE 720 rigging.'] },
+                { n:'03', num:'C5020', name:'Custom LED Build',
+                  rect:[551,800,299,100], call:'0900', crew:'4 Techs + 2 I&amp;D', figs:6,
+                  hours:42, kind:'custom',
+                  notes:['110 LED cabinets, 2 processor racks &mdash; truss flown day 1.',
+                         '4 techs + 2 Local 631 &middot; call 0900 &middot; stand C5020.',
+                         'Pixel map and color balance by 1400; spares to the work box.'] },
+                { n:'04', num:'C7050', name:'Emergency Response',
+                  rect:[1299,1149,99,100], call:'On Call', crew:'Rapid Team', figs:3,
+                  hours:12, kind:'rush',
+                  notes:['Forced freight &mdash; missed target, rerouted via marshalling yard.',
+                         'Rapid team &middot; 4-hour minimum call &middot; stand C7050.',
+                         'Scope on arrival: recrate damage, graphic swap, header re-hang.'] }
+            ];
+
+            window.__MI = { stage: stage, WO: WO,
+                            narrow: window.matchMedia('(max-width: 760px)').matches,
+                            upf: 5 };
+
+            var RAKE = narrow.matches ? 66 : 72;
+
+            var ZOOM = narrow.matches ? 4.6 : 5.8;
+            var YAW  = narrow.matches ? -14 : -20;
+
+            var SHOT = [
+                { dRake: -1, yaw: -26, k: 0.86 },
+                { dRake:-10, yaw:  14, k: 0.85 },
+                { dRake:-12, yaw: -18, k: 0.58 },
+                { dRake: -2, yaw:  30, k: 0.95 }
+            ];
+            function camOf(i) {
+                var w = WO[i], r = w.rect, sh = SHOT[i];
+
+                return { s: ZOOM * sh.k, cx: r[0]+r[2]/2, cy: r[1]+r[3]/2,
+                         rake: RAKE + sh.dRake,
+                         yaw: sh.yaw * (narrow.matches ? 0.55 : 1) };
+            }
+            var WIDE = { s: 1, cx: VBW/2, cy: VBH/2, rake: 0, yaw: 0 };
+            /* the payoff is a MOVE, not a frame: crane back off the last
+               finished stand and look down the hall with all four stands
+               stacked in depth */
+            var DOORS_A = { s: 3.6, cx: 1300, cy: 1140, rake: 64, yaw: -18 };
+            var DOORS_B = { s: 1.85, cx: 1000, cy: 862, rake: 60, yaw: -32 };
+            function doorsCam(cp) {
+                var t = ss(.04, .70, cp);
+                /* slow push continues through the tail so the climax never freezes */
+                var push = 1 + 0.06 * ss(.70, 1, cp);
+                return { s: lerp(DOORS_A.s, DOORS_B.s, t) * push,
+                         cx: lerp(DOORS_A.cx, DOORS_B.cx, t),
+                         cy: lerp(DOORS_A.cy, DOORS_B.cy, t),
+                         rake: lerp(DOORS_A.rake, DOORS_B.rake, t),
+                         yaw: lerp(DOORS_A.yaw, DOORS_B.yaw, t) };
+            }
+            /* WO3's 60ft canyon: the camera dollies along the slot while the
+               booth prints, so the reveal front stays put in screen space
+               and the WORLD moves past it */
+            function canyonCam(cp) {
+                var c = camOf(2);
+                c.cx += -70 + 150 * ss(.30, .85, cp);
+                return c;
+            }
+
+            /* tempo follows the work orders: the 52h double-deck is slow and
+               establishes the grammar, the 17h coordination job is short and
+               high, the LED canyon is the loud set piece, a timelapse eats
+               the empty afternoon honestly, and the 3h rescue SNAPS. */
+            var CH = [
+                { a:0,    b:.055, t0:300, cam:WIDE, kind:'cold' },
+                { a:.055, b:.135, t0:330, cam:{ s:1.14, cx:VBW/2, cy:VBH/2, rake:RAKE, yaw:0 }, kind:'rise' },
+                { a:.135, b:.345, t0:360, cam:camOf(0), kind:'wo', i:0 },
+                { a:.345, b:.455, t0:450, cam:camOf(1), kind:'wo', i:1 },
+                { a:.455, b:.635, t0:540, cam:camOf(2), camFn:canyonCam, kind:'wo', i:2 },
+                { a:.635, b:.675, t0:760, cam:{ s:1.42, cx:830, cy:800, rake:56, yaw:-12 }, kind:'lapse' },
+                { a:.675, b:.755, t0:887, cam:camOf(3), kind:'wo', i:3 },
+                { a:.755, b:.925, t0:960, cam:DOORS_B, camFn:doorsCam, kind:'doors' },
+                { a:.925, b:1,    t0:960, cam:DOORS_B, kind:'sheet' }
+            ];
+            var WOCH = [2, 3, 4, 6];   /* chapter index of each work order */
+            function chCam(ci, cp) {
+                var c = CH[ci];
+                return c.camFn ? c.camFn(cp) : c.cam;
+            }
+            /* THE CAMERA TRAVELS. Transits run from cp .92 of a chapter into
+               cp .30 of the next — overlapping the boundary — with a Van Wijk
+               zoom dip (rise, cross, settle) sized by how many screens the
+               move covers. No more 118px teleports. */
+            function camAt(p) {
+                var ci = 0;
+                while (ci < CH.length - 1 && p >= CH[ci+1].a) ci++;
+                var cp = clamp01((p - CH[ci].a) / (CH[ci].b - CH[ci].a));
+                for (var i = CH.length - 1; i >= 1; i--) {
+                    var w0 = CH[i].a - (CH[i-1].b - CH[i-1].a) * 0.08;
+                    var w1 = CH[i].a + (CH[i].b - CH[i].a) * 0.30;
+                    if (p >= w0 && p <= w1) {
+                        var k = ss(w0, w1, p);
+                        var A = chCam(i-1, 1), B = chCam(i, clamp01((p - CH[i].a) / (CH[i].b - CH[i].a)));
+                        var sMid = (A.s + B.s) / 2;
+                        var screens = Math.abs(A.cx - B.cx) / (VBW / Math.max(sMid, 0.2));
+                        var dip = Math.max(0.28, Math.min(1, 1 - 0.42 * Math.min(screens, 3)));
+                        return {
+                            s: lerp(A.s, B.s, k) * (1 - (1 - dip) * Math.sin(Math.PI * k)),
+                            cx: lerp(A.cx, B.cx, k),
+                            cy: lerp(A.cy, B.cy, k),
+                            rake: lerp(A.rake, B.rake, k),
+                            yaw: lerp(A.yaw || 0, B.yaw || 0, k)
+                        };
+                    }
                 }
+                return chCam(ci, cp);
+            }
+
+            function clamp01(v){ return v<0?0:v>1?1:v; }
+            function ss(a,b,v){ var t=clamp01((v-a)/((b-a)||1)); return t*t*(3-2*t); }
+            function lerp(a,b,t){ return a+(b-a)*t; }
+
+            var C1=1.70158, C3=C1+1;
+            function outBack(t){ return 1 + C3*Math.pow(t-1,3) + C1*Math.pow(t-1,2); }
+            function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
+
+            var laserG = document.createElementNS(NS, 'g');
+            laserG.setAttribute('class', 'mi-laser');
+            plan.appendChild(laserG);
+            var lasers = WO.map(function (w) {
+                var r = w.rect;
+                var g = document.createElementNS(NS, 'g');
+                var mk = function (cls) {
+                    var e = document.createElementNS(NS, 'rect');
+                    e.setAttribute('class', cls);
+                    e.setAttribute('x', r[0]); e.setAttribute('y', r[1]);
+                    e.setAttribute('width', r[2]); e.setAttribute('height', r[3]);
+                    e.setAttribute('pathLength', 100);
+                    g.appendChild(e); return e;
+                };
+                var burn = mk('mi-burn'), trail = mk('mi-trail'), head = mk('mi-head');
+                trail.setAttribute('stroke-dasharray', '100 100');
+                burn.setAttribute('stroke-dasharray', '100 100');
+                head.setAttribute('stroke-dasharray', '9 91');
+                laserG.appendChild(g);
+                return { g:g, trail:trail, burn:burn, head:head };
             });
-        }, {
-            threshold: 0.2, // Trigger when 20% of card is visible
-            rootMargin: '0px 0px -50px 0px' // Start animation slightly before card enters viewport
-        });
 
-        // Observe all service color cards
-        document.querySelectorAll('.service-color-card').forEach(card => {
-            serviceCardObserver.observe(card);
-        });
+            var surveyG = document.createElementNS(NS, 'g');
+            plan.appendChild(surveyG);
+            var surveys = WO.map(function (w) {
+                var r = w.rect;
+                var e = document.createElementNS(NS, 'rect');
+                e.setAttribute('class', 'mi-survey');
+                e.setAttribute('x', r[0]); e.setAttribute('y', r[1]);
+                e.setAttribute('width', r[2]); e.setAttribute('height', r[3]);
+                surveyG.appendChild(e); return e;
+            });
 
-        // ===== TYPING ANIMATION FOR "SERVICES WE OFFER" HEADING =====
-        const servicesHeadingObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('typing');
-                    servicesHeadingObserver.unobserve(entry.target);
+            cards.innerHTML = WO.map(function (w) {
+                return '<a class="mi-card" href="i-d-labor-request.html">' +
+                       '<b>' + w.n + ' &middot; Call ' + w.call + '</b>' +
+                       '<strong>' + w.name + '</strong>' +
+                       '<span>' + w.crew + ' &middot; Stand ' + w.num + '</span></a>';
+            }).join('');
+
+            var rectW = 1, rectH = 1, fit = 1, trackTop = 0, span = 1;
+            function measure() {
+                var r = stage.getBoundingClientRect();
+                rectW = r.width || 1; rectH = r.height || 1;
+
+                fit = Math.max(rectW / VBW, rectH / VBH) || 1;
+                var t = track.getBoundingClientRect();
+                trackTop = t.top + window.pageYOffset;
+                span = Math.max(1, track.offsetHeight - stage.offsetHeight);
+            }
+
+            function Spring(x, w) { this.x = x; this.v = 0; this.w = w; }
+            Spring.prototype.step = function (t, dt) {
+                dt = Math.min(dt, .064);
+                var w = this.w, d = this.x - t, b = this.v + w * d, e = Math.exp(-w * dt);
+                this.x = t + (d + b * dt) * e;
+                this.v = (this.v - b * w * dt) * e;
+                return this.x;
+            };
+            var sp = new Spring(0, 13);
+            /* second, heavier spring for the CAMERA only — different mass
+               for different things is secondary motion for free, and the
+               slower settle kills the whip on chapter cuts */
+            var spCam = new Spring(0, 7);
+
+            var liveOn = false, raf = 0, last = 0, pPrev = 0, pVel = 0;
+
+            var curCh = -1, shownMin = -1, noteN = -1;
+
+            function setChapter(ci) {
+                var c = CH[ci];
+                say.classList.remove('is-on');
+                sheet.classList.remove('is-on');
+                ticket.classList.remove('is-on');
+
+                if (c.kind === 'cold') {
+                    say.innerHTML = '0500<small>Gang boxes staged. Nobody has shown up yet.</small>';
+                    say.classList.add('is-on');
+                } else if (c.kind === 'rise') {
+                    say.innerHTML = 'The crates are on the dock.<br><em>We show up.</em>';
+                    say.classList.add('is-on');
+                } else if (c.kind === 'lapse') {
+                    say.innerHTML = '12:40 &rarr; 14:47<small>Three stands up. The afternoon runs.</small>';
+                    say.classList.add('is-on');
+                } else if (c.kind === 'doors') {
+                    /* is-on is granted by paint() at the surge frame */
+                    say.innerHTML = '16:00 &middot; Floor Release<small>Aisles clear. Empties pulled. Every screen live.</small>';
+                } else if (c.kind === 'sheet') {
+                    sheet.classList.add('is-on');
                 }
+
+                var handed = c.kind === 'doors' || c.kind === 'sheet';
+                if (probe) probe.classList.toggle('is-on', handed);
+
+                if (booths) {
+                    var tv = handed ? '0' : '-1';
+                    if (booths.getAttribute('data-tab') !== tv) {
+                        booths.setAttribute('data-tab', tv);
+                        Array.prototype.forEach.call(booths.querySelectorAll('.fp-b'),
+                            function (g) { g.setAttribute('tabindex', tv); });
+                    }
+                }
+
+                Array.prototype.forEach.call(sec.querySelectorAll('.fp-stand'),
+                    function (st) {
+                        var sn = +st.getAttribute('data-stand');
+                        st.classList.toggle('is-dim',
+                            (c.kind === 'wo' && sn === c.i) ||
+
+                            (c.kind === 'cold' && sn === 3));
+                    });
+
+                if (c.kind === 'wo') {
+                    var w = WO[c.i];
+                    tWo.innerHTML = 'Work Order ' + w.n + ' &mdash; Notes';
+                    tH.innerHTML = w.name;
+                    for (var i = 0; i < tNotes.length; i++) tNotes[i].innerHTML = w.notes[i] || '';
+                    ticket.classList.toggle('is-right', (c.i % 2) === 1);
+                    ticket.classList.add('is-on');
+                    if (live) live.textContent =
+                        'Work order ' + w.n + ' of 4: ' + w.name.replace('&amp;','and') +
+                        '. ' + w.crew + ', call ' + w.call + ', stand ' + w.num + '.';
+                }
+
+                var upto = c.kind === 'wo' ? c.i
+                    : c.kind === 'lapse' ? 2
+                    : (c.kind === 'doors' || c.kind === 'sheet') ? 3 : -1;
+                if (window.MIGL) {
+                    MIGL.setStands(upto, c.kind === 'wo' ? c.i : -1);
+                    if (c.kind !== 'wo') MIGL.setReveal(-1);
+                }
+                for (var l = 0; l < lasers.length; l++)
+                    lasers[l].g.classList.toggle('is-live', c.kind === 'wo' && l === c.i);
+                noteN = -1;
+            }
+
+            function progress() {
+                return clamp01((window.pageYOffset - trackTop) / span);
+            }
+
+            var wcache = {};
+            function wProp(el, key, prop, v) {
+                if (wcache[key] !== v) { wcache[key] = v; el.style.setProperty(prop, v); }
+            }
+            function wAttr(el, key, name, v) {
+                if (wcache[key] !== v) { wcache[key] = v; el.setAttribute(name, v); }
+            }
+            function wStyle(el, key, prop, v) {
+                if (wcache[key] !== v) { wcache[key] = v; el.style[prop] = v; }
+            }
+
+            function paint(p, pCam) {
+                if (pCam == null) pCam = p;
+                var ci = 0;
+                while (ci < CH.length - 1 && p >= CH[ci+1].a) ci++;
+                var c = CH[ci], cp = clamp01((p - c.a) / (c.b - c.a));
+                if (ci !== curCh) { curCh = ci; setChapter(ci); }
+
+                var camNow = camAt(pCam);
+                /* idle drift: the camera breathes when the reader stops —
+                   amplitude collapses the moment scroll velocity returns */
+                var idle = 1 - clamp01(Math.abs(pVel) * 6);
+                var tnow = performance.now() / 1000;
+                var s  = camNow.s * (1 + 0.005 * idle * Math.sin(tnow * 0.449)),
+                    cx = camNow.cx,
+                    cy = camNow.cy,
+                    rk = camNow.rake,
+                    yw = (camNow.yaw || 0) + 0.8 * idle * Math.sin(tnow * 0.331);
+
+                wProp(world, 'rake', '--rake', rk.toFixed(2) + 'deg');
+
+                var ywEff = yw * clamp01(rk / (RAKE * 0.7));
+                wProp(world, 'yaw', '--yaw', ywEff.toFixed(2) + 'deg');
+
+                wProp(world, 'wall', '--wall', ss(14, 34, rk).toFixed(3));
+
+                var tx = VBW/2 - cx*s, ty = VBH/2 - cy*s;
+                wAttr(plan, 'plan', 'transform',
+                    'translate(' + tx.toFixed(1) + ' ' + ty.toFixed(1) +
+                    ') scale(' + s.toFixed(4) + ')');
+                if (truss) {
+                    var s2 = s * 1.075;
+                    wAttr(truss, 'truss', 'transform',
+                        'translate(' + (VBW/2 - cx*s2).toFixed(1) + ' ' + (VBH/2 - cy*s2).toFixed(1) +
+                        ') scale(' + s2.toFixed(4) + ')');
+                }
+
+                if (booths) wStyle(booths, 'bo', 'opacity', (c.kind === 'wo' ? 0.34 : 1).toFixed(2));
+                if (furn) wStyle(furn, 'fo', 'opacity', (c.kind === 'wo' ? 0.30 : 1).toFixed(2));
+                if (aisl) wStyle(aisl, 'ao', 'opacity', (c.kind === 'wo' ? 0.40 : 1).toFixed(2));
+
+                if (haze) wProp(haze, 'hz', '--haze', window.MIGL ? '0' :
+                    (c.kind === 'wo' ? (0.35 + 0.65 * ss(.20, .8, cp)) : 0).toFixed(3));
+
+                if (fogEl) wStyle(fogEl, 'fg', 'opacity',
+                    (c.kind === 'wo' ? 0.25 : c.kind === 'doors' || c.kind === 'sheet' ? 0.5 : 1).toFixed(2));
+
+                if (c.kind === 'wo') {
+                    var w = WO[c.i];
+                    var fast = w.kind === 'rush';
+
+                    /* THE SHEET STANDS UP.
+                       arrive -> a genuinely empty footprint -> the survey
+                       laser closes its lap (the strike) -> the plan stands
+                       itself up as gold ink -> a light bar sweeps matter in
+                       behind it -> dress, crew, coves. The rescue stand
+                       skips the drawing: no time — it SNAPS in. */
+                    var sb = fast ? ss(.16, .26, cp) : ss(.24, .32, cp);
+                    var L = lasers[c.i];
+                    wAttr(L.trail, 'ltr' + c.i, 'stroke-dashoffset', (100 - sb*100).toFixed(1));
+                    wAttr(L.burn, 'lbu' + c.i, 'stroke-dashoffset', (100 - sb*100).toFixed(1));
+                    wAttr(L.head, 'lhe' + c.i, 'stroke-dashoffset', (-sb*100).toFixed(1));
+                }
+                /* survey burns are a pure function of p — reverse scroll
+                   un-burns them (jurors scrub backward first) */
+                for (var sq = 0; sq < surveys.length; sq++) {
+                    var sc2 = CH[WOCH[sq]];
+                    surveys[sq].classList.toggle('is-on',
+                        p >= sc2.a + (sc2.b - sc2.a) * 0.33);
+                }
+                if (c.kind === 'wo') {
+                    var b, flat, fill, strike;
+                    if (fast) {
+                        strike = ss(.24, .36, cp);
+                        b = ss(.30, .58, cp);
+                        flat = 0;
+                        fill = ss(.30, .42, cp);
+                    } else {
+                        strike = ss(.32, .42, cp);
+                        b = ss(.36, .88, cp);
+                        flat = 1 - ss(.58, .68, cp);
+                        var fu = ss(.48, .68, cp);
+                        /* fill holds a beat at the fascia line, then finishes hot */
+                        fill = fu < .5 ? easeOutCubic(fu * 2) * 0.65
+                                       : 0.65 + 0.35 * Math.pow((fu - .5) * 2, 3);
+                    }
+                    if (window.MIGL) {
+                        MIGL.setB(c.i, b);
+                        MIGL.setReveal(c.i, { flat: flat, fill: fill, strike: strike });
+                    }
+
+                    /* notes land on structural events: the strike, the solid,
+                       the coves — not on arbitrary scroll marks */
+                    /* the card is never empty: note 1 is the status line */
+                    var nn = fast ? (cp < .44 ? 1 : cp < .56 ? 2 : 3)
+                                  : (cp < .68 ? 1 : cp < .82 ? 2 : 3);
+                    if (nn !== noteN) {
+                        noteN = nn;
+                        ticket.classList.remove('n1','n2','n3');
+                        if (nn) ticket.classList.add('n' + nn);
+                    }
+                    /* the stamp COMMITS — outBack slam as the coves ignite */
+                    var stp = cp < .82 ? 0.9 : 0.9 + 0.1 * outBack(ss(.82, .88, cp));
+                    wProp(stamp, 'stp', '--st', stp.toFixed(3));
+                }
+
+                var nxt = CH[Math.min(CH.length - 1, ci + 1)];
+                var t1 = (ci >= CH.length - 1) ? 960 : nxt.t0;
+                var mins = Math.round(c.t0 + (t1 - c.t0) * cp);
+                if (mins !== shownMin) {
+                    shownMin = mins;
+                    var hh = Math.floor(mins/60), mm = mins%60;
+                    clockEl.textContent = (hh<10?'0':'') + hh + ':' + (mm<10?'0':'') + mm;
+                    var toDoors = 960 - mins;
+                    floatEl.textContent = toDoors > 0
+                        ? 'T−' + Math.floor(toDoors/60) + ':' + (toDoors%60<10?'0':'') + (toDoors%60) + ' to floor release'
+                        : 'Floor released';
+                    floatEl.classList.toggle('is-hot', toDoors > 0 && toDoors <= 75);
+
+                    var done = 0, crew = 0, ph = 0;
+                    for (var q = 0; q < WO.length; q++) {
+                        var ca = CH[WOCH[q]].a, cb = CH[WOCH[q]].b;
+                        if (p < ca) continue;
+                        var t = clamp01((p - ca) / ((cb - ca) * .74));
+                        /* crew arrive with the work, not before it */
+                        crew += Math.round(WO[q].figs * clamp01(t * 2.5));
+                        ph += Math.round(WO[q].hours * t);
+                        if (t >= 1) done++;
+                    }
+                    tSt.textContent = done; tCr.textContent = crew; tPh.textContent = ph;
+                }
+
+                /* DOORS: the house lights DROP first (a breath of black),
+                   then the surge SNAPS on — exponential, not a glide — and
+                   the headline lands on the same beat */
+                var showT = 0, dimT = 0;
+                if (c.kind === 'doors') {
+                    dimT = ss(0, .07, cp) * (1 - ss(.09, .17, cp));
+                    var su = ss(.10, .30, cp);
+                    showT = su >= 1 ? 1 : 1 - Math.pow(2, -10 * su);
+                    say.classList.toggle('is-on', cp >= .17);
+                } else if (c.kind === 'sheet') showT = 1;
+                if (window.MIGL) MIGL.paint({
+                    rectW: rectW, rectH: rectH, fit: fit,
+                    s: s, tx: tx, ty: ty, rake: rk, yaw: ywEff,
+
+                    show: showT,
+                    dim: dimT,
+                    idle: idle,
+
+                    day: clamp01((mins - 300) / 660)
+                });
+
+                wProp(world, 'pd', '--plandim', showT.toFixed(3));
+
+                var dq = Math.round(clamp01((mins - 300) / 660) * 24) / 24;
+                var dsh = Math.round(showT * 12) / 12;
+                wProp(stage, 'dbg', '--daybg', 'rgb(' +
+                    Math.round(3 + 11 * dq + 14 * dsh) + ',' +
+                    Math.round(6 + 16 * dq + 20 * dsh) + ',' +
+                    Math.round(10 + 22 * dq + 26 * dsh) + ')');
+            }
+
+            function frame(now) {
+                if (!liveOn) { raf = 0; return; }
+                raf = requestAnimationFrame(frame);
+                var dt = last ? Math.min((now - last) / 1000, .064) : 1/60; last = now;
+
+                var raw = progress();
+
+                var v = (raw - pPrev) / Math.max(dt, 1e-4);
+                pVel += (v - pVel) * (1 - Math.exp(-dt / .09));
+                pPrev = raw;
+                var lead = raw + Math.max(-.08, Math.min(.08, pVel * .05));
+                paint(clamp01(sp.step(lead, dt)), clamp01(spCam.step(lead, dt)));
+            }
+
+            function snap() {
+                var p = progress();
+                sp.x = p; sp.v = 0; spCam.x = p; spCam.v = 0; pPrev = p; pVel = 0;
+                paint(p, p);
+            }
+            window.addEventListener('scroll', function () {
+                if (!raf && isNear) snap();
+            }, { passive: true });
+
+            window.addEventListener('migl-ready', function () {
+                curCh = -1; measure(); snap();
             });
-        }, {
-            threshold: 0.5
-        });
 
-        const servicesHeading = document.querySelector('.services-grid-section h2');
-        if (servicesHeading) {
-            servicesHeadingObserver.observe(servicesHeading);
-        }
+            function onResize() { measure(); if (!raf) snap(); }
+            var rt = 0;
+            window.addEventListener('resize', function () {
+                clearTimeout(rt); rt = setTimeout(onResize, 140);
+            }, { passive: true });
+            window.addEventListener('orientationchange', onResize);
 
-        // ===== COUNT-UP ANIMATION FOR STATS =====
+            if (window.ResizeObserver) new ResizeObserver(onResize).observe(document.body);
+
+            var quote = sec.querySelector('.mi-quote');
+            var probe = sec.querySelector('.mi-probe');
+            var picked = null;
+
+            function estimate(g) {
+                var size = g.getAttribute('data-size') || '';
+                var num  = g.getAttribute('data-n') || '';
+                var m = size.split(/[^0-9]+/).filter(Boolean);
+                if (m.length < 2) return null;
+                var ft = +m[0] * +m[1];
+
+                var hrs  = Math.max(6, Math.round(ft / 12));
+                var crew = ft >= 800 ? 8 : ft >= 400 ? 6 : ft >= 200 ? 4 : 2;
+                var days = Math.max(1, Math.ceil(hrs / (crew * 8)));
+                return { num: num, size: size, ft: ft, hrs: hrs, crew: crew, days: days };
+            }
+
+            function showQuote(g) {
+                var q = estimate(g);
+                if (!q) return;
+                if (picked) picked.classList.remove('is-picked');
+                picked = g; g.classList.add('is-picked');
+                quote.innerHTML =
+                    '<b>Stand ' + q.num + ' &middot; ' + q.size + ' FT</b>' +
+                    '<strong>' + q.ft + ' sq ft &middot; <em>' + q.hrs + ' person-hours</em></strong>' +
+                    '<span>' + q.crew + '-person crew &middot; ' + q.days +
+                    (q.days > 1 ? ' days' : ' day') + ' on site</span>' +
+                    '<i>Estimate &middot; LVTSR quotes to your actual scope</i>';
+                quote.classList.add('is-on');
+                if (live) live.textContent =
+                    'Stand ' + q.num + ', ' + q.size + ' feet. Estimated ' + q.hrs +
+                    ' person-hours, ' + q.crew + ' person crew, ' + q.days + ' day on site.';
+            }
+
+            if (booths) {
+                booths.addEventListener('click', function (ev) {
+                    var g = ev.target.closest && ev.target.closest('.fp-b');
+                    if (g) showQuote(g);
+                });
+
+                if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+                    booths.addEventListener('mouseover', function (ev) {
+                        var g = ev.target.closest && ev.target.closest('.fp-b');
+                        if (g) showQuote(g);
+                    });
+                }
+
+                Array.prototype.forEach.call(booths.querySelectorAll('.fp-b'), function (g) {
+                    g.setAttribute('tabindex', '-1');
+                    g.setAttribute('role', 'button');
+                    var n = g.getAttribute('data-n'), sz = g.getAttribute('data-size');
+                    g.setAttribute('aria-label', 'Stand ' + n + ', ' + sz + ' feet. Labor estimate.');
+                    g.addEventListener('focus', function () { showQuote(g); });
+                });
+            }
+
+            measure();
+            snap();
+            sec.classList.add('mi-js');
+
+            var isNear = true;
+            if ('IntersectionObserver' in window) {
+                isNear = false;
+                new IntersectionObserver(function (en) {
+                    isNear = en[en.length-1].isIntersecting;
+                    liveOn = isNear && !document.hidden;
+                    if (liveOn && !raf) { last = 0; measure(); raf = requestAnimationFrame(frame); }
+                }, { rootMargin: '20% 0px' }).observe(track);
+            } else {
+                liveOn = true; raf = requestAnimationFrame(frame);
+            }
+            document.addEventListener('visibilitychange', function () {
+                if (document.hidden) { liveOn = false; }
+                else if (!raf && isNear) { last = 0; liveOn = true; raf = requestAnimationFrame(frame); }
+            });
+        })();
+
         function animateCount(element, target) {
             const duration = 2000;
             const start = 0;
@@ -1897,7 +2642,6 @@
             }, 16);
         }
 
-        // Trigger count-up when stats section is visible
         const statsObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting && !entry.target.classList.contains('counted')) {
@@ -1911,7 +2655,6 @@
 
         document.querySelectorAll('.stat-box').forEach(box => statsObserver.observe(box));
 
-        // ===== PRICING TESTIMONIAL CAROUSEL =====
         const pricingTestimonialObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -1929,15 +2672,10 @@
             pricingTestimonialObserver.observe(pricingTestimonial);
         }
 
-        // Auto-rotating testimonial carousel
         (function initTestimonialCarousel() {
             const track = document.querySelector('.testimonial-track');
             const slides = document.querySelectorAll('.testimonial-slide');
 
-            // Nothing to rotate with a single testimonial: starting the timer would
-            // reapply translateX(0%) every 6s forever for no visible effect, and hold
-            // the hover/visibility listeners open. Revives on its own once a second
-            // .testimonial-slide is added back.
             if (!track || slides.length < 2) return;
 
             let currentIndex = 0;
@@ -1951,16 +2689,14 @@
                 track.style.transform = `translateX(${offset}%)`;
             }
 
-            // Helper function to start rotation
             function startRotation() {
-                // Clear any existing interval first
+
                 if (intervalId) {
                     clearInterval(intervalId);
                 }
                 intervalId = setInterval(rotateTestimonial, rotationInterval);
             }
 
-            // Helper function to stop rotation
             function stopRotation() {
                 if (intervalId) {
                     clearInterval(intervalId);
@@ -1968,10 +2704,8 @@
                 }
             }
 
-            // Start auto-rotation
             startRotation();
 
-            // Pause on hover for better UX
             const carousel = document.querySelector('.pricing-testimonial-carousel');
             if (carousel) {
                 carousel.addEventListener('mouseenter', () => {
@@ -1983,7 +2717,6 @@
                 });
             }
 
-            // Pause when tab is not visible
             document.addEventListener('visibilitychange', () => {
                 if (document.hidden) {
                     stopRotation();
@@ -1993,7 +2726,6 @@
             });
         })();
 
-        // ===== TYPING ANIMATION FOR HERO BADGES =====
         const phrases = [
             "20+ Years Experience",
             "1000+ Booth Builds",
@@ -2012,7 +2744,7 @@
             const currentPhrase = phrases[phraseIndex];
 
             if (isPaused) {
-                // Pause after typing complete phrase
+
                 setTimeout(() => {
                     isPaused = false;
                     isDeleting = true;
@@ -2022,7 +2754,7 @@
             }
 
             if (isDeleting) {
-                // Erasing
+
                 typingElement.textContent = currentPhrase.substring(0, charIndex - 1);
                 charIndex--;
 
@@ -2034,7 +2766,7 @@
                     setTimeout(typeEffect, 30); // Fast erase (0.5 sec total for ~15 chars)
                 }
             } else {
-                // Typing
+
                 typingElement.textContent = currentPhrase.substring(0, charIndex + 1);
                 charIndex++;
 
@@ -2047,19 +2779,7 @@
             }
         }
 
-        // Start typing animation
         typeEffect();
-
-        // ===== SCROLLING LOGO ANIMATION ENHANCEMENTS =====
-        /**
-         * Enhanced scrolling logo system with:
-         * - Seamless infinite scroll with dynamic duplication
-         * - Pause on hover functionality
-         * - Window resize handling
-         * - Reduced motion preferences support
-         * - Performance optimization with requestAnimationFrame
-         * - Cross-browser compatibility
-         */
 
         (function initLogoScroll() {
             const logoContainer = document.querySelector('.event-logos');
@@ -2070,39 +2790,33 @@
                 return;
             }
 
-            // Check for reduced motion preference
             const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
             if (prefersReducedMotion) {
-                // For users who prefer reduced motion, disable animation
+
                 logoTrack.style.animation = 'none';
                 console.log('Reduced motion preferred - animation disabled');
                 return;
             }
 
-            // Configuration
             const config = {
                 scrollSpeed: 1.5, // pixels per frame (adjust for speed)
                 gap: 60 // gap between logos in pixels (matches CSS)
             };
 
-            // Get original logo items (first 5 items are originals, rest are duplicates)
             const allLogoItems = Array.from(logoTrack.children);
             const originalLogoCount = 5; // CES, SEMA, MAGIC, NAB, CONEXPO
             const originalLogos = allLogoItems.slice(0, originalLogoCount);
 
-            // Function to ensure we have enough duplicates for seamless scrolling
             function ensureEnoughDuplicates() {
                 const containerWidth = logoContainer.offsetWidth;
                 const singleSetWidth = Array.from(originalLogos).reduce((width, logo) => {
                     return width + logo.offsetWidth + config.gap;
                 }, 0);
 
-                // Calculate how many complete sets we need
                 const requiredSets = Math.max(3, Math.ceil((containerWidth * 2.5) / singleSetWidth));
                 const currentSets = Math.floor(logoTrack.children.length / originalLogoCount);
 
-                // Add more duplicates if needed
                 if (currentSets < requiredSets) {
                     for (let i = currentSets; i < requiredSets; i++) {
                         originalLogos.forEach(logo => {
@@ -2115,38 +2829,30 @@
                 return singleSetWidth;
             }
 
-            // Initial duplicate check
             let setWidth = ensureEnoughDuplicates();
 
-            // Use requestAnimationFrame for smooth, performant scrolling
             let scrollPosition = 0;
             let animationId = null;
             let isPaused = false;
 
-            // Disable CSS animation and use JS for better control
             logoTrack.style.animation = 'none';
 
             function animate() {
                 if (!isPaused) {
                     scrollPosition += config.scrollSpeed;
 
-                    // Reset position seamlessly after TWO complete logo sets (double cycling)
-                    // This ensures we show all logos twice before resetting: CES → SEMA → MAGIC → NAB → CONEXPO → CES → SEMA → MAGIC → NAB → CONEXPO (then reset)
                     if (scrollPosition >= setWidth * 2) {
                         scrollPosition = scrollPosition % setWidth;
                     }
 
-                    // Apply smooth transform
                     logoTrack.style.transform = `translateX(-${scrollPosition}px)`;
                 }
 
                 animationId = requestAnimationFrame(animate);
             }
 
-            // Start animation
             animate();
 
-            // Enhanced pause on hover - works for entire container
             logoContainer.addEventListener('mouseenter', () => {
                 isPaused = true;
             });
@@ -2155,7 +2861,6 @@
                 isPaused = false;
             });
 
-            // Touch support for mobile devices
             let touchTimeout;
             logoContainer.addEventListener('touchstart', () => {
                 isPaused = true;
@@ -2174,20 +2879,17 @@
                 }, 1000);
             });
 
-            // Handle window resize with debouncing
             let resizeTimeout;
             window.addEventListener('resize', () => {
                 clearTimeout(resizeTimeout);
                 resizeTimeout = setTimeout(() => {
-                    // Recalculate set width and ensure enough duplicates
+
                     setWidth = ensureEnoughDuplicates();
 
-                    // Reset position to avoid jumps
                     scrollPosition = scrollPosition % setWidth;
                 }, 250); // Debounce resize events
             });
 
-            // Performance optimization: pause when tab is not visible
             document.addEventListener('visibilitychange', () => {
                 if (document.hidden) {
                     if (animationId) {
@@ -2201,7 +2903,6 @@
                 }
             });
 
-            // Cleanup on page unload
             window.addEventListener('beforeunload', () => {
                 if (animationId) {
                     cancelAnimationFrame(animationId);
@@ -2211,41 +2912,9 @@
             console.log('Enhanced logo scrolling animation initialized with', logoTrack.children.length, 'logo items');
         })();
 
-        /**
-         * NOTE: The current implementation uses CSS-only for logo display, which is
-         * perfectly acceptable for a simple static logo showcase. The JavaScript above
-         * enhances this with smooth infinite scrolling capabilities.
-         *
-         * Key Features Implemented:
-         * 1. Seamless infinite loop with no visible jump
-         * 2. Dynamic logo duplication based on viewport width
-         * 3. Pause on hover for better user experience
-         * 4. Touch support for mobile devices
-         * 5. Responsive resize handling with debouncing
-         * 6. Performance optimization using requestAnimationFrame
-         * 7. Tab visibility detection to pause when not in view
-         * 8. Respects prefers-reduced-motion accessibility setting
-         * 9. Cross-browser compatible (all modern browsers)
-         * 10. Automatic cleanup to prevent memory leaks
-         *
-         * Performance Considerations:
-         * - Uses CSS transforms (GPU accelerated) instead of position changes
-         * - Pauses animation when tab is not visible
-         * - Debounces resize events to prevent excessive recalculations
-         * - Uses requestAnimationFrame for optimal frame rate
-         *
-         * Accessibility:
-         * - Respects prefers-reduced-motion user preference
-         * - Maintains semantic HTML structure
-         * - Keyboard accessible (no click handlers on logos)
-         *
-         * Browser Support:
-         * - Chrome/Edge (Chromium): Full support
-         * - Firefox: Full support
-         * - Safari: Full support
-         * - Opera: Full support
-         * - Mobile browsers: Full support with touch enhancements
-         */
     </script>
+
+    <script type="importmap">{"imports":{"three":"./assets/three.module.min.js"}}</script>
+    <script type="module" src="assets/mi-gl.js"></script>
 </body>
 </html>
