@@ -1,0 +1,647 @@
+/* ============================================================
+   BUILD STAGE — "The Live Build"
+   A CSS-3D exhibit that assembles itself from the form beside it.
+   Faces are lit from a real normal·light dot product computed in
+   build-stage.js, so light MOVES across surfaces as the booth is
+   orbited — the difference between a 3D scene and coloured rectangles.
+
+   No library, no build step, no three.js.
+
+   Coordinate contract (must match build-stage.js):
+     x = right (feet)   y = UP (feet)   z = toward viewer (feet)
+   CSS y grows downward, so the JS placer emits translate3d(x, -y, z).
+
+   HARD RULE — never put filter / opacity<1 / mask / clip-path on any
+   element that has 3D children. Per CSS Transforms L2 that forces
+   transform-style to `flat` and silently collapses the whole subtree.
+   Only LEAF faces (.bs-solid, .bs-wire, .bs-beam, .bs-face) may carry
+   them. Group-level fades go on .bs-veil, which sits OUTSIDE the
+   perspective. The submit sequence used to break this and flattened the
+   entire booth for the 1.4s exit.
+   ============================================================ */
+
+@property --lum   { syntax: '<number>'; initial-value: 0.5; inherits: false; }
+@property --flash { syntax: '<number>'; initial-value: 0;   inherits: false; }
+@property --spec  { syntax: '<number>'; initial-value: 0;   inherits: false; }
+@property --rim   { syntax: '<number>'; initial-value: 0;   inherits: false; }
+
+/* ---------- Shell ---------- */
+.bs {
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    background: radial-gradient(126% 92% at 50% 2%, #1a2534 0%, #111a26 44%, #080c12 100%);
+    border: 1px solid var(--border-subtle);
+    box-shadow: var(--shadow-lg);
+    -webkit-user-select: none;
+    user-select: none;
+}
+/* If the engine bails (no form, JS error) it removes itself; this catches
+   the case where the script never ran at all, so no dead box is left. */
+.bs:empty { display: none; }
+
+/* Hall light behind the booth. This is what the shadow side reads against —
+   raising the shader's ambient floor to do the same job flattened the whole
+   object into one midtone. Sits under .bs-viewport (z-index 1). */
+.bs::before {
+    content: '';
+    position: absolute;
+    left: 50%; top: 46%;
+    width: 96%; height: 62%;
+    transform: translate(-50%, -50%);
+    z-index: 0;
+    pointer-events: none;
+    background: radial-gradient(closest-side ellipse,
+        rgba(120, 158, 196, 0.20) 0%, rgba(96, 130, 168, 0.10) 42%, transparent 76%);
+}
+
+.bs::after {                       /* hall haze, strengthens with the build */
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 4;
+    background: radial-gradient(70% 52% at 50% 68%, rgba(45, 156, 202, 0.13), transparent 74%);
+    opacity: calc(var(--bs-progress, 0) * 0.85);
+    transition: opacity 0.8s var(--ease);
+}
+
+.bs-viewport {
+    position: relative;
+    height: clamp(420px, 54vh, 580px);
+    /* Shorter lens + lower horizon = more convergence, and the booth looms
+       instead of being looked down on. */
+    perspective: 720px;
+    perspective-origin: 50% 58%;
+    z-index: 1;
+    /* pan-y, NOT none. `none` stopped the jerk-on-scroll but cost the page its
+       vertical gesture entirely: at <=1000px the stage sits ABOVE the form, so
+       the visitor's first swipe died on a black box. Vertical belongs to the
+       page; the orbit takes horizontal. */
+    touch-action: pan-y;
+}
+
+.bs-world {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+    /* NO transition. The hover parallax writes this on every pointermove; a
+       0.9s ease here restarted from ~1% each time, so the world lagged ~800ms
+       behind the cursor and kept drifting after the pointer stopped. Damping
+       is done with a spring in JS instead. */
+}
+.bs.is-dragging .bs-world { will-change: transform; }
+
+/* Idle drift: two nested compositor animations on incommensurate periods, so
+   there is no readable loop. `linear` between sine-sampled keys — ease-in-out
+   on a two-key sway dwells at both extremes, which is the most legible
+   possible loop signature. */
+.bs-orbit, .bs-orbit-b { position: absolute; inset: 0; transform-style: preserve-3d; }
+.bs-orbit   { animation: bs-drift-y 41s linear infinite; }
+.bs-orbit-b { animation: bs-drift-x 27s linear infinite; }
+.bs.is-dragging .bs-orbit,
+.bs.is-dragging .bs-orbit-b { animation-play-state: paused; }
+@keyframes bs-drift-y {
+    0%   { transform: rotateY(0deg); }
+    25%  { transform: rotateY(2.4deg); }
+    50%  { transform: rotateY(0deg); }
+    75%  { transform: rotateY(-2.4deg); }
+    100% { transform: rotateY(0deg); }
+}
+@keyframes bs-drift-x {
+    0%   { transform: rotateX(0deg); }
+    50%  { transform: rotateX(1.1deg); }
+    100% { transform: rotateX(0deg); }
+}
+
+.bs-el { position: absolute; left: 50%; top: 50%; transform-style: preserve-3d; }
+
+/* Fades that would otherwise need opacity on a 3D node happen here instead. */
+.bs-veil {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    opacity: 0;
+    background: radial-gradient(120% 90% at 50% 40%, #111a26, #06090e);
+}
+.bs.is-shipping .bs-veil { animation: bs-veil 900ms ease-in 1000ms both; }
+@keyframes bs-veil { to { opacity: 1; } }
+
+/* ---------- Ground ----------
+   Keep this plane SMALL. At rotateX(90deg) under perspective a large one
+   projects toward the horizon and Chrome rasterizes a near-unbounded texture.
+   The fade is painted in rather than masked, because a mask re-rasterizes
+   instead of just re-compositing. */
+.bs-ground {
+    /* The fade must reach FULLY transparent, and reach it early. Terminating on
+       an opaque colour left a hard-edged dark oval sitting in the backdrop
+       instead of a floor receding into the hall. */
+    background:
+        radial-gradient(closest-side, rgba(8, 12, 18, 0) 18%, rgba(8, 12, 18, 0.55) 52%, rgba(8, 12, 18, 0) 78%),
+        repeating-linear-gradient(0deg, transparent 0 47px, rgba(110, 150, 190, 0.075) 47px 48px),
+        repeating-linear-gradient(90deg, transparent 0 47px, rgba(110, 150, 190, 0.075) 47px 48px);
+    /* No mask: it re-rasterizes this whole plane on every camera change, and a
+       mask on a preserve-3d node forces it flat. The gradient above already
+       terminates fully transparent, which is all the fade needs. */
+    border-radius: 50%;            /* no straight edge to betray the lozenge */
+}
+
+.bs-pool { border-radius: 50%; background: radial-gradient(closest-side, rgba(0, 0, 0, 0.5), transparent 70%); }
+
+/* A part without a contact shadow floats no matter how well it is lit. It has
+   to arrive IN the impact frame — a half-second ease-in is the floatiest
+   possible cue. Oversized on frame 0, contracting to size. */
+.bs-cshadow {
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(0, 0, 0, 0.66), transparent 74%);
+    opacity: 0;
+}
+.bs-cshadow.is-on { animation: bs-contact 110ms cubic-bezier(0.333, 0.667, 0.667, 1) forwards; }
+@keyframes bs-contact {
+    0%   { opacity: 1; transform: scale(1.42); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+/* ---------- The hall ----------
+   Context, not detail. Everything here is static and unlit — it exists to give
+   the booth somewhere to BE. Kept very dark and low-contrast so it never
+   competes with the subject; if you can read these as objects, they are too
+   bright. */
+.bs-far {
+    background: linear-gradient(180deg, rgba(28, 39, 54, 0.95) 0%, rgba(11, 17, 25, 0.98) 100%);
+    box-shadow: inset 0 1px 0 rgba(130, 170, 210, 0.12);
+}
+.bs-farsign {
+    position: absolute;
+    left: 14%; right: 14%; top: 18%; height: 13%;
+    border-radius: 2px;
+    opacity: 0.34;
+}
+.bs-aisle {
+    background: linear-gradient(180deg, rgba(126, 158, 198, 0.09) 0%, rgba(126, 158, 198, 0.03) 38%, transparent 78%);
+}
+.bs-ceil {
+    background:
+        repeating-linear-gradient(0deg, transparent 0 58px, rgba(150, 185, 225, 0.055) 58px 60px),
+        repeating-linear-gradient(90deg, transparent 0 58px, rgba(150, 185, 225, 0.055) 58px 60px);
+    opacity: 0.85;
+}
+
+/* ---------- Faces ---------- */
+.bs-face { position: absolute; inset: 0; backface-visibility: hidden; }
+
+.bs-wire {
+    border: 1px solid rgba(86, 190, 232, 0.42);
+    background:
+        repeating-linear-gradient(0deg, transparent 0 15px, rgba(86, 190, 232, 0.085) 15px 16px),
+        repeating-linear-gradient(90deg, transparent 0 15px, rgba(86, 190, 232, 0.085) 15px 16px);
+    opacity: 1;
+    /* 120ms linear, not a 550ms ease — the blueprint is REPLACED by matter,
+       it does not dissolve into it. */
+    transition: opacity 120ms linear;
+}
+.bs-part.is-falling .bs-wire { opacity: 0.62; }
+.bs-part.is-built .bs-wire { opacity: 0.13; }
+
+.bs-wire::before, .bs-wire::after {
+    content: '';
+    position: absolute;
+    width: 8px; height: 8px;
+    border: 1px solid rgba(120, 205, 240, 0.7);
+}
+.bs-wire::before { top: -1px; left: -1px; border-right: 0; border-bottom: 0; }
+.bs-wire::after { bottom: -1px; right: -1px; border-left: 0; border-top: 0; }
+
+/* ---------- Solid ----------
+   Colour is a live dot product, not a hand-picked per-side tint. Static
+   per-face colours are THE $500-template signature.
+   The face PRINTS ITSELF TOP-DOWN during the fall and is solid ~20ms before
+   it lands, so the reveal is part of the arrival rather than a wipe on a
+   stationary object. */
+.bs-solid {
+    background:
+        radial-gradient(150% 120% at var(--sx, 50%) var(--sy, 40%),
+            rgba(255, 246, 226, calc(var(--spec, 0) * 0.9)) 0%, transparent 54%),
+        color-mix(in oklab,
+            var(--bs-mat, #33455f) calc(min(1, var(--lum, 0.5) + var(--flash, 0)) * 100%),
+            #05070d);
+    box-shadow:
+        /* the bevel highlight FLIPS SIDES with the light — this is what makes a
+           div read as an extruded solid rather than a printed rectangle */
+        inset var(--bx, 1px) var(--by, 1px) 0 rgba(255, 255, 255, calc(0.16 + var(--spec, 0) * 0.4)),
+        inset calc(var(--bx, 1px) * -1) calc(var(--by, 1px) * -1) 0 rgba(0, 0, 0, 0.5),
+        inset 0 0 0 1px rgba(180, 214, 255, calc(var(--rim, 0) * 0.55));
+    clip-path: inset(0 0 100% 0);
+    /* Base transition so REMOVING a part collapses instead of popping. A juror
+       will clear the company field within twenty seconds. */
+    transition: clip-path 200ms cubic-bezier(0.333, 0, 0.667, 0);
+}
+.bs-part.is-falling .bs-solid {
+    clip-path: inset(0 0 0 0);
+    /* matches the derived fall duration written by land() */
+    transition: clip-path var(--bs-fall, 310ms) linear;
+}
+.bs-part.is-built .bs-solid { clip-path: inset(0 0 0 0); animation: bs-flash 130ms linear forwards; }
+/* `forwards`, not `both`: `both` back-filled the 0% keyframe through the delay,
+   so the face emerged already at peak flash and only got dimmer. */
+@keyframes bs-flash {
+    0%   { --flash: 0.62; }
+    22%  { --flash: 0.30; }
+    100% { --flash: 0; }
+}
+
+@supports not (background: color-mix(in oklab, red 50%, blue)) {
+    .bs-solid { background: linear-gradient(172deg, #3e5271 0%, #33455f 46%, #1b2536 100%); }
+}
+
+/* ---------- Materials ----------
+   --ks / --shin are read once per part at build time. A single diffuse ramp
+   makes gold, brushed aluminium and carpet the same shader; these do not.
+   Near-monochrome on purpose: CSS 3D cannot win on material fidelity, so it
+   wins on restraint. */
+.bs-mat-wall   { --bs-mat: #33455f; --ks: 0.10; --shin: 14; }
+.bs-mat-carpet { --bs-mat: #22303f; --ks: 0.03; --shin: 4; }
+.bs-mat-gold   { --bs-mat: #a8955f; --ks: 0.85; --shin: 26; }
+.bs-mat-truss  { --bs-mat: #78828f; --ks: 0.65; --shin: 48; }
+.bs-mat-screen { --bs-mat: #17384c; --ks: 0.20; --shin: 30; }
+
+.bs-mat-carpet .bs-solid {
+    background:
+        repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.022) 0 7px, transparent 7px 14px),
+        color-mix(in oklab, var(--bs-mat) calc(min(1, var(--lum, 0.5) + var(--flash, 0)) * 100%), #05070d);
+}
+
+/* A metal's look is mostly WHAT IT REFLECTS, not its diffuse albedo. --envang
+   is the in-plane light direction, so this band rotates as the booth orbits —
+   the whole difference between "gold plastic" and "brushed brass". */
+.bs-mat-gold .bs-solid {
+    background:
+        linear-gradient(var(--envang, 100deg),
+            #2a2416 0%, #6d5f38 26%, #d8c68e 44%, #f6ecc8 49%, #9d8a52 56%, #4a4026 78%, #201c11 100%),
+        color-mix(in oklab, var(--bs-mat) calc(min(1, var(--lum, 0.5) + var(--flash, 0)) * 100%), #05070d);
+    background-blend-mode: overlay, normal;
+}
+.bs-mat-truss .bs-solid {
+    background:
+        repeating-linear-gradient(var(--envang, 100deg), rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 3px),
+        linear-gradient(var(--envang, 100deg), #1c222c 0%, #99a4b2 38%, #e8eef5 47%, #7e8996 58%, #232a34 100%),
+        color-mix(in oklab, var(--bs-mat) calc(min(1, var(--lum, 0.5) + var(--flash, 0)) * 100%), #05070d);
+    background-blend-mode: overlay, overlay, normal;
+}
+
+/* Painted lattice. At this projection no arrangement of thin quads resolves as
+   truss, so the web is drawn on a box section instead — chord rails top and
+   bottom, diagonals both ways. */
+.bs-mat-truss .bs-solid.is-lattice {
+    background:
+        /* chord rails */
+        linear-gradient(180deg, rgba(232, 240, 250, 0.5) 0 2px, transparent 2px calc(100% - 2px), rgba(150, 162, 178, 0.34) calc(100% - 2px) 100%),
+        /* the web: both diagonal families must blend IDENTICALLY or the lattice
+           reads as irregular perforated decking rather than as truss */
+        repeating-linear-gradient(58deg, transparent 0 5px, rgba(6, 10, 16, 0.72) 5px 8px, transparent 8px 14px),
+        repeating-linear-gradient(-58deg, transparent 0 5px, rgba(6, 10, 16, 0.72) 5px 8px, transparent 8px 14px),
+        /* brushed-metal band, kept here too: dropping it left the truss the one
+           metal object in the scene with no metal treatment */
+        linear-gradient(var(--envang, 100deg), #1c222c 0%, #99a4b2 38%, #e8eef5 47%, #7e8996 58%, #232a34 100%),
+        color-mix(in oklab, var(--bs-mat) calc(min(1, var(--lum, 0.5) + var(--flash, 0)) * 100%), #05070d);
+    background-blend-mode: normal, normal, normal, overlay, normal;
+}
+
+/* The one emissive surface — it ignores the lighting model. Two sweeps on
+   incommensurate periods, because one perfectly periodic sheen is the "shine"
+   preset. */
+.bs-mat-screen .bs-solid {
+    background:
+        linear-gradient(115deg, transparent 28%, rgba(96, 200, 245, 0.32) 47%, transparent 64%),
+        linear-gradient(180deg, #1b4c66 0%, #0b1a26 100%);
+    background-size: 260% 100%, 100% 100%;
+    box-shadow: inset 0 0 34px rgba(96, 200, 245, 0.3), 0 0 30px rgba(45, 156, 202, 0.24);
+}
+.bs-part.is-built.bs-mat-screen .bs-solid { animation: bs-screen 6.3s linear infinite; }
+@keyframes bs-screen { from { background-position: 130% 0, 0 0; } to { background-position: -130% 0, 0 0; } }
+
+/* ---------- Sign ----------
+   Dark letters with a light bleed = halo-lit channel letters, which is what a
+   real gold fascia does. Glowing cream-on-cream reads as a CSS demo. */
+.bs-signtext {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5%;
+    font-family: 'Archivo', system-ui, sans-serif;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: #16130b;
+    text-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.34),
+        0 0 16px rgba(240, 225, 170, 0.85),
+        0 0 44px rgba(226, 208, 152, 0.42);
+    white-space: nowrap;
+    overflow: hidden;
+    backface-visibility: hidden;
+    opacity: 0;
+}
+/* Signage strikes, it does not dissolve. Driven by .is-lit (set from JS once
+   the typed name settles) rather than by .is-built, which fired the ballast
+   flash on the first character and then let the text mutate silently. */
+.bs-part.is-built .bs-signtext { opacity: 1; }
+.bs-signtext.is-lit { animation: bs-strike 280ms linear forwards; }
+@keyframes bs-strike {
+    0% { opacity: 0; } 8% { opacity: 0.95; } 14% { opacity: 0.12; }
+    22% { opacity: 1; } 26% { opacity: 0.4; } 34% { opacity: 1; } 100% { opacity: 1; }
+}
+
+.bs-cable {
+    background: linear-gradient(90deg, rgba(150, 168, 190, 0.25), rgba(228, 238, 252, 0.85), rgba(150, 168, 190, 0.25));
+    opacity: 0;
+    transition: opacity 120ms linear;
+}
+.bs-part.is-built .bs-cable { opacity: 1; }
+
+.bs-decal {
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: rgba(232, 216, 164, 0.9);
+    border: 1px dashed rgba(168, 149, 95, 0.45);
+    background: rgba(168, 149, 95, 0.07);
+    white-space: nowrap; overflow: hidden;
+    backface-visibility: hidden;
+}
+.bs-decal-wrap, .bs-dim-wrap { transition: opacity 0.4s var(--ease); }
+
+/* ---------- Crew ----------
+   Roughly 5'10" at FT=12. They were 2.5ft tall — shorter than the 3.4ft
+   counter beside them, which was the single most immediate scale tell in the
+   scene. Dark silhouettes, not glowing gold pills: the eye goes to the
+   brightest human-shaped thing, and that must not outrank the architecture. */
+.bs-crew { transform-style: preserve-3d; }
+.bs-figw {
+    position: absolute;
+    bottom: 0; left: 50%;
+    width: 20px;
+    opacity: 0;
+    scale: var(--fz, 1);
+    /* LOAD-BEARING. Without it this is a flat containing block: the shadow's
+       rotateX(90deg) collapses to a zero-height line and the JS counter-rotation
+       on .bs-fig squashes horizontally instead of billboarding. */
+    transform-style: preserve-3d;
+}
+.bs-fig { position: relative; width: 20px; }
+.bs-fig i {
+    display: block;
+    width: 20px; height: 56px;
+    background: linear-gradient(100deg, #0d1219 0 44%, #2a3646 62%, #61748a 100%);
+    clip-path: polygon(38% 0, 62% 0, 72% 13%, 78% 42%, 70% 44%, 66% 62%,
+                       62% 100%, 53% 100%, 50% 68%, 47% 100%, 38% 100%,
+                       34% 62%, 30% 44%, 22% 42%, 28% 13%);
+}
+.bs-fig::after {                   /* hi-vis band — the only warm accent */
+    content: '';
+    position: absolute;
+    left: 4px; right: 4px; top: 20px; height: 5px;
+    background: rgba(226, 208, 152, 0.72);
+}
+.bs-fig b {
+    display: block;
+    width: 14px; height: 10px;
+    margin: 0 auto -2px;
+    border-radius: 7px 7px 1px 1px;
+    /* muted: three bright white dots were pulling focus off the architecture */
+    background: linear-gradient(180deg, #b9b3a3 0%, #7d786c 100%);
+}
+.bs-figshadow {                    /* on the FLOOR, not standing up in the world plane */
+    position: absolute;
+    bottom: -2px; left: 50%;
+    width: 26px; height: 8px;
+    margin-left: -13px;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(0, 0, 0, 0.6), transparent 72%);
+    transform: rotateX(90deg);
+}
+
+/* ---------- Light ----------
+   mix-blend-mode is NOT usable inside preserve-3d: each transformed element is
+   composited into its own layer, so the blend has no shared backdrop and
+   silently isolates — the beams vanish. Bright low-alpha gradient instead. */
+/* Wide, weak and soft-edged. Narrow + bright made these read as three white
+   POSTS standing in the booth rather than as light falling through haze. Light
+   should be the least substantial thing in the frame, not the most. */
+.bs-beam {
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(90deg, transparent 0%, rgba(178, 220, 252, 0.13) 26%, rgba(196, 232, 255, 0.2) 50%, rgba(178, 220, 252, 0.13) 74%, transparent 100%),
+        linear-gradient(180deg, rgba(196, 232, 255, 0.16) 0%, rgba(150, 205, 245, 0.06) 46%, transparent 84%);
+    clip-path: polygon(34% 0, 66% 0, 96% 100%, 4% 100%);
+    opacity: 0;
+}
+.bs-beam-pool {
+    background: radial-gradient(closest-side, rgba(180, 224, 255, 0.24), transparent 68%);
+    opacity: 0;
+}
+/* Stage lights STRIKE. A 1s ease-out fade-up was the most generic moment here. */
+.bs-beam.is-on, .bs-beam-pool.is-on { animation: bs-strike-lamp 300ms linear forwards; }
+@keyframes bs-strike-lamp {
+    0% { opacity: 0; } 4% { opacity: 1; } 10% { opacity: 0.45; } 100% { opacity: 1; }
+}
+
+/* ---------- Dimension line ---------- */
+.bs-dim {
+    display: flex; align-items: center; gap: 6px;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 12px; letter-spacing: 0.1em;
+    color: rgba(130, 210, 244, 0.95);
+    white-space: nowrap;
+    backface-visibility: hidden;
+}
+.bs-dim span { flex: 0 0 auto; }
+.bs-dim i { flex: 1 1 auto; height: 1px; background: currentColor; position: relative; }
+.bs-dim i::before, .bs-dim i::after {
+    content: '';
+    position: absolute; top: -3px;
+    width: 7px; height: 7px;
+    border-top: 1px solid currentColor; border-right: 1px solid currentColor;
+}
+.bs-dim i::before { left: 0; transform: rotate(-135deg); }
+.bs-dim i::after  { right: 0; transform: rotate(45deg); }
+
+/* ---------- Road case ---------- */
+.bs-case .bs-face {
+    background: linear-gradient(170deg, #39445a 0%, #1c2530 100%);
+    border: 1px solid rgba(168, 149, 95, 0.32);
+    box-shadow: inset 0 0 26px rgba(0, 0, 0, 0.55);
+    opacity: 0;                    /* leaf — safe */
+    transition: opacity 260ms linear;
+}
+.bs.is-shipping .bs-case .bs-face { opacity: 1; }
+.bs-caselabel {
+    position: absolute;
+    inset: 16% 9% auto 9%;
+    padding: 6px 4px;
+    text-align: center;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: #e2d098;
+    border: 1px solid rgba(168, 149, 95, 0.5);
+    background: rgba(168, 149, 95, 0.09);
+    white-space: nowrap; overflow: hidden;
+    backface-visibility: hidden;
+}
+
+/* Pack + ship. NO opacity on these — .bs-part and .bs-world are preserve-3d
+   nodes and any opacity<1 flattens them. Parts shrink to nothing
+   geometrically; the world exits frame; the veil does the fade. */
+.bs.is-shipping .bs-part,
+.bs.is-shipping .bs-crew,
+.bs.is-shipping .bs-decal-wrap,
+.bs.is-shipping .bs-dim-wrap { animation: bs-pack 460ms cubic-bezier(0.333, 0, 0.667, 0) both; }
+@keyframes bs-pack { to { scale: 0.02; } }   /* `scale`, not transform: never clobbers the placement */
+.bs.is-shipping .bs-world { animation: bs-ship 580ms cubic-bezier(0.333, 0, 0.667, 0) 900ms both; }
+@keyframes bs-ship { to { translate: 140% 0; } }
+
+/* ---------- HUD (outside the perspective — filters/blends safe here) ---------- */
+.bs-hud {
+    position: absolute; inset: 0; z-index: 5;
+    pointer-events: none;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+}
+.bs-hud-tl { position: absolute; top: 16px; left: 18px; display: flex; flex-direction: column; gap: 6px; }
+.bs-tag {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 8.5px; letter-spacing: 0.28em; text-transform: uppercase;
+    color: var(--text-secondary);
+}
+/* A real typographic ladder — every HUD line at one size in one grey is the
+   stock sci-fi preset. */
+.bs-mode { font-size: 17px; letter-spacing: 0.06em; }
+.bs-mode b { color: rgba(120, 205, 240, 0.95); font-weight: 600; }
+.bs-live {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--success);
+    animation: bs-pulse 2.6s var(--ease) infinite;
+}
+/* All three stops declared — with only a 50% key the ring contracted while
+   regaining opacity, i.e. a radar ping that sucks back in. */
+@keyframes bs-pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(74, 157, 111, 0.34); }
+    70%  { box-shadow: 0 0 0 9px rgba(74, 157, 111, 0); }
+    100% { box-shadow: 0 0 0 9px rgba(74, 157, 111, 0); }
+}
+
+.bs-spec {
+    position: absolute; top: 16px; right: 18px;
+    display: flex; flex-direction: column; align-items: flex-end; gap: 5px;
+    max-width: 52%;
+}
+.bs-spec li {
+    list-style: none;
+    font-size: 8.5px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--text-secondary);
+    opacity: 0; transform: translateX(9px);
+    transition: opacity 0.34s var(--ease), transform 0.34s var(--ease);
+    white-space: nowrap; overflow: hidden; max-width: 100%; text-overflow: ellipsis;
+}
+.bs-spec li.is-on { opacity: 1; transform: none; }
+.bs-spec li b {
+    display: block;
+    font-size: 12px; letter-spacing: 0.02em; text-transform: none;
+    color: var(--text-primary); font-weight: 600;
+}
+
+.bs-prog { position: absolute; left: 18px; right: 18px; bottom: 15px; }
+.bs-prog-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 8.5px; letter-spacing: 0.28em; text-transform: uppercase;
+    color: var(--text-secondary); margin-bottom: 8px;
+}
+.bs-prog-row b {
+    font-size: 22px; letter-spacing: 0; color: #e2d098; font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+.bs-prog-bar { height: 3px; border-radius: 3px; background: rgba(255, 255, 255, 0.09); overflow: hidden; }
+.bs-prog-fill {
+    height: 100%;
+    /* scaleX, not width — width relayouts on every keystroke */
+    transform: scaleX(0);
+    transform-origin: left center;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--accent-teal), #e2d098);
+    box-shadow: 0 0 12px rgba(96, 200, 245, 0.5);
+    transition: transform 220ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.bs-drag {
+    position: absolute; left: 50%; bottom: 48px; transform: translateX(-50%);
+    font-size: 8.5px; letter-spacing: 0.28em; text-transform: uppercase;
+    color: rgba(168, 172, 177, 0.5);
+    transition: opacity 0.4s var(--ease);
+}
+.bs.is-touched .bs-drag { opacity: 0; }
+
+/* Sound toggle. Lives outside .bs-hud (and outside the aria-hidden subtree) so
+   it is reachable and announced — a focusable control inside aria-hidden is a
+   WCAG 4.1.2 failure and leaves AT users unable to mute. */
+.bs-sound {
+    position: absolute; right: 14px; bottom: 36px; z-index: 6;
+    display: flex; align-items: flex-end; gap: 3px;
+    height: 18px; padding: 4px 5px;
+    background: none; border: 0; cursor: pointer; border-radius: 4px;
+}
+.bs-sound span {
+    width: 2px; height: 14px;
+    transform: scaleY(0.22);
+    transform-origin: bottom;
+    background: rgba(120, 205, 240, 0.85);
+    transition: background 0.3s var(--ease);
+}
+.bs-sound[aria-pressed="false"] span { transform: scaleY(0.22) !important; background: rgba(168, 172, 177, 0.45); }
+.bs-sound:focus-visible { outline: 2px solid var(--accent-teal-bright); outline-offset: 2px; }
+
+/* ---------- Reduced motion ----------
+   Not "no animation" — the booth still BUILDS, it just cross-fades instead of
+   travelling. Same information, same lighting, zero travel. The previous
+   version forced clip-path:none with no opacity pair, which rendered the
+   finished booth at page load and deleted the entire premise. */
+@media (prefers-reduced-motion: reduce) {
+    .bs-orbit, .bs-orbit-b { animation: none; }
+    .bs-solid {
+        clip-path: none !important;
+        opacity: 0;                                  /* leaf — safe */
+        transition: opacity 300ms linear;
+        animation: none !important;
+    }
+    .bs-part.is-built .bs-solid { opacity: 1; }
+    .bs-wire { transition: opacity 300ms linear; }
+    .bs-signtext, .bs-beam, .bs-beam-pool, .bs-cshadow { animation: none !important; }
+    .bs-part.is-built .bs-signtext { opacity: 1; }
+    .bs-beam.is-on, .bs-beam-pool.is-on, .bs-cshadow.is-on { opacity: 1; }
+    .bs-drag { display: none; }
+    .bs-part.is-built.bs-mat-screen .bs-solid, .bs-live { animation: none; }
+    .bs-prog-fill { transition: none; }
+    .bs-spec li { transform: none; transition: opacity 300ms linear; }
+    .bs.is-shipping .bs-part,
+    .bs.is-shipping .bs-crew,
+    .bs.is-shipping .bs-decal-wrap,
+    .bs.is-shipping .bs-dim-wrap,
+    .bs.is-shipping .bs-world { animation: none; }
+    .bs.is-shipping .bs-veil { animation: none; opacity: 1; transition: opacity 300ms linear; }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 700px) {
+    .bs-viewport { height: 340px; }
+    .bs-drag { display: none; }
+    /* Keep the spec readout: it is the clearest signal that the thing is
+       reacting to what you type, and hiding it killed the premise on the
+       devices most of this audience actually uses. */
+    .bs-spec { max-width: 46%; gap: 3px; }
+    .bs-spec li { font-size: 7.5px; }
+    .bs-spec li b { font-size: 10px; }
+    .bs-mode { font-size: 13px; }
+    .bs-prog-row b { font-size: 17px; }
+}

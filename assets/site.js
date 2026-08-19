@@ -159,13 +159,20 @@
             parallax();
         }
 
-        /* ---------- Formspree AJAX submit (progressive enhancement) ---------- */
+        /* ---------- AJAX form submit (progressive enhancement) ----------
+           Forms post to FormSubmit.co. The markup keeps the plain endpoint so a
+           no-JS browser still submits and lands on FormSubmit's thank-you page;
+           here we rewrite it to the /ajax/ endpoint, which answers with JSON so
+           the visitor never leaves the page. ------------------------------- */
         document.querySelectorAll('form[data-ajax="true"]').forEach(function (form) {
             form.addEventListener('submit', function (e) {
                 var action = form.getAttribute('action') || '';
-                // If the form still points at the placeholder endpoint, let it submit
+                // If the form still points at a placeholder endpoint, let it submit
                 // normally so the user clearly sees it needs configuring.
                 if (action.indexOf('YOUR_FORM_ID') !== -1) return;
+                if (action.indexOf('formsubmit.co/') !== -1 && action.indexOf('/ajax/') === -1) {
+                    action = action.replace('formsubmit.co/', 'formsubmit.co/ajax/');
+                }
                 e.preventDefault();
                 var btn = form.querySelector('[type="submit"]');
                 var original = btn ? btn.textContent : '';
@@ -180,6 +187,10 @@
                     })
                     .catch(function () {
                         if (btn) { btn.disabled = false; btn.textContent = original; }
+                        /* Let the build stage put the booth back — otherwise it
+                           stays packed into its road case and slid off screen
+                           while the user is being told to try again. */
+                        form.dispatchEvent(new Event('bs:restore'));
                         alert('Something went wrong. Please call us at 702-483-8279 or try again.');
                     });
             });

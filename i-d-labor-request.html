@@ -11,6 +11,7 @@
     <meta property="og:image" content="assets/world2-logo.png">
     <link rel="icon" type="image/png" href="assets/world2-logo.png">
     <link rel="stylesheet" href="assets/site.css">
+    <link rel="stylesheet" href="assets/build-stage.css">
     <style>
         /* ============================================================
            I&D LABOR REQUEST
@@ -58,7 +59,9 @@
 
         /* ---------- 2. Request — the form, on a lit stage ---------- */
         .lab-request {
-            position: relative; overflow: hidden;
+            /* `clip`, not `hidden` — `hidden` makes this a scroll container and
+               silently kills `position: sticky` on the stage column. */
+            position: relative; overflow: clip;
             padding: 78px 20px 92px;
             background: var(--primary-bg);
         }
@@ -77,10 +80,20 @@
         }
         .lab-request-grid {
             position: relative; z-index: 2;
-            display: grid; grid-template-columns: 0.78fr 1.22fr; gap: 58px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 48px;
             align-items: start; max-width: var(--maxw); margin: 0 auto;
         }
-        .lab-aside { position: sticky; top: 100px; }
+        /* Intro band now sits above the build row, so it no longer sticks. */
+        .lab-intro { position: relative; z-index: 2; max-width: var(--maxw); margin: 0 auto 46px; }
+        .lab-intro .lab-assure { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0 30px; }
+        .lab-intro .lab-assure li { border-bottom: none; border-top: 1px solid rgba(255, 255, 255, 0.09); }
+        .lab-aside { position: static; }
+
+        .lab-stagecol { position: sticky; top: 96px; }
+        .lab-stagenote {
+            margin-top: 14px; font-size: 0.84rem; line-height: 1.6; color: var(--text-secondary);
+        }
+        .lab-stagenote b { color: var(--accent-teal-bright); font-weight: 600; }
         .lab-aside h2 { font-size: clamp(1.7rem, 3.4vw, 2.4rem); line-height: 1.12; letter-spacing: -0.8px; margin-bottom: 16px; }
         .lab-aside h2 em { font-style: normal; color: var(--accent-gold); }
         .lab-aside > p { color: rgba(255, 255, 255, 0.78); max-width: 38ch; }
@@ -281,8 +294,9 @@
            beats stop swapping in place and become a scrolling column — the
            controller switches to "flow" to match. */
         @media (max-width: 1000px) {
-            .lab-request-grid { grid-template-columns: 1fr; gap: 40px; }
-            .lab-aside { position: static; }
+            .lab-request-grid { grid-template-columns: 1fr; gap: 30px; }
+            .lab-stagecol { position: static; }
+            .lab-intro .lab-assure { grid-template-columns: 1fr; }
             .seq-track { height: auto; }
             .seq-stick { position: static; height: auto; display: block; padding: 96px 20px 40px; }
             .seq-stage { position: static; min-height: 0; display: grid; gap: 64px; }
@@ -366,8 +380,8 @@
         <div class="lab-request-bg" data-parallax="0.09" aria-hidden="true"></div>
         <div class="lab-request-ov" aria-hidden="true"></div>
 
-        <div class="lab-request-grid">
-            <!-- Aside -->
+        <!-- Intro band, full width above the build row -->
+        <div class="lab-intro">
             <div class="lab-aside" data-reveal="left">
                 <span class="eyebrow gold">Book A Crew</span>
                 <h2>Tell us what you're <em>building</em>.</h2>
@@ -381,6 +395,23 @@
 
                 <p class="lab-aside-phone">Prefer to talk it through?<br><a href="tel:+17024838279">702-483-8279</a></p>
             </div>
+        </div>
+
+        <div class="lab-request-grid">
+
+            <!-- LEFT: THE LIVE BUILD ------------------------------------
+                 A CSS-3D exhibit that assembles itself from the form on the
+                 right. Decorative and aria-hidden — every field still works
+                 with build-stage.js absent.
+                 Engine: assets/build-stage.js  Styles: build-stage.css -->
+            <div class="lab-stagecol" data-reveal="left">
+                <div class="bs" data-build-stage="labor" data-form="#lab-form"></div>
+                <p class="lab-stagenote">
+                    <b>Your stand, live.</b> It assembles as you fill the form &mdash; your
+                    company name lands on the header sign and the crew count you enter
+                    walks onto the floor. Drag it to orbit.
+                </p>
+            </div>
 
             <!-- Form -->
             <div data-reveal="right">
@@ -388,12 +419,14 @@
                 <h3 class="lab-form-title">Labor request</h3>
                 <p class="lab-form-sub">Takes about two minutes</p>
 
-                <!-- OWNER TODO: replace YOUR_FORM_ID below with your real Formspree form ID
-                     (e.g. action="https://formspree.io/f/abcdwxyz"). Until then the form
-                     posts to the placeholder endpoint and the AJAX success message is skipped. -->
-                <form data-ajax="true" method="POST" action="https://formspree.io/f/YOUR_FORM_ID">
+                <!-- Posts to FormSubmit.co (free, no account). assets/site.js rewrites this
+                     action to the /ajax/ endpoint on submit so the visitor stays on the page;
+                     without JS it falls back to a normal POST + thank-you page. -->
+                <form id="lab-form" data-ajax="true" method="POST" action="https://formsubmit.co/LVTradeShowRentals@outlook.com">
                     <input type="hidden" name="_subject" value="New I&amp;D labor request — LV Trade Show Rentals">
-                    <input class="hp" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
+                    <input type="hidden" name="_template" value="table">
+                    <input type="hidden" name="_captcha" value="false">
+                    <input class="hp" type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true">
 
                     <div class="form-grid">
                         <div class="field">
@@ -586,6 +619,7 @@
     </footer>
 
     <script src="assets/site.js" defer></script>
+    <script src="assets/build-stage.js" defer></script>
     <!-- Binds the closer clip's playhead to scroll. Same engine as index /
          about-us / what-we-do; this page has its own clip.
          assets/labor-request-scroll.mp4 is re-encoded ALL-INTRA (-g 1): the

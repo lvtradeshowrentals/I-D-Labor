@@ -11,6 +11,7 @@
     <meta property="og:image" content="assets/world2-logo.png">
     <link rel="icon" type="image/png" href="assets/world2-logo.png">
     <link rel="stylesheet" href="assets/site.css">
+    <link rel="stylesheet" href="assets/build-stage.css">
     <style>
         /* ============================================================
            CONTACT PAGE — page-specific styles (con- prefix only).
@@ -52,7 +53,9 @@
         .con-chip-ic { font-size: 1rem; line-height: 1; }
 
         /* ---------- Main contact section ---------- */
-        .con-contact { position: relative; overflow: hidden; }
+        /* NOTE: `clip`, not `hidden` — `hidden` would make this a scroll
+           container and silently kill `position: sticky` on the stage column. */
+        .con-contact { position: relative; overflow: clip; }
         .con-contact::before {
             content: ''; position: absolute; top: -130px; left: -120px;
             width: 440px; height: 440px; pointer-events: none;
@@ -74,6 +77,18 @@
             display: grid; grid-template-columns: 1.12fr 0.88fr;
             gap: 44px; align-items: start;
         }
+
+        /* ---------- Live build row: stage (sticky) + form ---------- */
+        .con-build {
+            display: grid; grid-template-columns: 1.04fr 0.96fr;
+            gap: 40px; align-items: start; margin-bottom: 52px;
+        }
+        .con-stagecol { position: sticky; top: 96px; }
+        .con-stagenote {
+            margin-top: 14px; font-size: 0.84rem; line-height: 1.6;
+            color: var(--text-secondary);
+        }
+        .con-stagenote b { color: var(--accent-teal-bright); font-weight: 600; }
 
         /* ---------- Form column ---------- */
         .con-form-head { margin-bottom: 22px; }
@@ -123,6 +138,10 @@
         .con-slim { padding-top: 72px; padding-bottom: 72px; }
 
         /* ---------- Responsive ---------- */
+        @media (max-width: 1000px) {
+            .con-build { grid-template-columns: 1fr; gap: 26px; }
+            .con-stagecol { position: static; }
+        }
         @media (max-width: 960px) {
             .con-grid { grid-template-columns: 1fr; gap: 34px; }
         }
@@ -177,10 +196,24 @@
     <section class="section con-contact">
         <div class="con-orb con-orb-drift" data-parallax="0.08" aria-hidden="true"></div>
         <div class="container">
-            <div class="con-grid">
+            <div class="con-build">
 
-                <!-- LEFT: quote form -->
-                <div class="con-formcol" data-reveal="left">
+                <!-- LEFT: THE LIVE BUILD ------------------------------------
+                     A CSS-3D exhibit that assembles itself from the form on
+                     the right. Purely decorative and aria-hidden — every
+                     field still works with build-stage.js absent.
+                     Engine: assets/build-stage.js  Styles: build-stage.css -->
+                <div class="con-stagecol" data-reveal="left">
+                    <div class="bs" data-build-stage="quote" data-form=".con-form"></div>
+                    <p class="con-stagenote">
+                        <b>This is your booth.</b> It builds itself as you fill the form &mdash;
+                        your company name lands on the header sign, your booth size resizes the
+                        real footprint. Drag it to orbit.
+                    </p>
+                </div>
+
+                <!-- RIGHT: quote form -->
+                <div class="con-formcol" data-reveal="right">
                     <div class="con-form-head">
                         <span class="eyebrow">Request a Quote</span>
                         <h3>Tell us about your project</h3>
@@ -190,11 +223,11 @@
 
                     <div class="form-wrap">
                         <!--
-                          OWNER TODO: Replace YOUR_FORM_ID in the form action below with your
-                          Formspree endpoint (e.g. action="https://formspree.io/f/abcdwxyz").
-                          Until it's replaced, the form falls back to a normal browser submit.
+                          Posts to FormSubmit.co (free, no account). assets/site.js rewrites
+                          this action to the /ajax/ endpoint on submit so the visitor stays on
+                          the page; without JS it falls back to a normal POST + thank-you page.
                         -->
-                        <form data-ajax="true" method="POST" action="https://formspree.io/f/YOUR_FORM_ID" class="con-form" aria-label="Trade show booth quote request">
+                        <form data-ajax="true" method="POST" action="https://formsubmit.co/LVTradeShowRentals@outlook.com" class="con-form" aria-label="Trade show booth quote request">
                             <div class="form-grid">
                                 <div class="field">
                                     <label for="con-name">Full Name <span class="req">*</span></label>
@@ -256,8 +289,10 @@
                             </div>
 
                             <!-- Honeypot (spam trap) — leave empty -->
-                            <input class="hp" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
+                            <input class="hp" type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true">
                             <input type="hidden" name="_subject" value="New quote request — LV Trade Show Rentals">
+                            <input type="hidden" name="_template" value="table">
+                            <input type="hidden" name="_captcha" value="false">
 
                             <button type="submit" class="cta-button con-submit">Request My Quote</button>
                             <p class="form-note">Prefer to talk? Call <a href="tel:+17024838279">702-483-8279</a>.</p>
@@ -267,8 +302,10 @@
                     </div>
                 </div>
 
-                <!-- RIGHT: info card + CSS map -->
-                <aside class="con-aside" data-reveal="right">
+            </div>
+
+            <!-- Contact details, full width beneath the build row -->
+            <aside class="con-aside" data-reveal="right">
 
                     <div class="con-info tilt" data-tilt-max="6">
                         <div class="tilt-glare"></div>
@@ -310,9 +347,8 @@
                         </div>
                     </div>
 
-                </aside>
+            </aside>
 
-            </div>
         </div>
     </section>
 
@@ -405,5 +441,6 @@
         })();
     </script>
     <script src="assets/site.js" defer></script>
+    <script src="assets/build-stage.js" defer></script>
 </body>
 </html>
