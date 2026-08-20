@@ -645,3 +645,34 @@
     .bs-mode { font-size: 13px; }
     .bs-prog-row b { font-size: 17px; }
 }
+
+/* ---------- Docked (mobile) ----------
+   The stage pins under the navbar and compacts into a HUD band once the form is
+   engaged, so the build stays visible while the visitor types. Full height on
+   arrival for the reveal; short and unobtrusive from then on. The host page owns
+   the `position: sticky` (it knows its own layout); this owns the compaction. */
+@media (max-width: 1000px) {
+    [data-bs-dock] .bs-viewport { transition: height 320ms cubic-bezier(0.2, 0, 0, 1); }
+
+    [data-bs-dock].is-docked .bs-viewport { height: clamp(132px, 23vh, 184px); }
+    [data-bs-dock].is-docked .bs { border-radius: 10px; box-shadow: 0 16px 34px rgba(0, 0, 0, 0.55); }
+    [data-bs-dock].is-docked .con-stagenote,
+    [data-bs-dock].is-docked .lab-stagenote { display: none; }
+
+    /* HUD shrinks with the band, or it eats the whole thing */
+    [data-bs-dock].is-docked .bs-hud-tl { top: 9px; left: 11px; gap: 2px; }
+    [data-bs-dock].is-docked .bs-mode { font-size: 12px; }
+    [data-bs-dock].is-docked .bs-tag { font-size: 7.5px; letter-spacing: 0.2em; }
+    [data-bs-dock].is-docked .bs-spec { top: 9px; right: 11px; gap: 1px; max-width: 44%; }
+    [data-bs-dock].is-docked .bs-spec li { font-size: 7px; }
+    [data-bs-dock].is-docked .bs-spec li b { font-size: 9px; }
+    /* only the two most recently answered lines survive the squeeze */
+    [data-bs-dock].is-docked .bs-spec li.is-on:nth-last-of-type(n+3) { display: none; }
+    [data-bs-dock].is-docked .bs-prog { left: 11px; right: 11px; bottom: 8px; }
+    [data-bs-dock].is-docked .bs-prog-row { margin-bottom: 5px; font-size: 7.5px; }
+    [data-bs-dock].is-docked .bs-prog-row b { font-size: 14px; }
+    [data-bs-dock].is-docked .bs-sound { bottom: 26px; right: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    [data-bs-dock] .bs-viewport { transition: none; }
+}

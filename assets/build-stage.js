@@ -695,13 +695,20 @@
         /* Fit from BOTH axes and the real viewport — width alone clipped the
            truss and the rigging straight off the top of the frame. */
         function fit(f) {
-            /* Fill the frame. The previous 0.46 target shrank the booth into a
-               tabletop model in a black void -- more correct, far less impressive.
-               Letting the truss bleed past the top edge is cinematic; a fully
-               contained miniature is not. */
+            /* Fill the frame, but fit against the height that is ACTUALLY
+               available above the floor. The world origin sits at 50% + the 7%
+               translate = 57% from the top, so the usable headroom is 0.57*vh,
+               not the whole viewport — measuring against full height overflowed
+               the top by ~35px and clipped the header sign, which carries the
+               visitor's own company name. Matters most in the short docked band
+               on mobile, where the sign is nearly the entire point. */
             var vh = vp.clientHeight || 440;
-            camS = Math.min(430 / (f.w * FT), (vh * 0.78) / (TOP_FT * FT));
-            camS = Math.max(0.6, Math.min(1.7, camS));
+            /* In the short docked band, fit to the SIGN (~14.5ft) rather than the
+               ceiling rigging (~18ft). Cropping the rigging is free; shrinking the
+               booth until the company name is unreadable is not. */
+            var topFt = vh < 230 ? 14.5 : TOP_FT;
+            camS = Math.min(430 / (f.w * FT), (vh * 0.57 - 8) / (topFt * FT));
+            camS = Math.max(0.32, Math.min(1.7, camS));
         }
 
         /* ---------- build ---------- */
@@ -1143,6 +1150,40 @@
         window.addEventListener('resize', function () {
             if (currentSize) { fit(currentSize); camera(); }
         });
+
+        /* The stage changes height when it docks, which is not a window resize —
+           without this the camera keeps the tall-band scale and the booth
+           overflows the compact band. */
+        if (window.ResizeObserver) {
+            var lastH = 0;
+            new ResizeObserver(function () {
+                var h = vp.clientHeight;
+                if (!h || h === lastH || !currentSize) return;
+                lastH = h;
+                fit(currentSize);
+                camera();
+            }).observe(vp);
+        }
+
+        /* ---------- dock ----------
+           A sentinel just above the stage: once it passes under the navbar the
+           stage is pinned, so compact it. Cheap, and it never reads layout on
+           scroll. The CSS only reacts below 1000px, so this is inert on desktop. */
+        (function dock() {
+            var host = root.closest ? root.closest('[data-bs-dock]') : null;
+            if (!host || !window.IntersectionObserver || !host.parentNode) return;
+            /* ABSOLUTE, not in flow. As a normal sibling this becomes an extra
+               GRID ITEM on desktop and pushes the stage into the form's column.
+               Positioned against the row wrapper (which is position:relative), it
+               marks exactly where the stage begins to pin and costs no layout. */
+            var sentinel = document.createElement('div');
+            sentinel.setAttribute('aria-hidden', 'true');
+            sentinel.style.cssText = 'position:absolute;top:0;left:0;width:1px;height:1px;pointer-events:none';
+            host.parentNode.insertBefore(sentinel, host);
+            new IntersectionObserver(function (es) {
+                host.classList.toggle('is-docked', !es[0].isIntersecting);
+            }, { rootMargin: '-71px 0px 0px 0px', threshold: 0 }).observe(sentinel);
+        })();
 
         form.addEventListener('submit', function () {
             if (caseEl && caseEl.__label) {

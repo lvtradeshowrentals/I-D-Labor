@@ -294,8 +294,18 @@
            beats stop swapping in place and become a scrolling column — the
            controller switches to "flow" to match. */
         @media (max-width: 1000px) {
-            .lab-request-grid { grid-template-columns: 1fr; gap: 30px; }
-            .lab-stagecol { position: static; }
+            /* See the note in contact-us.html: block, not a one-column grid,
+               so the sticky stage can travel the height of the form. */
+            .lab-request-grid { display: block; }
+            .lab-stagecol {
+                position: sticky;
+                top: 70px;
+                z-index: 20;
+                padding-bottom: 14px;
+                background: linear-gradient(180deg,
+                    var(--primary-bg) 0%, var(--primary-bg) 86%, transparent 100%);
+            }
+            .lab-request-grid > div[data-reveal="right"] { margin-top: 4px; }
             .lab-intro .lab-assure { grid-template-columns: 1fr; }
             .seq-track { height: auto; }
             .seq-stick { position: static; height: auto; display: block; padding: 96px 20px 40px; }
@@ -404,12 +414,16 @@
                  right. Decorative and aria-hidden — every field still works
                  with build-stage.js absent.
                  Engine: assets/build-stage.js  Styles: build-stage.css -->
-            <div class="lab-stagecol" data-reveal="left">
+            <div class="lab-stagecol" data-reveal="left" data-bs-dock>
                 <div class="bs" data-build-stage="labor" data-form="#lab-form"></div>
+                <!-- As on contact-us: an illustration of the REQUEST, not a design
+                     proposal. We are being hired to install someone else's exhibit
+                     here, so implying we designed it would be doubly wrong. -->
                 <p class="lab-stagenote">
-                    <b>Your stand, live.</b> It assembles as you fill the form &mdash; your
-                    company name lands on the header sign and the crew count you enter
-                    walks onto the floor. Drag it to orbit.
+                    <b>Your job, taking shape.</b> The details you type drive this live
+                    illustration &mdash; your company on the header, the crew size you
+                    enter out on the floor. It&rsquo;s a stand-in for your request, not
+                    your actual exhibit. Drag it to orbit.
                 </p>
             </div>
 

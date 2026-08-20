@@ -82,6 +82,8 @@
         .con-build {
             display: grid; grid-template-columns: 1.04fr 0.96fr;
             gap: 40px; align-items: start; margin-bottom: 52px;
+            /* containing block for the dock sentinel that build-stage.js inserts */
+            position: relative;
         }
         .con-stagecol { position: sticky; top: 96px; }
         .con-stagenote {
@@ -139,8 +141,24 @@
 
         /* ---------- Responsive ---------- */
         @media (max-width: 1000px) {
-            .con-build { grid-template-columns: 1fr; gap: 26px; }
-            .con-stagecol { position: static; }
+            /* BLOCK, not a single-column grid. A sticky GRID ITEM is constrained
+               to its own grid area, which in a one-column grid is its own height
+               — i.e. zero travel. As a block child its containing block becomes
+               .con-build, which includes the form, so it can stay pinned for the
+               whole scroll. This is what makes the build visible WHILE you type,
+               which is the entire point of the section on a phone. */
+            .con-build { display: block; }
+            .con-stagecol {
+                position: sticky;
+                top: 70px;                       /* the fixed navbar */
+                z-index: 20;
+                padding-bottom: 14px;
+                /* opaque behind the stage so form fields do not show through the
+                   gap as they scroll under it */
+                background: linear-gradient(180deg,
+                    var(--primary-bg) 0%, var(--primary-bg) 86%, transparent 100%);
+            }
+            .con-formcol { margin-top: 4px; }
         }
         @media (max-width: 960px) {
             .con-grid { grid-template-columns: 1fr; gap: 34px; }
@@ -203,12 +221,18 @@
                      the right. Purely decorative and aria-hidden — every
                      field still works with build-stage.js absent.
                      Engine: assets/build-stage.js  Styles: build-stage.css -->
-                <div class="con-stagecol" data-reveal="left">
+                <div class="con-stagecol" data-reveal="left" data-bs-dock>
                     <div class="bs" data-build-stage="quote" data-form=".con-form"></div>
+                    <!-- Copy deliberately does NOT claim this is their booth design.
+                         It is an illustration driven by the form values; promising a
+                         design here would set the wrong expectation for a rental
+                         enquiry and confuse what they are actually getting. -->
                     <p class="con-stagenote">
-                        <b>This is your booth.</b> It builds itself as you fill the form &mdash;
-                        your company name lands on the header sign, your booth size resizes the
-                        real footprint. Drag it to orbit.
+                        <b>Your request, taking shape.</b> The details you type drive this
+                        live illustration &mdash; your company on the header, your footprint
+                        underfoot. It&rsquo;s a sketch of what you&rsquo;re asking for, not a
+                        finished design; our team sends real concepts once we&rsquo;ve talked.
+                        Drag it to orbit.
                     </p>
                 </div>
 
