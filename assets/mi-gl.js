@@ -3226,24 +3226,26 @@ const _fogShow = new THREE.Color(0x140f0e), _skyShow = new THREE.Color(0x8aa4b8)
    pushed the whole run into a void — every beat is lifted, fills raised
    off zero so nothing falls to pure black, and vignettes pulled back. */
 const LS = [
-  /* THE DAY MUST ACTUALLY PASS. Measured across p042..p072 the piece held
-     mean luma 0.115 +/- 0.001 over seven simulated hours and the key
-     colour never left warm white — with the clock cropped the frames were
-     unorderable, which is fatal for a piece whose entire premise is
-     05:00 -> 16:00. Level and colour temperature now climb monotonically:
-     cold blue-grey dawn, neutral bright midday, warm show-light surge. */
+  /* One row per CHAPTER — the table is indexed by beat, so it must track
+     the CH table's length or the tail chapters silently clamp to the last
+     row and the day arc dies. Order:
+     0 cold · 1 rise · 2 wo0 · 3 transit · 4 wo1 · 5 transit · 6 wo2
+     7 lapse · 8 transit · 9 wo3 · 10 doors · 11 sheet
+     Level and colour temperature climb monotonically: cold blue-grey
+     dawn -> neutral midday -> warm show light. */
   { hemi: 0.040, key: 1.60, fill: 0.04, exp: 0.92, kc: 0x8ea6bd, sl: [0.90, 0.97, 1.14], sat: 0.92, vig: 0.30, hal: 0.05 },
   { hemi: 0.055, key: 3.20, fill: 0.06, exp: 1.02, kc: 0x9fb4c8, sl: [0.93, 0.99, 1.10], sat: 1.02, vig: 0.24, hal: 0.08 },
   { hemi: 0.075, key: 4.40, fill: 0.09, exp: 1.12, kc: 0xb8c6d2, sl: [0.97, 1.00, 1.05], sat: 1.12, vig: 0.20, hal: 0.11 },
+  { hemi: 0.200, key: 4.80, fill: 0.20, exp: 1.30, kc: 0xc4cdd6, sl: [0.98, 1.00, 1.03], sat: 1.14, vig: 0.14, hal: 0.12 },
   { hemi: 0.105, key: 5.20, fill: 0.12, exp: 1.20, kc: 0xd2d6d6, sl: [1.00, 1.00, 1.00], sat: 1.16, vig: 0.18, hal: 0.13 },
+  { hemi: 0.240, key: 5.55, fill: 0.24, exp: 1.36, kc: 0xdcdbd4, sl: [1.01, 1.00, 0.99], sat: 1.18, vig: 0.13, hal: 0.14 },
   { hemi: 0.140, key: 5.90, fill: 0.15, exp: 1.28, kc: 0xe6e0d2, sl: [1.02, 1.00, 0.98], sat: 1.20, vig: 0.16, hal: 0.15 },
   { hemi: 0.180, key: 6.30, fill: 0.18, exp: 1.34, kc: 0xf2e6cc, sl: [1.04, 1.01, 0.96], sat: 1.20, vig: 0.15, hal: 0.13 },
+  { hemi: 0.280, key: 6.45, fill: 0.26, exp: 1.42, kc: 0xf8ead2, sl: [1.05, 1.00, 0.95], sat: 1.18, vig: 0.12, hal: 0.14 },
   { hemi: 0.110, key: 6.60, fill: 0.10, exp: 1.30, kc: 0xffeeda, sl: [1.06, 1.00, 0.94], sat: 1.16, vig: 0.20, hal: 0.15 },
   { hemi: 0.230, key: 6.20, fill: 0.22, exp: 1.52, kc: 0xffe6c0, sl: [1.08, 1.02, 0.94], sat: 1.28, vig: 0.14, hal: 0.22 },
-  /* the CLOSE. This is where the money is asked for — it used to dim 55%
-     below the finale, desaturate and vignette at the exact conversion
-     moment. It now sits at or above the peak; the cards get their contrast
-     from their own DOM scrim, not by killing the room. */
+  /* the CLOSE — at or above the peak; the cards get their contrast from
+     their own DOM scrim, never by dimming the room you are selling */
   { hemi: 0.235, key: 6.30, fill: 0.22, exp: 1.54, kc: 0xffe6c0, sl: [1.08, 1.02, 0.94], sat: 1.30, vig: 0.12, hal: 0.20 },
 ];
 const _kcA = new THREE.Color(), _kcB = new THREE.Color();
@@ -3274,7 +3276,7 @@ function applyShow(t, day, dim, beat, beatT) {
   /* GLORY LIFT (owner 2026-08-19): the back third of every work-order
      chapter dwells on a COMPLETED stand — the set celebrates it. Key up,
      air up, halation up; still a pure function of scroll. */
-  const gloryRaw = (beat === 2 || beat === 3 || beat === 4 || beat === 6)
+  const gloryRaw = (beat === 2 || beat === 4 || beat === 6 || beat === 9)
     ? Math.min(1, Math.max(0, (beatT - 0.62) / 0.23)) : 0;
   const glory = gloryRaw * gloryRaw * (3 - 2 * gloryRaw);
   cue.key *= 1 + 0.30 * glory;

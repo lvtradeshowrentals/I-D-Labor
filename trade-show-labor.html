@@ -2320,6 +2320,37 @@
                 };
             }
 
+            /* THE TRANSIT. Between-stand beats did not exist — chapters
+               abutted and camAt only cross-faded cameras, so every frame
+               between two stands was a hold on the outgoing one. The cold
+               open's move proves the device: a low travelling shot down
+               the aisle carries you from one footprint to the next and is
+               the only thing that makes the hall feel walked. */
+            function transitCam(fromI, toI) {
+                var A = camOf(fromI), B = camOf(toI);
+                return function (cp) {
+                    var t = ss(0, 1, cp);
+                    return {
+                        /* a shallow dip only: pulling back hard emptied
+                           the frame of both stands, which is the dead
+                           space this beat exists to remove. The outgoing
+                           stand must stay in shot, receding. */
+                        /* WIDEN, don't just travel. The stands sit far
+                           apart on the plan, so a straight lerp between
+                           their centres passes through bare aisle — the
+                           midpoint must pull back far enough to hold the
+                           finished stand AND the next footprint together. */
+                        s: lerp(A.s, B.s, t) * (1 - 0.62 * Math.sin(Math.PI * t)),
+                        cx: lerp(A.cx, B.cx, t),
+                        cy: lerp(A.cy, B.cy, t) + 10 * Math.sin(Math.PI * t),
+                        rake: lerp(83, 74, Math.sin(Math.PI * t)),
+                        yaw: lerp(A.yaw, B.yaw, t) + 10 * Math.sin(Math.PI * t),
+                        D: lerp(820, 980, Math.sin(Math.PI * t)),
+                        poy: 0.34
+                    };
+                };
+            }
+
             /* tempo follows the work orders: the 52h double-deck is slow and
                establishes the grammar, the 17h coordination job is short and
                high, the LED canyon is the loud set piece, a timelapse eats
@@ -2327,36 +2358,53 @@
             var CH = [
                 { a:0,    b:.055, t0:300, cam:WIDE, kind:'cold' },
                 { a:.055, b:.135, t0:330, cam:{ s:1.14, cx:VBW/2, cy:VBH/2, rake:RAKE, yaw:0, D:650, poy:0.62 }, kind:'rise' },
-                { a:.135, b:.345, t0:360, cam:camOf(0), camFn:inkCam(0), kind:'wo', i:0 },
-                { a:.345, b:.455, t0:450, cam:camOf(1), camFn:inkCam(1), kind:'wo', i:1 },
-                { a:.455, b:.635, t0:540, cam:camOf(2), camFn:inkCam(2), kind:'wo', i:2 },
-                { a:.635, b:.675, t0:760, cam:{ s:1.85, cx:800, cy:860, rake:58, yaw:-12, D:950, poy:0.50 }, kind:'lapse' },
-                { a:.675, b:.755, t0:887, cam:camOf(3), kind:'wo', i:3 },
-                { a:.755, b:.925, t0:960, cam:DOORS_B, camFn:doorsCam, kind:'doors' },
+                { a:.135, b:.330, t0:360, cam:camOf(0), camFn:inkCam(0), kind:'wo', i:0 },
+                { a:.330, b:.365, t0:440, cam:camOf(1), camFn:transitCam(0, 1), kind:'transit' },
+                { a:.365, b:.470, t0:455, cam:camOf(1), camFn:inkCam(1), kind:'wo', i:1 },
+                { a:.470, b:.505, t0:530, cam:camOf(2), camFn:transitCam(1, 2), kind:'transit' },
+                { a:.505, b:.640, t0:545, cam:camOf(2), camFn:inkCam(2), kind:'wo', i:2 },
+                { a:.640, b:.678, t0:760, cam:{ s:1.85, cx:800, cy:860, rake:58, yaw:-12, D:950, poy:0.50 }, kind:'lapse' },
+                { a:.678, b:.712, t0:860, cam:camOf(3), camFn:transitCam(2, 3), kind:'transit' },
+                { a:.712, b:.760, t0:887, cam:camOf(3), camFn:inkCam(3), kind:'wo', i:3 },
+                { a:.760, b:.925, t0:960, cam:DOORS_B, camFn:doorsCam, kind:'doors' },
                 { a:.925, b:1,    t0:960, cam:{ s:1.4, cx:940, cy:800, rake:52, yaw:-24, D:1600, poy:0.50 }, kind:'sheet' }
             ];
-            var WOCH = [2, 3, 4, 6];   /* chapter index of each work order */
+            var WOCH = [2, 4, 6, 9];   /* chapter index of each work order */
             /* one lock per stand, parked where the build has finished and
                the hero camera has settled (cp .62), plus one on the 16:00
                payoff — a fast flick catches and holds just long enough to
                read the work order and see the stand */
-            (function buildLocks() {
+            /* THE DWELL — a scroll-VELOCITY DAMPER, not a snap.
+               The CSS-snap version hijacked the whole sequence: 1px
+               proximity targets on a 560vh track have a catchment of
+               roughly half a viewport each, so every position inside a
+               chapter was pulled onto the same lock and the clock froze.
+               This instead adds gentle resistance as you approach each
+               stand's finished moment — a fast flick slows through the
+               payoff and keeps going, and a deliberate scroll is never
+               fought because the damper only ever REDUCES how far a frame
+               of momentum carries, and never moves the page itself. */
+            var DWELL = (function () {
                 var pts = [];
                 for (var q = 0; q < WOCH.length; q++) {
                     var ch = CH[WOCH[q]];
-                    pts.push(ch.a + (ch.b - ch.a) * 0.62);
+                    pts.push(ch.a + (ch.b - ch.a) * 0.66);
                 }
-                pts.push(CH[7].a + (CH[7].b - CH[7].a) * 0.30);
-                pts.forEach(function (p) {
-                    var d = document.createElement('div');
-                    d.className = 'mi-lock';
-                    /* the stage is sticky for the whole track, so a lock at
-                       fraction p of the SCROLLABLE span sits at p of
-                       (trackHeight - stageHeight) */
-                    d.style.top = 'calc((100% - 100svh) * ' + p.toFixed(4) + ')';
-                    track.appendChild(d);
-                });
+                pts.push(CH[10].a + (CH[10].b - CH[10].a) * 0.30);
+                return pts;
             })();
+            function dwellDamp(pNow, pPrev) {
+                var step = pNow - pPrev;
+                if (!step) return pNow;
+                var near = 0;
+                for (var i = 0; i < DWELL.length; i++) {
+                    var d = Math.abs(pNow - DWELL[i]);
+                    if (d < 0.022) near = Math.max(near, 1 - d / 0.022);
+                }
+                if (near <= 0) return pNow;
+                /* at most a 45% slow-down, eased so entry and exit are smooth */
+                return pPrev + step * (1 - 0.45 * near * near);
+            }
             function chCam(ci, cp) {
                 var c = CH[ci];
                 return c.camFn ? c.camFn(cp) : c.cam;
