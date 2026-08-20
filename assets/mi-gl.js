@@ -1378,6 +1378,32 @@ function portalRing(w, h, thick, depth, outer, inner) {
   add2(thick, h - thick * 2, w / 2 - thick / 2, 0);
   return g;
 }
+/* THE ONE WARM MATERIAL THAT GLOWS. Every warm pixel in the piece was
+   line-work — cove strips, arris lines, dot rows. The reference's warm
+   surface is a BROAD emissive face, and that is what makes a stand read
+   as lit from within rather than painted. */
+let _glowWallTex = null;
+function glowWallTex() {
+  if (_glowWallTex) return _glowWallTex;
+  _glowWallTex = canvasTex(64, 256, (g) => {
+    const gr = g.createLinearGradient(0, 0, 0, 256);
+    gr.addColorStop(0.00, '#fff2dc');
+    gr.addColorStop(0.34, '#ffd79a');
+    gr.addColorStop(0.72, '#c9722c');
+    gr.addColorStop(1.00, '#2a1206');
+    g.fillStyle = gr; g.fillRect(0, 0, 64, 256);
+    /* faint banding so it reads as a fabric-backed lightbox, not a ramp */
+    g.fillStyle = 'rgba(0,0,0,0.05)';
+    for (let y = 0; y < 256; y += 7) g.fillRect(0, y, 64, 2);
+  });
+  return _glowWallTex;
+}
+function glowWall(w, h) {
+  return new THREE.Mesh(new THREE.PlaneGeometry(w, h),
+    new THREE.MeshBasicMaterial({ map: glowWallTex(),
+      color: new THREE.Color(3.4, 3.0, 2.5), fog: false, toneMapped: false }));
+}
+
 /* ============ THE STAND SHELL ============
    C1006's system, factored so all four stands share it: a polished pad
    with a brand reveal, ONE deep roof plane whose soffit is near-black and
@@ -1466,6 +1492,15 @@ function standShell(bo, o) {
     }
     put(bo, bx(RW - 1.5, SOF, 0.4, M.brandDark, RCX, SOF * 0.5, -hd + 0.5), { st: 0.36, w: .11 });
   }
+  /* the broad warm light wall, behind everything under the roof */
+  {
+    const gw = glowWall(RW * 0.92, SOF * 0.78);
+    put(bo, gw, null, 0, 0, { st: 0.38, w: .12 });
+    gw.position.set(RCX, SOF * 0.46, -hd + 0.62);
+    bo.parts[bo.parts.length - 1].rest.p.set(RCX, SOF * 0.46, -hd + 0.62);
+    if (!state.narrow) practical(bo, 0xffb45e, 6.5, 24, RCX, SOF * 0.5, -hd + 2.6);
+  }
+
   /* wordmark on the fascia */
   const mk = lightbox(Math.min(15, RW * 0.42), 1.4, o.mark || 'LVTSR');
   put(bo, mk, null, 0, 0, { st: 0.68, w: .09 });
@@ -1739,7 +1774,9 @@ function booth1(bo) {           /* C1006 — THE MONOGRAM. 40x20 double-deck */
      portrait panels in dark recesses, polished reflective floor. */
   const SOF = 11.4;            /* underside of the big plane           */
   const CY = 13.2;             /* upper deck walking surface           */
-  const RX0 = -hw, RX1 = 9.0;  /* roof DIES against the V, never through */
+  const RX0 = -hw, RX1 = 2.0;  /* roof DIES well short of the V — the
+                                  shared slab was half the silhouette and
+                                  made it confusable with the drum */
   const RW = RX1 - RX0, RCX = (RX0 + RX1) / 2;
   put(bo, blob(hw * 1.10, hd * 1.20, 0, 0, .5), null, 0, 0, { st: 0.02, w: .04, dy: 0 });
 
@@ -1862,6 +1899,15 @@ function booth1(bo) {           /* C1006 — THE MONOGRAM. 40x20 double-deck */
       put(bo, bx(5.4, 0.26, 0.66, M.brand, px, 11.45, -hd + 0.82), { st: 0.42 + i * 0.014, w: .07 });
     }
     put(bo, bx(RW - 1.5, 11.4, 0.4, M.brandDark, RCX, 5.7, -hd + 0.5), { st: 0.36, w: .11 });
+  }
+
+  /* the broad warm light wall — C1006 needs it as much as the others */
+  {
+    const gw = glowWall(RW * 0.9, SOF * 0.74);
+    put(bo, gw, null, 0, 0, { st: 0.38, w: .12 });
+    gw.position.set(RCX, SOF * 0.44, -hd + 0.62);
+    bo.parts[bo.parts.length - 1].rest.p.set(RCX, SOF * 0.44, -hd + 0.62);
+    if (!state.narrow) practical(bo, 0xffb45e, 6.5, 24, RCX, SOF * 0.5, -hd + 2.6);
   }
 
   /* ---------- WORDMARK ON THE FASCIA ---------- */
@@ -2087,7 +2133,7 @@ function booth3(bo) {           /* C5020 — THE CANYON. 60x20 custom LED */
     state.ledClones.push([t, spd]);
     const m = new THREE.Mesh(facetWall(len, h, facets, amp, true),
       new THREE.MeshBasicMaterial({ map: t, side: THREE.DoubleSide,
-        color: new THREE.Color(2.1, 2.1, 2.2), fog: false }));
+        color: new THREE.Color(2.6, 1.55, 1.05), fog: false }));
     put(bo, m, null, 0, 0, { st: st, w: .17 });
     m.position.set(x, 0, z);
     bo.parts[bo.parts.length - 1].rest.p.set(x, 0, z);

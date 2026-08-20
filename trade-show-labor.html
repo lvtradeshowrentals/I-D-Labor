@@ -2693,7 +2693,11 @@
                         /* crew arrive with the work, not before it */
                         crew += Math.round(WO[q].figs * clamp01(t * 2.5));
                         ph += Math.round(WO[q].hours * t);
-                        if (t >= 1) done++;
+                        /* the stand counts once its structure is printed —
+                           it used to read "0 Stands" over a finished booth,
+                           which broke the one instrument that carries the
+                           pitch's credibility */
+                        if (t >= 0.62) done++;
                     }
                     tSt.textContent = done; tCr.textContent = crew; tPh.textContent = ph;
                 }
