@@ -509,7 +509,14 @@
            each section and miss the info and view"). PROXIMITY snap, not
            mandatory — it catches a fast flick at the moment each stand is
            finished and lit, but never fights a deliberate scroll. */
-        html { scroll-snap-type: y proximity; }
+        /* DISABLED. 1px proximity snap targets on a 560vh track have a
+           catchment of roughly half a viewport each, so EVERY scroll
+           position within a chapter was being pulled onto the same lock —
+           the clock froze, the camera pinned, and three consecutive
+           "frames" in a review sweep were literally the same render. That
+           is what a whole-set critic read as dead pacing. The dwell needs
+           re-implementing as a velocity damper, not a snap. */
+        html { scroll-snap-type: none; }
         .mi-lock {
             position: absolute; left: 0; width: 1px; height: 1px;
             scroll-snap-align: start; scroll-snap-stop: normal;
@@ -595,7 +602,7 @@
                frame against a strict two-colour brief. This swings the whole
                drawing to amber-on-black without touching the SVG itself. */
             filter: sepia(0.88) hue-rotate(-16deg) saturate(1.55) brightness(0.95);
-            opacity: calc(0.46 * (1 - 0.30 * var(--plandim, 0)));
+            opacity: calc(0.66 * (1 - 0.80 * var(--plandim, 0)));
         }
 
         .fp-stand { transition: opacity .45s ease; }
@@ -2206,7 +2213,7 @@
                world is rotateX(rake), so rake 0 = looking straight DOWN at
                the plan and rake 90 = eye at floor level, horizontal. Higher
                rake = lower, grander camera. */
-            var RAKE = narrow.matches ? 79 : 79;
+            var RAKE = narrow.matches ? 74 : 74;
 
             /* MOBILE FRAMING (owner 2026-08-19: "way too close, crowding,
                can't actually see the booth"). At 4.6 a 40ft stand projected
@@ -2219,10 +2226,10 @@
             var YAW  = narrow.matches ? -14 : -20;
 
             var SHOT = [
-                { dRake:  4, yaw: -34, k: 0.72, D: 680, poy: 0.30, ox:  6 },
-                { dRake:  4, yaw: -28, k: 0.50, D: 760, poy: 0.36, ox: -4 },
-                { dRake:  4, yaw: -30, k: 0.40, D: 820, poy: 0.36, ox:  0 },
-                { dRake:  4, yaw: -26, k: 0.48, D: 900, poy: 0.34, ox:  0 }
+                { dRake:  0, yaw: -34, k: 0.72, D: 680, poy: 0.30, ox:  6 },
+                { dRake:  0, yaw: -28, k: 0.50, D: 760, poy: 0.36, ox: -4 },
+                { dRake:  0, yaw: -30, k: 0.40, D: 820, poy: 0.36, ox:  0 },
+                { dRake:  0, yaw: -26, k: 0.48, D: 900, poy: 0.34, ox:  0 }
             ];
             function camOf(i) {
                 var w = WO[i], r = w.rect, sh = SHOT[i];
@@ -2282,7 +2289,7 @@
                     if (low > 0.001) {
                         sc   = sc * lerp(1, 1.12, low);
                         cy   = cy + 30 * low;
-                        rake = lerp(rake, 78, low);
+                        rake = lerp(rake, 86, low);
                         yaw  = yaw * lerp(1, 0.72, low);
                         D    = lerp(D, 1500, low);
                         poy  = lerp(poy, 0.44, low);
@@ -2293,7 +2300,7 @@
                         /* THE HERO: eye drops to the floor and looks UP the
                            structure (owner: "so you're getting the grand,
                            you're in shock") */
-                        rake = lerp(rake, narrow.matches ? 84 : 84, hero);
+                        rake = lerp(rake, narrow.matches ? 88 : 88, hero);
                         sc   = lerp(sc, c.s * (narrow.matches ? 0.80 : 0.92), hero);
                         yaw  = lerp(yaw, c.yaw * 1.05, hero);
                         /* long lens: at D 760 the near end of a 40ft span
@@ -2302,6 +2309,12 @@
                         poy  = lerp(poy, 0.40, hero);
                         cy   = lerp(cy, c.cy + 60, hero);
                     }
+                    /* the tail must keep moving: hero reaches 1 at cp .60
+                       and the last 40% of every chapter was a still image */
+                    var tail = ss(.60, 1.0, cp);
+                    sc  *= 1 + 0.10 * tail;
+                    yaw += 5.0 * tail;
+                    D   -= 60 * tail;
                     return { s: sc, cx: c.cx, cy: cy, rake: rake,
                              yaw: yaw, D: D, poy: poy };
                 };
@@ -2724,10 +2737,17 @@
                 /* the drawing itself obeys the lighting script: near-black
                    under security light, waking with the dock light.
                    Computed BEFORE paint so the GL plan (mobile) gets it. */
+                /* THE DAY IS CARRIED BY THE HALL, not the stands — the red
+                   brand masses look identical at every hour, so the only
+                   thing that can make 05:00 and 15:00 distinguishable with
+                   the clock cropped is the floor and air brightening. pdim
+                   is a DIM amount, so it falls monotonically as day rises. */
+                var dayNow = clamp01((mins - 300) / 660);
                 var pdim = Math.max(showT,
                     c.kind === 'cold' ? 1.15 :
                     c.kind === 'rise' ? 0.42 * (1 - cp * 0.6) :
-                    c.kind === 'wo' ? 1.6 * flat : 0);
+                    c.kind === 'wo' ? Math.max(1.6 * flat, 0.62 * (1 - dayNow)) :
+                    0.62 * (1 - dayNow));
 
                 if (window.MIGL) MIGL.paint({
                     rectW: rectW, rectH: rectH, fit: fit,
