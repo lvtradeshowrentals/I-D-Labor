@@ -123,10 +123,8 @@
     z-index: 3;
     pointer-events: none;
     opacity: 0;
-    background: radial-gradient(120% 90% at 50% 40%, #111a26, #06090e);
+    background: radial-gradient(128% 96% at 50% 44%, #0a1018, #04070b);
 }
-.bs.is-shipping .bs-veil { animation: bs-veil 900ms ease-in 1000ms both; }
-@keyframes bs-veil { to { opacity: 1; } }
 
 /* ---------- Ground ----------
    Keep this plane SMALL. At rotateX(90deg) under perspective a large one
@@ -471,14 +469,13 @@
 .bs-dim i::after  { right: 0; transform: rotate(45deg); }
 
 /* ---------- Road case ---------- */
+/* Road case retained but unused by the finale — kept so the geometry is there
+   if the crate-and-ship idea ever comes back. */
 .bs-case .bs-face {
     background: linear-gradient(170deg, #39445a 0%, #1c2530 100%);
     border: 1px solid rgba(168, 149, 95, 0.32);
-    box-shadow: inset 0 0 26px rgba(0, 0, 0, 0.55);
-    opacity: 0;                    /* leaf — safe */
-    transition: opacity 260ms linear;
+    opacity: 0;
 }
-.bs.is-shipping .bs-case .bs-face { opacity: 1; }
 .bs-caselabel {
     position: absolute;
     inset: 16% 9% auto 9%;
@@ -493,16 +490,100 @@
     backface-visibility: hidden;
 }
 
-/* Pack + ship. NO opacity on these — .bs-part and .bs-world are preserve-3d
-   nodes and any opacity<1 flattens them. Parts shrink to nothing
-   geometrically; the world exits frame; the veil does the fade. */
-.bs.is-shipping .bs-part,
-.bs.is-shipping .bs-crew,
-.bs.is-shipping .bs-decal-wrap,
-.bs.is-shipping .bs-dim-wrap { animation: bs-pack 460ms cubic-bezier(0.333, 0, 0.667, 0) both; }
-@keyframes bs-pack { to { scale: 0.02; } }   /* `scale`, not transform: never clobbers the placement */
-.bs.is-shipping .bs-world { animation: bs-ship 580ms cubic-bezier(0.333, 0, 0.667, 0) 900ms both; }
-@keyframes bs-ship { to { translate: 140% 0; } }
+/* ---------- FINALE: "show open" ----------
+   The booth does not leave. The customer just asked us to build it, so the
+   payoff is seeing it BUILT AND OPEN — hall to black, lamps strike one at a
+   time, screen wakes, sign ignites, crowd arrives, camera pushes in, the floor
+   gets stamped. Then it HOLDS, lit, indefinitely. The final frame is the best
+   frame in the piece and it is still there when they scroll back.
+
+   Note every one of these is a transform/opacity on a LEAF or on the veil,
+   which lives outside the perspective — nothing here flattens preserve-3d. */
+
+/* Blackout, then the house lights never fully come back: the booth's own
+   lighting carries the frame from here. */
+.bs.is-open .bs-veil { animation: bs-blackout 2600ms ease-out forwards; }
+@keyframes bs-blackout {
+    0%   { opacity: 0; }
+    5%   { opacity: 0.88; }
+    14%  { opacity: 0.74; }
+    28%  { opacity: 0.46; }
+    58%  { opacity: 0.2; }
+    100% { opacity: 0.07; }
+}
+
+/* Lamps re-strike on cue. Delay is set per beam from JS. */
+.bs.is-open .bs-beam,
+.bs.is-open .bs-beam-pool { animation: bs-strike-lamp 320ms linear var(--bs-lamp, 0ms) forwards; }
+
+/* The sign is the emotional beat — their own name lighting up. */
+.bs.is-open .bs-signtext { animation: bs-strike 420ms linear 900ms forwards; }
+
+/* Floor stamp. Slams down oversized and contracts — no fade-in. */
+.bs-stampbill { position: absolute; inset: 0; transform-style: preserve-3d; }
+.bs-stamp {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 0 10px;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    text-transform: uppercase;
+    color: #f4e6bd;
+    border: 2px solid rgba(232, 214, 158, 0.9);
+    background: linear-gradient(180deg, rgba(30, 26, 16, 0.94), rgba(16, 14, 9, 0.94));
+    box-shadow: 0 0 26px rgba(226, 208, 152, 0.35);
+    white-space: nowrap;
+    overflow: hidden;
+    opacity: 0;
+    backface-visibility: hidden;
+}
+.bs-stamp b {
+    font-size: 14px; font-weight: 700; letter-spacing: 0.16em; color: #f7ead0; line-height: 1.15;
+    text-shadow: 0 0 14px rgba(226, 208, 152, 0.6);
+}
+.bs-stamp span { font-size: 9px; line-height: 1.2; letter-spacing: 0.2em; color: rgba(226, 208, 152, 0.78); }
+.bs.is-open .bs-stamp { animation: bs-stamp 240ms cubic-bezier(0.333, 0, 0.667, 0) 1620ms forwards; }
+@keyframes bs-stamp {
+    0%   { opacity: 0; transform: scale(1.8); }
+    45%  { opacity: 1; }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+/* Dust ring thrown out by the stamp. */
+.bs-ring {
+    border: 2px solid rgba(232, 214, 158, 0.75);
+    border-radius: 50%;
+    opacity: 0;
+}
+.bs.is-open .bs-ring { animation: bs-ring 640ms cubic-bezier(0.12, 0.7, 0.3, 1) 1640ms forwards; }
+@keyframes bs-ring {
+    0%   { opacity: 0.75; transform: scale(0.28); }
+    100% { opacity: 0; transform: scale(3); }
+}
+
+/* Visitors walking the aisle. Delay + direction set per figure from JS. */
+.bs-figw.is-visitor { opacity: 0; }
+.bs.is-open .bs-figw.is-visitor {
+    animation: bs-arrive 1500ms cubic-bezier(0.24, 0.6, 0.3, 1) var(--bs-arrive, 1100ms) forwards;
+}
+@keyframes bs-arrive {
+    0%   { opacity: 0; transform: translateX(var(--bs-from, 120px)); }
+    18%  { opacity: 1; }
+    100% { opacity: 1; transform: translateX(0); }
+}
+
+/* Drafting annotations are clutter at the climax — clear the floor for the stamp. */
+.bs.is-open .bs-dim-wrap,
+.bs.is-open .bs-decal-wrap { opacity: 0 !important; transition: opacity 300ms linear; }
+
+/* HUD flips to the confirmation. */
+.bs.is-open .bs-live { background: #e2d098; animation: none; }
+.bs.is-open .bs-mode b { color: #f4e6bd; }
+.bs.is-open .bs-drag { opacity: 0; }
 
 /* ---------- HUD (outside the perspective — filters/blends safe here) ---------- */
 .bs-hud {
@@ -624,12 +705,14 @@
     .bs-part.is-built.bs-mat-screen .bs-solid, .bs-live { animation: none; }
     .bs-prog-fill { transition: none; }
     .bs-spec li { transform: none; transition: opacity 300ms linear; }
-    .bs.is-shipping .bs-part,
-    .bs.is-shipping .bs-crew,
-    .bs.is-shipping .bs-decal-wrap,
-    .bs.is-shipping .bs-dim-wrap,
-    .bs.is-shipping .bs-world { animation: none; }
-    .bs.is-shipping .bs-veil { animation: none; opacity: 1; transition: opacity 300ms linear; }
+    /* Finale still HAPPENS for reduced motion — it just arrives rather than
+       animating. Same information, same final frame. */
+    .bs.is-open .bs-veil { animation: none; opacity: 0.07; }
+    .bs.is-open .bs-beam, .bs.is-open .bs-beam-pool { animation: none; opacity: 1; }
+    .bs.is-open .bs-signtext { animation: none; opacity: 1; }
+    .bs.is-open .bs-stamp { animation: none; opacity: 1; }
+    .bs.is-open .bs-ring { animation: none; opacity: 0; }
+    .bs.is-open .bs-figw.is-visitor { animation: none; opacity: 1; transform: none; }
 }
 
 /* ---------- Responsive ---------- */
@@ -675,4 +758,12 @@
 }
 @media (prefers-reduced-motion: reduce) {
     [data-bs-dock] .bs-viewport { transition: none; }
+}
+
+/* The climax must not play out inside a 184px strip — on mobile the stage
+   leaves its docked band and expands to take the screen. */
+@media (max-width: 1000px) {
+    [data-bs-dock].is-finale .bs-viewport { height: clamp(330px, 58vh, 520px); }
+    [data-bs-dock].is-finale .con-stagenote,
+    [data-bs-dock].is-finale .lab-stagenote { display: none; }
 }

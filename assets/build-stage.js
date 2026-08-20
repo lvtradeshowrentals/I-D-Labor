@@ -138,7 +138,7 @@
     /* ---------- audio ---------- */
     var Snd = {
         ctx: null, bus: null, duck: null, reward: null, wet: null, ana: null, noise: null,
-        on: false, bed: null, _rdy: null, _comp: null,
+        on: false, bed: null, _rdy: null, _comp: null, _hum: null,
 
         init: function () {
             if (this.ctx) {
@@ -367,6 +367,52 @@
                 o.connect(g); g.connect(this.reward);
                 o.start(st); o.stop(st + 1.85);
             });
+        },
+
+        /* Contactor tick + strike thump: what a stage lamp actually sounds like
+           when it hits. The hum that follows is free "the rig is powered". */
+        lamp: function () {
+            if (!this.ready()) return;
+            var c = this.ctx, t = c.currentTime;
+            this._nz(this.bus, t, 9000, 'highpass', 1, 0.16, 0.01);
+            var o = c.createOscillator(), g = c.createGain();
+            o.type = 'sine';
+            o.frequency.setValueAtTime(130, t + 0.012);
+            o.frequency.exponentialRampToValueAtTime(58, t + 0.14);
+            g.gain.setValueAtTime(0.0001, t + 0.012);
+            g.gain.exponentialRampToValueAtTime(0.34, t + 0.02);
+            g.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+            g.gain.setValueAtTime(0, t + 0.32);
+            o.connect(g); g.connect(this.bus);
+            o.start(t + 0.012); o.stop(t + 0.34);
+        },
+        hum: function () {
+            if (!this.ready() || this._hum) return;
+            var c = this.ctx, t = c.currentTime;
+            var o = c.createOscillator(), g = c.createGain();
+            o.type = 'sawtooth'; o.frequency.value = 100;
+            var lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 320;
+            g.gain.value = 0;
+            g.gain.setTargetAtTime(0.016, t, 0.6);
+            o.connect(lp); lp.connect(g); g.connect(this.bus);
+            o.start(t);
+            this._hum = g;
+        },
+        /* Rising noise sweep — the approach into the blackout. */
+        swell: function (dur) {
+            if (!this.ready()) return;
+            var c = this.ctx, t = c.currentTime;
+            var n = c.createBufferSource(); n.buffer = this.noise;
+            var bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 1.2;
+            bp.frequency.setValueAtTime(240, t);
+            bp.frequency.exponentialRampToValueAtTime(3400, t + dur);
+            var g = c.createGain();
+            g.gain.setValueAtTime(0.0001, t);
+            g.gain.linearRampToValueAtTime(0.16, t + dur * 0.86);
+            g.gain.linearRampToValueAtTime(0.0001, t + dur);
+            g.gain.setValueAtTime(0, t + dur + 0.02);
+            n.connect(bp); bp.connect(g); g.connect(this.bus);
+            n.start(t, Math.random() * 1.5); n.stop(t + dur + 0.05);
         },
 
         /* Discrete events in silence is what a FORM sounds like; a world has a
@@ -617,6 +663,7 @@
 
         var parts = {}, planes = [], beams = [], shadows = {}, figs = [], billboards = [];
         var crew = null, dimWrap = null, dimA = null, dimB = null, decalEl = null;
+        var stampWrap = null, stampEl = null, ringEl = null;
         var decalWrap = null, caseEl = null;
 
         /* ---------- camera ---------- */
@@ -716,6 +763,7 @@
             group.innerHTML = '';
             parts = {}; planes = []; beams = []; shadows = {}; figs = []; billboards = [];
             crew = null; dimWrap = null; decalWrap = null; caseEl = null;
+            stampWrap = null; stampEl = null; ringEl = null;
             islandNow = f.island;
 
             geometry(f).forEach(function (p) {
@@ -824,6 +872,21 @@
             decalWrap.style.opacity = '0';
 
             place(pool, { w: f.w * 1.45, h: f.d * 1.6, y: 0.1, rx: 90 });
+
+            /* Finale furniture: the floor stamp and the ring it throws. */
+            /* STANDS UP and faces the camera. Lying flat at rotateX(90deg) it was
+               almost edge-on at the near-eye-level camera and compressed into an
+               illegible sliver — the same foreshortening that makes the floor
+               decal and dimension line marginal at this angle. The billboard
+               wrapper is separate from the plate because the slam animation
+               drives `transform` and would otherwise clobber the counter-rotation. */
+            stampWrap = mk('bs-el', group);
+            place(stampWrap, { w: Math.min(19, f.w * 0.66), h: 3.5, y: 3.0, z: f.d / 2 + 2.6 });
+            var sBill = mk('bs-stampbill', stampWrap);
+            billboards.push(sBill);
+            stampEl = mk('bs-stamp', sBill);
+            ringEl = mk('bs-el bs-ring', group);
+            place(ringEl, { w: f.w * 0.55, h: f.w * 0.55, y: 0.65, z: f.d / 2 + 2.8, rx: 90 });
 
             caseEl = mk('bs-el bs-case', group);
             place(caseEl, {});
@@ -1185,17 +1248,125 @@
             }, { rootMargin: '-71px 0px 0px 0px', threshold: 0 }).observe(sentinel);
         })();
 
-        form.addEventListener('submit', function () {
-            if (caseEl && caseEl.__label) {
-                caseEl.__label.textContent = (val('company') || 'LV TRADE SHOW').toUpperCase().slice(0, 18);
-            }
-            root.classList.add('is-shipping');
-            Snd.thunk(2.2, 0, currentSize ? currentSize.w / 2 : 15, camRY + pxRY);
+        /* ---------- FINALE: show open ----------
+           Beat sheet (ms from submit):
+             0     everything stops, hall drops to black, rising swell
+             200   lamp 1 strikes    380  lamp 2    560  lamp 3
+             700   screen wakes
+             900   header sign ignites — their own name
+             1100  crew and aisle visitors arrive
+             1300  the only camera push-in in the whole piece
+             1620  floor stamp SLAMS + dust ring + resolving chord
+             then it holds, lit, indefinitely. */
+        var finaleTimers = [];
+        function at(ms, fn) { finaleTimers.push(setTimeout(fn, ms)); }
+
+        function finale() {
+            if (root.classList.contains('is-open')) return;
+            root.classList.add('is-open');
+
+            /* Break out of the mobile docked band — the climax cannot play in a
+               184px strip. ResizeObserver refits the camera when the height changes. */
+            var host = root.closest ? root.closest('[data-bs-dock]') : null;
+            if (host) { host.classList.remove('is-docked'); host.classList.add('is-finale'); }
+
+            Snd.cutBed();
+            Snd.swell(0.62);
             buzz([30, 40, 90]);
-        });
+
+            /* lamps, one at a time */
+            var beamDelay = 0;
+            beams.forEach(function (b, i) {
+                beamDelay = 200 + Math.floor(i / 2) * 180;
+                b.style.setProperty('--bs-lamp', beamDelay + 'ms');
+                b.classList.add('is-on');
+            });
+            at(200, function () { Snd.lamp(); Snd.hum(); buzz(14); });
+            at(380, function () { Snd.lamp(); buzz(14); });
+            at(560, function () { Snd.lamp(); buzz(14); });
+
+            /* the sign — the beat that matters */
+            at(900, function () { Snd.thunk(0.5, 0, 15, camRY + pxRY); buzz(18); });
+
+            /* crowd arrives down both aisles */
+            at(1100, function () {
+                if (!crew) return;
+                for (var i = 0; i < 6; i++) {
+                    var w2 = mk('bs-figw is-visitor', crew);
+                    var h = ((i * 2654435761) % 991) / 991;
+                    var side = i % 2 ? 1 : -1;
+                    w2.style.marginLeft = (-10 + side * (54 + h * 120)) + 'px';
+                    w2.style.setProperty('--fz', (0.86 + h * 0.2).toFixed(3));
+                    w2.style.setProperty('--bs-from', (side * (150 + h * 120)).toFixed(0) + 'px');
+                    w2.style.setProperty('--bs-arrive', (i * 130).toFixed(0) + 'ms');
+                    var fg = mk('bs-fig', w2);
+                    fg.innerHTML = '<b></b><i></i>';
+                    figs.push(fg);
+                    mk('bs-figshadow', w2);
+                }
+                queueRelight();
+            });
+
+            /* the only camera move in the piece */
+            at(1300, function () {
+                var from = camS, to = camS * 1.045, t0 = performance.now();
+                (function push(now) {
+                    var k = Math.min(1, ((now || performance.now()) - t0) / 700);
+                    var e = 1 - Math.pow(1 - k, 3);
+                    camS = from + (to - from) * e;
+                    camera();
+                    if (k < 1) requestAnimationFrame(push);
+                })(t0);
+            });
+
+            /* stamp */
+            at(1620, function () {
+                shake(2);
+                Snd.thunk(2.2, 0, currentSize ? currentSize.w / 2 : 15, camRY + pxRY);
+                buzz([26, 34, 80]);
+            });
+            at(1720, function () { Snd.complete(); });
+
+            if (stampEl) {
+                var show = val('event') || val('event_name');
+                var when = new Date();
+                /* Two lines, not one: a single run overflowed the plate and was
+                   clipped at both ends. The headline is fixed; the variable part
+                   (their show) goes on the subordinate line. Both auto-fitted. */
+                stampEl.textContent = '';
+                var h1 = document.createElement('b');
+                h1.textContent = 'Request received';
+                var h2 = document.createElement('span');
+                h2.textContent = (show ? show.toUpperCase().slice(0, 22) + ' \u00b7 ' : '') +
+                    (when.getMonth() + 1) + '/' + when.getDate() + '/' +
+                    String(when.getFullYear()).slice(2);
+                stampEl.appendChild(h1);
+                stampEl.appendChild(h2);
+                fitSign(h1);
+                fitSign(h2);
+            }
+            var mb = modeTag.querySelector('b');
+            if (mb) mb.textContent = 'REQUEST RECEIVED';
+        }
+
+        form.addEventListener('submit', finale);
+
         /* If the post fails, site.js re-enables the button and alerts — put the
-           booth back rather than leaving the user retrying against a blank box. */
-        form.addEventListener('bs:restore', function () { root.classList.remove('is-shipping'); });
+           booth back rather than leaving the user retrying against a dead scene. */
+        form.addEventListener('bs:restore', function () {
+            finaleTimers.forEach(clearTimeout);
+            finaleTimers = [];
+            root.classList.remove('is-open');
+            var host2 = root.closest ? root.closest('[data-bs-dock]') : null;
+            if (host2) host2.classList.remove('is-finale');
+            if (crew) {
+                crew.querySelectorAll('.is-visitor').forEach(function (n) { n.remove(); });
+                figs = [].slice.call(crew.querySelectorAll('.bs-fig'));
+            }
+            beams.forEach(function (b) { b.style.removeProperty('--bs-lamp'); });
+            var mb2 = modeTag.querySelector('b');
+            if (mb2) mb2.textContent = 'BUILDING';
+        });
 
         /* ---------- orbit ---------- */
         function stepSpring() {
