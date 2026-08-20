@@ -640,8 +640,8 @@
            gold read as chosen rather than as all that was available. */
         (function buildHall() {
             var far = [
-                { w: 18, h: 7.5, x: -40, y: 3.75, z: -46, ry: 22, tint: 'rgba(196, 104, 150, 0.5)' },
-                { w: 22, h: 8.5, x: 41, y: 4.25, z: -52, ry: -18, tint: 'rgba(110, 200, 160, 0.42)' },
+                { w: 18, h: 7.5, x: -40, y: 3.75, z: -46, ry: 22, tint: 'rgba(178, 122, 152, 0.42)' },
+                { w: 22, h: 8.5, x: 41, y: 4.25, z: -52, ry: -18, tint: 'rgba(122, 178, 152, 0.38)' },
                 { w: 34, h: 6.5, x: -4, y: 3.25, z: -66, ry: 2, tint: 'rgba(150, 175, 215, 0.3)' }
             ];
             far.forEach(function (o) {
@@ -1136,7 +1136,12 @@
             el.style.transform = '';
             el.style.display = 'inline-block';
             requestAnimationFrame(function () {
-                var w = el.getBoundingClientRect().width;
+                /* offsetWidth, NOT getBoundingClientRect(): inside a 3D-transformed
+                   subtree the rect is the PROJECTED width while boxPx is a layout
+                   width. Comparing the two is a coordinate-space mismatch and the
+                   ratio is meaningless — which is why the headline still shipped
+                   clipped after the first fix. */
+                var w = el.offsetWidth;
                 if (!w || !boxPx) return;
                 var k = Math.min(1, (boxPx - 14) / w);
                 if (k < 1) el.style.transform = 'scaleX(' + Math.max(0.5, k) + ')';

@@ -174,7 +174,10 @@
     position: absolute;
     left: 14%; right: 14%; top: 18%; height: 13%;
     border-radius: 2px;
-    opacity: 0.34;
+    /* Barely there. At booth scale these far-off sign tints read as stray
+       coloured streaks glitching through the subject rather than as distant
+       neighbours; they only work as a suggestion of colour in the depth. */
+    opacity: 0.13;
 }
 .bs-aisle {
     background: linear-gradient(180deg, rgba(126, 158, 198, 0.09) 0%, rgba(126, 158, 198, 0.03) 38%, transparent 78%);
@@ -261,7 +264,7 @@
 .bs-mat-wall   { --bs-mat: #33455f; --ks: 0.10; --shin: 14; }
 .bs-mat-carpet { --bs-mat: #22303f; --ks: 0.03; --shin: 4; }
 .bs-mat-gold   { --bs-mat: #a8955f; --ks: 0.85; --shin: 26; }
-.bs-mat-truss  { --bs-mat: #78828f; --ks: 0.65; --shin: 48; }
+.bs-mat-truss  { --bs-mat: #5d6773; --ks: 0.65; --shin: 48; }
 .bs-mat-screen { --bs-mat: #17384c; --ks: 0.20; --shin: 30; }
 
 .bs-mat-carpet .bs-solid {
@@ -294,7 +297,7 @@
 .bs-mat-truss .bs-solid.is-lattice {
     background:
         /* chord rails */
-        linear-gradient(180deg, rgba(232, 240, 250, 0.5) 0 2px, transparent 2px calc(100% - 2px), rgba(150, 162, 178, 0.34) calc(100% - 2px) 100%),
+        linear-gradient(180deg, rgba(206, 218, 232, 0.3) 0 2px, transparent 2px calc(100% - 2px), rgba(126, 138, 154, 0.24) calc(100% - 2px) 100%),
         /* the web: both diagonal families must blend IDENTICALLY or the lattice
            reads as irregular perforated decking rather than as truss */
         repeating-linear-gradient(58deg, transparent 0 5px, rgba(6, 10, 16, 0.72) 5px 8px, transparent 8px 14px),
@@ -383,8 +386,11 @@
     position: absolute;
     inset: 0;
     background:
-        linear-gradient(90deg, transparent 0%, rgba(178, 220, 252, 0.13) 26%, rgba(196, 232, 255, 0.2) 50%, rgba(178, 220, 252, 0.13) 74%, transparent 100%),
-        linear-gradient(180deg, rgba(196, 232, 255, 0.16) 0%, rgba(150, 205, 245, 0.06) 46%, transparent 84%);
+        /* Weak on purpose. Translucent geometry cannot be depth-sorted reliably
+           inside preserve-3d, so the beams paint over the wall faces and at any
+           real strength the booth reads as a glass vitrine. */
+        linear-gradient(90deg, transparent 0%, rgba(178, 220, 252, 0.05) 26%, rgba(196, 232, 255, 0.09) 50%, rgba(178, 220, 252, 0.05) 74%, transparent 100%),
+        linear-gradient(180deg, rgba(196, 232, 255, 0.07) 0%, rgba(150, 205, 245, 0.03) 46%, transparent 84%);
     clip-path: polygon(34% 0, 66% 0, 96% 100%, 4% 100%);
     opacity: 0;
 }

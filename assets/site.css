@@ -381,7 +381,48 @@ h2 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 800; line-height: 1.15; }
 .field input::placeholder, .field textarea::placeholder { color: #6b7280; }
 .form-note { font-size: 0.85rem; color: var(--text-secondary); margin-top: 8px; }
 .hp { position: absolute; left: -9999px; opacity: 0; height: 0; overflow: hidden; }
-.form-success { display: none; text-align: center; padding: 30px; color: var(--success); font-weight: 600; }
+/* Success panel. This is the ONLY confirmation a screen-reader user gets —
+   the one inside the build stage is aria-hidden decoration — so it carries
+   role="status" in the markup and states plainly what happens next. It was
+   previously a bare line of centred green text that read as an empty box. */
+.form-success {
+    display: none;
+    text-align: center;
+    padding: 34px 26px;
+    background: linear-gradient(150deg, var(--surface) 0%, #1b2536 100%);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    box-shadow: var(--shadow-lg);
+}
+.form-success .fs-check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px; height: 46px;
+    margin-bottom: 15px;
+    border-radius: 50%;
+    background: rgba(74, 157, 111, 0.14);
+    border: 1px solid rgba(74, 157, 111, 0.5);
+    color: var(--success);
+    font-size: 1.35rem;
+    font-weight: 700;
+}
+.form-success h4 {
+    font-size: 1.32rem;
+    color: #fff;
+    margin: 0 0 10px;
+    letter-spacing: -0.2px;
+}
+.form-success p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.65;
+    max-width: 44ch;
+    margin: 0 auto;
+}
+.form-success .fs-call { margin-top: 15px; font-size: 0.9rem; }
+.form-success .fs-call a { color: var(--accent-gold); font-weight: 700; }
+.form-success .fs-call a:hover { color: var(--accent-gold-bright); }
 
 /* Contact info list */
 .info-list { list-style: none; }
