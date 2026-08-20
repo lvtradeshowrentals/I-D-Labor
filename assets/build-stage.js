@@ -661,8 +661,8 @@
         var group = mk('bs-el', orbitB);
         place(group, {});
 
-        var parts = {}, planes = [], beams = [], shadows = {}, figs = [], billboards = [];
-        var crew = null, dimWrap = null, dimA = null, dimB = null, decalEl = null;
+        var parts = {}, planes = [], beams = [], shadows = {}, billboards = [];
+        var dimWrap = null, dimA = null, dimB = null, decalEl = null;
         var stampWrap = null, stampEl = null, ringEl = null;
         var decalWrap = null, caseEl = null;
 
@@ -675,7 +675,7 @@
 
         function camera() {
             world.style.transform =
-                'translate3d(0,7%,-60px)' +
+                'translate3d(0,20%,-60px)' +
                 /* z left unscaled so the effective FOV does not change with
                    footprint — otherwise the lens changes when the user picks a
                    different booth size from a dropdown */
@@ -731,10 +731,8 @@
                 s.setProperty('--by', (sv * 1.6).toFixed(2) + 'px');
                 s.setProperty('--envang', (Math.atan2(sv, su) * 180 / Math.PI + 90).toFixed(1) + 'deg');
             }
-            /* Crew and light shafts are DOM quads — counter-rotate or they go
-               edge-on and vanish. */
-            var ct = 'rotateY(' + (-ry) + 'deg) rotateX(' + (-rx) + 'deg)';
-            for (var k = 0; k < figs.length; k++) figs[k].style.transform = ct;
+            /* Light shafts are DOM quads — counter-rotate or they go edge-on
+               and vanish. */
             var byaw = 'rotateY(' + (-ry) + 'deg)';   /* shafts stay vertical */
             for (var m = 0; m < billboards.length; m++) billboards[m].style.transform = byaw;
         }
@@ -747,22 +745,23 @@
                translate = 57% from the top, so the usable headroom is 0.57*vh,
                not the whole viewport — measuring against full height overflowed
                the top by ~35px and clipped the header sign, which carries the
-               visitor's own company name. Matters most in the short docked band
-               on mobile, where the sign is nearly the entire point. */
+               visitor's own company name. The origin is pushed LOW in the frame
+               (see camera()) because the booth only grows upward from it — a
+               centred origin left the bottom 40% permanently bare ground. */
             var vh = vp.clientHeight || 440;
             /* In the short docked band, fit to the SIGN (~14.5ft) rather than the
                ceiling rigging (~18ft). Cropping the rigging is free; shrinking the
                booth until the company name is unreadable is not. */
             var topFt = vh < 230 ? 14.5 : TOP_FT;
-            camS = Math.min(430 / (f.w * FT), (vh * 0.57 - 8) / (topFt * FT));
+            camS = Math.min(430 / (f.w * FT), (vh * 0.72 - 8) / (topFt * FT));
             camS = Math.max(0.32, Math.min(1.7, camS));
         }
 
         /* ---------- build ---------- */
         function rebuild(f) {
             group.innerHTML = '';
-            parts = {}; planes = []; beams = []; shadows = {}; figs = []; billboards = [];
-            crew = null; dimWrap = null; decalWrap = null; caseEl = null;
+            parts = {}; planes = []; beams = []; shadows = {}; billboards = [];
+            dimWrap = null; decalWrap = null; caseEl = null;
             stampWrap = null; stampEl = null; ringEl = null;
             islandNow = f.island;
 
@@ -852,8 +851,6 @@
                 parts[p.key] = g;
             });
 
-            crew = mk('bs-el bs-crew', group);
-            place(crew, { w: 0, h: 0, y: 0, z: f.d / 2 - 3 });
 
             /* Floor tiers spaced >=0.1ft (1.2px). They were within ~0.1px, which
                z-fought continuously under the idle drift. */
@@ -881,7 +878,7 @@
                wrapper is separate from the plate because the slam animation
                drives `transform` and would otherwise clobber the counter-rotation. */
             stampWrap = mk('bs-el', group);
-            place(stampWrap, { w: Math.min(19, f.w * 0.66), h: 3.5, y: 3.0, z: f.d / 2 + 2.6 });
+            place(stampWrap, { w: Math.max(14, Math.min(19, f.w * 0.62)), h: 3.4, y: 2.8, z: f.d / 2 + 2.6 });
             var sBill = mk('bs-stampbill', stampWrap);
             billboards.push(sBill);
             stampEl = mk('bs-stamp', sBill);
@@ -980,7 +977,7 @@
             return n ? (n.value || '').trim() : '';
         }
 
-        var built = {}, lastCrew = -1, celebrated = false, lastVal = {};
+        var built = {}, celebrated = false, lastVal = {};
         var currentSize = null, touched = {}, replaying = false;
         var lastSpec = {}, lastMode = '', lastDecal = '', lastSign = '', signTimer = 0;
 
@@ -996,32 +993,6 @@
                 if (shadows[key]) shadows[key].classList.remove('is-on');
                 if (!replaying) { Snd.unlatch(); buzz([10, 24, 16]); }
             }
-        }
-
-        function setCrew(n) {
-            if (!crew || n === lastCrew) return;
-            lastCrew = n;
-            crew.innerHTML = '';
-            figs = [];
-            for (var i = 0; i < n; i++) {
-                var wrapEl = mk('bs-figw', crew);
-                var hsh = ((i * 2654435761) % 997) / 997;   /* deterministic scatter —
-                                                               an even row is a chorus line */
-                wrapEl.style.marginLeft = (-10 + (i - (n - 1) / 2) * 2.4 * FT + (hsh - 0.5) * 10) + 'px';
-                wrapEl.style.setProperty('--fz', (0.93 + hsh * 0.14).toFixed(3));
-                var fg = mk('bs-fig', wrapEl);
-                fg.innerHTML = '<b></b><i></i>';
-                figs.push(fg);
-                mk('bs-figshadow', wrapEl);
-                if (!reduced) {
-                    wrapEl.animate([
-                        { opacity: 0, transform: 'translateY(9px) scaleY(0.86)' },
-                        { opacity: 1, transform: 'translateY(0) scaleY(1)' }
-                    ], { duration: 210, delay: i * 90 + hsh * 28, easing: E_LAND, fill: 'both' });
-                } else { wrapEl.style.opacity = '1'; }
-            }
-            queueRelight();
-            if (n > 0 && !replaying) buzz(14);
         }
 
         /* Pre-create every spec row so the HUD keeps a fixed reading order
@@ -1052,7 +1023,7 @@
             if (!currentSize || currentSize.label !== f.label) {
                 currentSize = f;
                 var was = built;
-                built = {}; lastCrew = -1;
+                built = {};
                 rebuild(f);
                 /* Re-assert prior state silently. Replaying it would fire N
                    thunks at one ctx.currentTime — ~70 nodes at identical start
@@ -1082,7 +1053,7 @@
                 /* explicit user change: booth_size is a <select> that already has
                    a value at load, so testing the value alone opened the page at
                    14% with a counter nobody asked for */
-                counter: !!(touched.booth_size || val('booth')),
+                counter: !!(touched.booth_size || val('booth') || val('service')),
                 truss: !!(val('budget') || val('estimated_hours') || val('move_in_date') || message)
             };
             Object.keys(on).forEach(function (k) { setBuilt(k, on[k]); });
@@ -1118,10 +1089,6 @@
                 }
             }
             if (dimWrap) dimWrap.style.opacity = on.plate ? '1' : '0';
-
-            setCrew(profile === 'labor'
-                ? (isNaN(installers) ? 0 : Math.max(0, Math.min(9, installers)))
-                : (message ? 3 : 0));
 
             beams.forEach(function (b) { b.classList.toggle('is-on', on.truss); });
 
@@ -1159,13 +1126,24 @@
             } else if (pct < 1) { celebrated = false; }
         }
 
-        function fitSign(el) {
+        /* Scale text to fit a KNOWN container width. Comparing an element's own
+           clientWidth to its scrollWidth only works when that element is width
+           constrained; inside a flex column the child is shrink-to-fit, so the two
+           are always equal and the fit silently never fires — which is how the
+           confirmation headline shipped clipped at both ends. */
+        function fitInto(el, boxPx) {
             if (!el) return;
             el.style.transform = '';
+            el.style.display = 'inline-block';
             requestAnimationFrame(function () {
-                var k = el.scrollWidth ? Math.min(1, (el.clientWidth - 6) / el.scrollWidth) : 1;
-                if (k < 1) el.style.transform = 'scaleX(' + Math.max(0.7, k) + ')';
+                var w = el.getBoundingClientRect().width;
+                if (!w || !boxPx) return;
+                var k = Math.min(1, (boxPx - 14) / w);
+                if (k < 1) el.style.transform = 'scaleX(' + Math.max(0.5, k) + ')';
             });
+        }
+        function fitSign(el) {
+            if (el) fitInto(el, el.parentNode ? el.parentNode.clientWidth : 0);
         }
 
         /* ---------- wiring ---------- */
@@ -1288,25 +1266,6 @@
             /* the sign — the beat that matters */
             at(900, function () { Snd.thunk(0.5, 0, 15, camRY + pxRY); buzz(18); });
 
-            /* crowd arrives down both aisles */
-            at(1100, function () {
-                if (!crew) return;
-                for (var i = 0; i < 6; i++) {
-                    var w2 = mk('bs-figw is-visitor', crew);
-                    var h = ((i * 2654435761) % 991) / 991;
-                    var side = i % 2 ? 1 : -1;
-                    w2.style.marginLeft = (-10 + side * (54 + h * 120)) + 'px';
-                    w2.style.setProperty('--fz', (0.86 + h * 0.2).toFixed(3));
-                    w2.style.setProperty('--bs-from', (side * (150 + h * 120)).toFixed(0) + 'px');
-                    w2.style.setProperty('--bs-arrive', (i * 130).toFixed(0) + 'ms');
-                    var fg = mk('bs-fig', w2);
-                    fg.innerHTML = '<b></b><i></i>';
-                    figs.push(fg);
-                    mk('bs-figshadow', w2);
-                }
-                queueRelight();
-            });
-
             /* the only camera move in the piece */
             at(1300, function () {
                 var from = camS, to = camS * 1.045, t0 = performance.now();
@@ -1342,8 +1301,9 @@
                     String(when.getFullYear()).slice(2);
                 stampEl.appendChild(h1);
                 stampEl.appendChild(h2);
-                fitSign(h1);
-                fitSign(h2);
+                var box = stampEl.clientWidth || stampWrap.clientWidth;
+                fitInto(h1, box);
+                fitInto(h2, box);
             }
             var mb = modeTag.querySelector('b');
             if (mb) mb.textContent = 'REQUEST RECEIVED';
@@ -1359,10 +1319,6 @@
             root.classList.remove('is-open');
             var host2 = root.closest ? root.closest('[data-bs-dock]') : null;
             if (host2) host2.classList.remove('is-finale');
-            if (crew) {
-                crew.querySelectorAll('.is-visitor').forEach(function (n) { n.remove(); });
-                figs = [].slice.call(crew.querySelectorAll('.bs-fig'));
-            }
             beams.forEach(function (b) { b.style.removeProperty('--bs-lamp'); });
             var mb2 = modeTag.querySelector('b');
             if (mb2) mb2.textContent = 'BUILDING';

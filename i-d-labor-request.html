@@ -421,9 +421,9 @@
                      here, so implying we designed it would be doubly wrong. -->
                 <p class="lab-stagenote">
                     <b>Your job, taking shape.</b> The details you type drive this live
-                    illustration &mdash; your company on the header, the crew size you
-                    enter out on the floor. It&rsquo;s a stand-in for your request, not
-                    your actual exhibit. Drag it to orbit.
+                    illustration &mdash; your company on the header, your show and venue
+                    on the spec. It&rsquo;s a stand-in for your request, not your actual
+                    exhibit. Drag it to orbit.
                 </p>
             </div>
 
@@ -460,12 +460,12 @@
                             <input type="tel" id="phone" name="phone" autocomplete="tel" placeholder="(702) 000-0000" required>
                         </div>
                         <div class="field">
-                            <label for="event">Show / Event Name</label>
-                            <input type="text" id="event" name="event_name" placeholder="CES, SEMA, MAGIC, NAB, CONEXPO…">
+                            <label for="event">Show / Event Name <span class="req">*</span></label>
+                            <input type="text" id="event" name="event_name" required placeholder="CES, SEMA, MAGIC, NAB, CONEXPO…">
                         </div>
                         <div class="field">
-                            <label for="venue">Venue</label>
-                            <select id="venue" name="venue">
+                            <label for="venue">Venue <span class="req">*</span></label>
+                            <select id="venue" name="venue" required>
                                 <option value="" selected>Select a venue</option>
                                 <option value="Las Vegas Convention Center">Las Vegas Convention Center</option>
                                 <option value="Mandalay Bay">Mandalay Bay</option>
@@ -479,8 +479,8 @@
                             <input type="text" id="booth" name="booth" placeholder="e.g. Central Hall, Booth #12345">
                         </div>
                         <div class="field">
-                            <label for="service">Service Needed</label>
-                            <select id="service" name="service">
+                            <label for="service">Service Needed <span class="req">*</span></label>
+                            <select id="service" name="service" required>
                                 <option value="" selected>Select a service</option>
                                 <option value="Installation">Installation</option>
                                 <option value="Dismantle">Dismantle</option>
@@ -488,16 +488,16 @@
                             </select>
                         </div>
                         <div class="field">
-                            <label for="movein">Move-in Date</label>
-                            <input type="date" id="movein" name="move_in_date">
+                            <label for="movein">Move-in Date <span class="req">*</span></label>
+                            <input type="date" id="movein" name="move_in_date" required>
                         </div>
                         <div class="field">
                             <label for="moveout">Move-out Date</label>
                             <input type="date" id="moveout" name="move_out_date">
                         </div>
                         <div class="field">
-                            <label for="installers"># of Installers Needed</label>
-                            <input type="number" id="installers" name="installers" min="1" step="1" placeholder="e.g. 4">
+                            <label for="installers"># of Installers Needed <span class="req">*</span></label>
+                            <input type="number" id="installers" name="installers" min="1" step="1" required placeholder="e.g. 4">
                         </div>
                         <div class="field">
                             <label for="hours">Estimated Hours</label>

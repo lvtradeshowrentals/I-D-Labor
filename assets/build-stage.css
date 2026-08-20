@@ -372,56 +372,6 @@
 }
 .bs-decal-wrap, .bs-dim-wrap { transition: opacity 0.4s var(--ease); }
 
-/* ---------- Crew ----------
-   Roughly 5'10" at FT=12. They were 2.5ft tall — shorter than the 3.4ft
-   counter beside them, which was the single most immediate scale tell in the
-   scene. Dark silhouettes, not glowing gold pills: the eye goes to the
-   brightest human-shaped thing, and that must not outrank the architecture. */
-.bs-crew { transform-style: preserve-3d; }
-.bs-figw {
-    position: absolute;
-    bottom: 0; left: 50%;
-    width: 20px;
-    opacity: 0;
-    scale: var(--fz, 1);
-    /* LOAD-BEARING. Without it this is a flat containing block: the shadow's
-       rotateX(90deg) collapses to a zero-height line and the JS counter-rotation
-       on .bs-fig squashes horizontally instead of billboarding. */
-    transform-style: preserve-3d;
-}
-.bs-fig { position: relative; width: 20px; }
-.bs-fig i {
-    display: block;
-    width: 20px; height: 56px;
-    background: linear-gradient(100deg, #0d1219 0 44%, #2a3646 62%, #61748a 100%);
-    clip-path: polygon(38% 0, 62% 0, 72% 13%, 78% 42%, 70% 44%, 66% 62%,
-                       62% 100%, 53% 100%, 50% 68%, 47% 100%, 38% 100%,
-                       34% 62%, 30% 44%, 22% 42%, 28% 13%);
-}
-.bs-fig::after {                   /* hi-vis band — the only warm accent */
-    content: '';
-    position: absolute;
-    left: 4px; right: 4px; top: 20px; height: 5px;
-    background: rgba(226, 208, 152, 0.72);
-}
-.bs-fig b {
-    display: block;
-    width: 14px; height: 10px;
-    margin: 0 auto -2px;
-    border-radius: 7px 7px 1px 1px;
-    /* muted: three bright white dots were pulling focus off the architecture */
-    background: linear-gradient(180deg, #b9b3a3 0%, #7d786c 100%);
-}
-.bs-figshadow {                    /* on the FLOOR, not standing up in the world plane */
-    position: absolute;
-    bottom: -2px; left: 50%;
-    width: 26px; height: 8px;
-    margin-left: -13px;
-    border-radius: 50%;
-    background: radial-gradient(closest-side, rgba(0, 0, 0, 0.6), transparent 72%);
-    transform: rotateX(90deg);
-}
-
 /* ---------- Light ----------
    mix-blend-mode is NOT usable inside preserve-3d: each transformed element is
    composited into its own layer, so the blend has no shared backdrop and
@@ -565,17 +515,6 @@
     100% { opacity: 0; transform: scale(3); }
 }
 
-/* Visitors walking the aisle. Delay + direction set per figure from JS. */
-.bs-figw.is-visitor { opacity: 0; }
-.bs.is-open .bs-figw.is-visitor {
-    animation: bs-arrive 1500ms cubic-bezier(0.24, 0.6, 0.3, 1) var(--bs-arrive, 1100ms) forwards;
-}
-@keyframes bs-arrive {
-    0%   { opacity: 0; transform: translateX(var(--bs-from, 120px)); }
-    18%  { opacity: 1; }
-    100% { opacity: 1; transform: translateX(0); }
-}
-
 /* Drafting annotations are clutter at the climax — clear the floor for the stamp. */
 .bs.is-open .bs-dim-wrap,
 .bs.is-open .bs-decal-wrap { opacity: 0 !important; transition: opacity 300ms linear; }
@@ -712,7 +651,6 @@
     .bs.is-open .bs-signtext { animation: none; opacity: 1; }
     .bs.is-open .bs-stamp { animation: none; opacity: 1; }
     .bs.is-open .bs-ring { animation: none; opacity: 0; }
-    .bs.is-open .bs-figw.is-visitor { animation: none; opacity: 1; transform: none; }
 }
 
 /* ---------- Responsive ---------- */
@@ -763,7 +701,7 @@
 /* The climax must not play out inside a 184px strip — on mobile the stage
    leaves its docked band and expands to take the screen. */
 @media (max-width: 1000px) {
-    [data-bs-dock].is-finale .bs-viewport { height: clamp(330px, 58vh, 520px); }
+    [data-bs-dock].is-finale .bs-viewport { height: clamp(300px, 50vh, 440px); }
     [data-bs-dock].is-finale .con-stagenote,
     [data-bs-dock].is-finale .lab-stagenote { display: none; }
 }

@@ -258,24 +258,24 @@
                                     <input type="text" id="con-name" name="name" autocomplete="name" required placeholder="Jane Doe">
                                 </div>
                                 <div class="field">
-                                    <label for="con-company">Company</label>
-                                    <input type="text" id="con-company" name="company" autocomplete="organization" placeholder="Company, Inc.">
+                                    <label for="con-company">Company <span class="req">*</span></label>
+                                    <input type="text" id="con-company" name="company" autocomplete="organization" required placeholder="Company, Inc.">
                                 </div>
                                 <div class="field">
                                     <label for="con-email">Email <span class="req">*</span></label>
                                     <input type="email" id="con-email" name="email" autocomplete="email" required placeholder="you@company.com">
                                 </div>
                                 <div class="field">
-                                    <label for="con-phone">Phone</label>
-                                    <input type="tel" id="con-phone" name="phone" autocomplete="tel" placeholder="(702) 000-0000">
+                                    <label for="con-phone">Phone <span class="req">*</span></label>
+                                    <input type="tel" id="con-phone" name="phone" autocomplete="tel" required placeholder="(702) 000-0000">
                                 </div>
                                 <div class="field">
                                     <label for="con-event">Show / Event</label>
                                     <input type="text" id="con-event" name="event" placeholder="e.g., CES 2026">
                                 </div>
                                 <div class="field">
-                                    <label for="con-booth">Booth Size</label>
-                                    <select id="con-booth" name="booth_size">
+                                    <label for="con-booth">Booth Size <span class="req">*</span></label>
+                                    <select id="con-booth" name="booth_size" required>
                                         <option value="">Select…</option>
                                         <option value="10x10">10×10</option>
                                         <option value="10x20">10×20</option>
@@ -285,8 +285,8 @@
                                     </select>
                                 </div>
                                 <div class="field">
-                                    <label for="con-interest">Interested In</label>
-                                    <select id="con-interest" name="interested_in">
+                                    <label for="con-interest">Interested In <span class="req">*</span></label>
+                                    <select id="con-interest" name="interested_in" required>
                                         <option value="">Select…</option>
                                         <option value="custom-booth">Custom Booth</option>
                                         <option value="booth-rental">Booth Rental</option>
