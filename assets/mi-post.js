@@ -52,14 +52,19 @@ const PREFILTER_FS = /* glsl */`
     float soft = clamp(l - uThresh + uKnee, 0.0, 2.0 * uKnee);
     soft = soft * soft / (4.0 * uKnee + 1e-4);
     float w = max(soft, l - uThresh) / max(l, 1e-4);
-    gl_FragColor = vec4(karis(c * w), 1.0);
+    gl_FragColor = vec4(c * w, 1.0);
   }`;
 
-/* Jimenez 13-tap downsample: inner 2x2 box at half weight + corners */
+/* Jimenez 13-tap downsample: inner 2x2 box at half weight + corners.
+   The Karis firefly weight lives HERE, per tap — applying it to the
+   prefilter output instead capped every bloom source at ~1.0 regardless
+   of emitter energy, which silently defeated the whole bloom chain. */
 const DOWN_FS = /* glsl */`
   uniform sampler2D tSrc;
   uniform vec2 uTexel;
   varying vec2 vUv;
+  float luma(vec3 c) { return dot(c, vec3(0.2126, 0.7152, 0.0722)); }
+  vec3 kw(vec3 c) { return c / (1.0 + luma(c) * 0.25); }
   void main() {
     vec2 t = uTexel;
     vec3 a = texture2D(tSrc, vUv + t * vec2(-2.0,  2.0)).rgb;
@@ -75,10 +80,10 @@ const DOWN_FS = /* glsl */`
     vec3 k = texture2D(tSrc, vUv + t * vec2( 1.0,  1.0)).rgb;
     vec3 l = texture2D(tSrc, vUv + t * vec2(-1.0, -1.0)).rgb;
     vec3 m = texture2D(tSrc, vUv + t * vec2( 1.0, -1.0)).rgb;
-    vec3 col = (j + k + l + m) * 0.125;
-    col += (a + c + g + i) * 0.03125;
-    col += (b + d + f + h) * 0.0625;
-    col += e * 0.125;
+    vec3 col = (kw(j) + kw(k) + kw(l) + kw(m)) * 0.125;
+    col += (kw(a) + kw(c) + kw(g) + kw(i)) * 0.03125;
+    col += (kw(b) + kw(d) + kw(f) + kw(h)) * 0.0625;
+    col += kw(e) * 0.125;
     gl_FragColor = vec4(col, 1.0);
   }`;
 
@@ -177,7 +182,7 @@ const COMPOSITE_FS = /* glsl */`
     float dRaw = texture2D(tDepth, vUv).x * 2.0 - 1.0;
     float dist = uFogC / (dRaw + uFogK);
     float aer = smoothstep(uFogNear, uFogFar, dist) * 0.42;
-    col = mix(col, mix(vec3(luma(col)), uFogCol, 0.6) * max(a, 0.001), aer * a);
+    col = mix(col, mix(vec3(luma(col)), uFogCol, 0.25) * max(a, 0.001), aer * a);
     vec3 bloom = texture2D(tBloom, vUv).rgb;
     col += bloom * uBloomStrength;
     /* the spill: glow raises coverage, so booth light lands ON the plan */
@@ -195,7 +200,7 @@ const COMPOSITE_FS = /* glsl */`
     col += texture2D(tBloom, vUv).rgb * vec3(1.0, 0.45, 0.22)
          * uHal * (1.0 - smoothstep(0.1, 0.9, luma(col)));
     /* transfer: exposure -> AgX -> sRGB (premultiplied throughout) */
-    col = agx(col * uExposure);
+    col = agx(mix(vec3(luma(col)), col, 1.40) * uExposure);
     /* per-beat grade: slope (color balance) + saturation — the DaVinci
        pass. Each chapter owns a look; the script lerps between them. */
     col = clamp(col * uSlope, 0.0, 1.4);
@@ -247,7 +252,7 @@ export class MiPost {
 
     this.u = {
       uExposure: { value: 1.65 },
-      uBloomStrength: { value: 0.055 },
+      uBloomStrength: { value: 0.40 },
       uBloomAlpha: { value: 0.6 },
       uGrain: { value: 0.012 },
       uTime: { value: 0 },
@@ -255,17 +260,17 @@ export class MiPost {
       uRadius: { value: 1.0 },
     };
     this.mPre = passMat(PREFILTER_FS, {
-      tSrc: { value: null }, uThresh: { value: 1.12 }, uKnee: { value: 0.5 } });
+      tSrc: { value: null }, uThresh: { value: 0.85 }, uKnee: { value: 0.5 } });
     this.mDown = passMat(DOWN_FS, {
       tSrc: { value: null }, uTexel: { value: new THREE.Vector2() } });
     this.mUp = passMat(UP_FS, {
       tSrc: { value: null }, uTexel: { value: new THREE.Vector2() },
-      uScale: { value: 1.0 } });
+      uScale: { value: 1.8 } });
     this.mUp.blending = THREE.AdditiveBlending;
     this.mUp.transparent = true;
     Object.assign(this.u, {
       uAOAmt: { value: 0.85 },
-      uFogCol: { value: new THREE.Color(0x14263a) },
+      uFogCol: { value: new THREE.Color(0x0b0a0a) },
       uFogK: { value: -1 }, uFogC: { value: -80 },
       uFogNear: { value: 2000 }, uFogFar: { value: 5600 },
       uSlope: { value: new THREE.Vector3(1, 1, 1) },

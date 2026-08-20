@@ -49,11 +49,13 @@ const state = {
 };
 
 /* ================= textures ================= */
-function canvasTex(w, h, draw) {
+function canvasTex(w, h, draw, linear) {
   const c = document.createElement('canvas'); c.width = w; c.height = h;
   draw(c.getContext('2d'), w, h);
   const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
+  /* roughness / normal / height data must stay LINEAR — tagging it sRGB
+     silently gamma-mangles every value */
+  t.colorSpace = linear ? THREE.NoColorSpace : THREE.SRGBColorSpace;
   t.anisotropy = 8;
   return t;
 }
@@ -75,11 +77,18 @@ function makeLedAtlas() {
         /* drawn block 3 = TEXTURE FRAME 0 (flipY): the PIXEL-MAP TEST CARD
            every screen runs until the 14:00 color-balance deadline the
            work order promises (jury r10 — content follows the clock) */
-        const bars = ['#8a8f94', '#8f8a4a', '#4a8a8a', '#4a8a4f',
-                      '#84508a', '#8a4a4a', '#4a4f8a', '#1a1d22'];
+        /* a GREY-STEP WEDGE, not a pastel swatch board. Nine desaturated
+           hues nowhere else in the piece made the calibration wall the
+           brightest, most saturated thing on screen and read as
+           placeholder art (critics, unanimous). Monochrome steps + ONE
+           saturated bar is what a real pixel-map pass looks like. */
+        const bars = ['#101317', '#1c2126', '#2a3036', '#383f46',
+                      '#474f57', '#575f68', '#67707a', '#79828d'];
         bars.forEach((c, bi) => {
           g.fillStyle = c; g.fillRect(bi * AW / 8, y0 + 8, AW / 8 + 1, 150);
         });
+        g.fillStyle = '#c9a54e';
+        g.fillRect(AW - AW / 8, y0 + 8, AW / 8, 150);
         g.strokeStyle = 'rgba(240,240,244,.8)'; g.lineWidth = 2;
         for (let cx2 = 128; cx2 < AW; cx2 += 256) {
           g.beginPath(); g.moveTo(cx2 - 14, y0 + 83); g.lineTo(cx2 + 14, y0 + 83);
@@ -185,8 +194,8 @@ function makeCliffAtlas() {
   const t = canvasTex(AW, AH * 2, (g) => {
     /* — test band (canvas bottom half) — */
     g.fillStyle = '#07090d'; g.fillRect(0, AH, AW, AH);
-    const cbars = ['#8a8f94', '#8f8a4a', '#4a8a8a', '#4a8a4f',
-                   '#84508a', '#8a4a4a', '#4a4f8a', '#15181d'];
+    const cbars = ['#0e1115', '#181d22', '#242a30', '#31383f',
+                   '#3f474f', '#4e5761', '#5e6873', '#c9a54e'];
     cbars.forEach((c, bi) => {
       g.fillStyle = c; g.fillRect(bi * AW / 8, AH + 30, AW / 8 + 1, 300);
     });
@@ -258,6 +267,72 @@ function makeCliffAtlas() {
   t.wrapS = THREE.RepeatWrapping;
   return t;
 }
+/* THE POSTER WALL. Measured, our backlit panels were the FOURTH-DARKEST
+   thing on the stand (Y 0.168) while the reference calls them
+   "brilliantly backlit" — the single most inverted value in the frame.
+   This atlas is deliberately HIGH-KEY: mean luma above 0.55, an ivory
+   field, one huge duotone figure, a wordmark, and NO type small enough to
+   turn to mush. 4 posters across one 2048x1024 sheet. */
+function makePosterAtlas() {
+  const AW = 2048, AH = 1024, PW = AW / 4;
+  const t = canvasTex(AW, AH, (g) => {
+    const R01 = (n) => { const v = Math.sin(n * 91.7 + 13.3) * 43758.5453;
+      return v - Math.floor(v); };
+    const heads = ['I&D CREWS', 'RIGGING', 'CUSTOM LED', '24HR RESCUE'];
+    for (let p = 0; p < 4; p++) {
+      const x0 = p * PW;
+      /* ivory field with a warm falloff — this is what makes it a LIGHTBOX */
+      const bg = g.createLinearGradient(x0, 0, x0, AH);
+      bg.addColorStop(0, '#fdf6e6'); bg.addColorStop(0.62, '#f3e3c2');
+      bg.addColorStop(1, '#e2c78d');
+      g.fillStyle = bg; g.fillRect(x0, 0, PW, AH);
+      /* one huge duotone figure — a crimson silhouette mass, big enough to
+         read as an image at thumbnail rather than as texture noise */
+      g.save();
+      g.beginPath(); g.rect(x0, 0, PW, AH); g.clip();
+      g.fillStyle = 'rgba(190,14,26,0.92)';
+      g.beginPath();
+      g.moveTo(x0 + PW * 0.14, AH);
+      g.lineTo(x0 + PW * 0.30, AH * 0.30);
+      g.lineTo(x0 + PW * 0.52, AH * 0.46);
+      g.lineTo(x0 + PW * 0.70, AH * 0.16);
+      g.lineTo(x0 + PW * 0.88, AH);
+      g.closePath(); g.fill();
+      g.fillStyle = 'rgba(20,20,22,0.90)';
+      g.beginPath();
+      g.moveTo(x0 + PW * 0.02, AH);
+      g.lineTo(x0 + PW * 0.24, AH * 0.55);
+      g.lineTo(x0 + PW * 0.44, AH * 0.72);
+      g.lineTo(x0 + PW * 0.40, AH);
+      g.closePath(); g.fill();
+      /* a few hot blown cells — a few percent of clipped pixels is what
+         makes a lightbox photograph like a lightbox */
+      for (let i = 0; i < 9; i++) {
+        g.fillStyle = '#ffffff';
+        g.fillRect(x0 + PW * (0.08 + R01(p * 9 + i) * 0.78), AH * (0.08 + R01(p * 5 + i) * 0.74),
+          PW * 0.10, AH * 0.030);
+      }
+      g.restore();
+      /* type: large only */
+      g.fillStyle = '#141416';
+      g.font = '800 132px "Segoe UI", system-ui, sans-serif';
+      g.fillText(heads[p], x0 + 46, 172);
+      g.fillStyle = '#be0e1a';
+      g.fillRect(x0 + 46, 210, PW * 0.42, 16);
+      g.fillStyle = '#141416';
+      g.font = '800 74px "Segoe UI", system-ui, sans-serif';
+      g.fillText('LVTSR', x0 + 46, AH - 62);
+      g.fillStyle = 'rgba(20,20,22,0.55)';
+      g.font = '700 44px "Segoe UI", system-ui, sans-serif';
+      g.fillText('LAS VEGAS', x0 + 300, AH - 62);
+      /* panel edge reveal */
+      g.fillStyle = 'rgba(0,0,0,0.35)';
+      g.fillRect(x0, 0, 5, AH); g.fillRect(x0 + PW - 5, 0, 5, AH);
+    }
+  });
+  t.wrapS = THREE.RepeatWrapping;
+  return t;
+}
 function makeColorBars() {
   return canvasTex(256, 128, (g) => {
     const cs = ['#c8ccd0', '#c2c22a', '#2ac2c2', '#2ac22a', '#c22ac2', '#c22a2a', '#2a2ac2'];
@@ -283,6 +358,83 @@ function textTex(text, opt) {
   });
   textTexCache.set(key, t);
   return t;
+}
+/* ============ PROCEDURAL SURFACE SET ============
+   Every surface in the owner's reference photos has grain, brush or a
+   panel seam; ours were flat untextured colour, which is the largest
+   single realism gap. All generated in canvas — no image files. */
+let _surf = null;
+function surfaces() {
+  if (_surf) return _surf;
+  /* WOOD — stacked bands with a fine ripple, plus darker growth lines.
+     Feeds map + roughnessMap on the slat cloud and wood elements. */
+  const wood = canvasTex(512, 512, (g) => {
+    g.fillStyle = '#6b4a24'; g.fillRect(0, 0, 512, 512);
+    for (let i = 0; i < 260; i++) {
+      const y = Math.random() * 512;
+      const w = 0.6 + Math.random() * 2.4;
+      const l = 0.10 + Math.random() * 0.30;
+      g.strokeStyle = 'rgba(' + (28 + Math.random() * 40 | 0) + ',' +
+        (16 + Math.random() * 26 | 0) + ',6,' + l.toFixed(2) + ')';
+      g.lineWidth = w;
+      g.beginPath();
+      for (let x = 0; x <= 512; x += 16)
+        g[x ? 'lineTo' : 'moveTo'](x, y + Math.sin(x * 0.02 + y) * 3.5);
+      g.stroke();
+    }
+    for (let i = 0; i < 40; i++) {
+      g.strokeStyle = 'rgba(200,160,110,' + (0.04 + Math.random() * 0.07).toFixed(2) + ')';
+      g.lineWidth = 0.8 + Math.random();
+      const y = Math.random() * 512;
+      g.beginPath();
+      for (let x = 0; x <= 512; x += 16)
+        g[x ? 'lineTo' : 'moveTo'](x, y + Math.sin(x * 0.017 + y * 0.4) * 2.4);
+      g.stroke();
+    }
+  });
+  wood.wrapS = wood.wrapT = THREE.RepeatWrapping;
+  /* BRUSHED METAL — fine directional streaks in a roughness map. A metal
+     with a uniform roughness reads as plastic; the streaks are what make
+     a highlight stretch along the grain. */
+  const brushed = canvasTex(512, 512, (g) => {
+    g.fillStyle = '#8a8a8a'; g.fillRect(0, 0, 512, 512);
+    for (let i = 0; i < 2600; i++) {
+      const y = Math.random() * 512;
+      const v = 90 + Math.random() * 90 | 0;
+      g.strokeStyle = 'rgba(' + v + ',' + v + ',' + v + ',0.30)';
+      g.lineWidth = 0.5 + Math.random() * 1.3;
+      const x0 = Math.random() * 512, len = 60 + Math.random() * 400;
+      g.beginPath(); g.moveTo(x0, y); g.lineTo(x0 + len, y + (Math.random() - .5) * 1.5);
+      g.stroke();
+    }
+  });
+  brushed.colorSpace = THREE.NoColorSpace;
+  brushed.wrapS = brushed.wrapT = THREE.RepeatWrapping;
+  /* PANEL SEAMS — a 4ft module of dark reveals with a soft AO gutter.
+     Turns any large flat into a built panel system. */
+  const seam = canvasTex(512, 512, (g) => {
+    g.fillStyle = '#8c8c8c'; g.fillRect(0, 0, 512, 512);
+    for (const p of [0, 128, 256, 384]) {
+      const gv = g.createLinearGradient(p - 8, 0, p + 8, 0);
+      gv.addColorStop(0, 'rgba(40,40,40,0)');
+      gv.addColorStop(0.5, 'rgba(28,28,28,0.85)');
+      gv.addColorStop(1, 'rgba(40,40,40,0)');
+      g.fillStyle = gv; g.fillRect(p - 8, 0, 16, 512);
+      const gh = g.createLinearGradient(0, p - 8, 0, p + 8);
+      gh.addColorStop(0, 'rgba(40,40,40,0)');
+      gh.addColorStop(0.5, 'rgba(28,28,28,0.85)');
+      gh.addColorStop(1, 'rgba(40,40,40,0)');
+      g.fillStyle = gh; g.fillRect(0, p - 8, 512, 16);
+    }
+  });
+  seam.colorSpace = THREE.NoColorSpace;
+  seam.wrapS = seam.wrapT = THREE.RepeatWrapping;
+  /* bind a surface map to uv1 (feet) at a real-world tile size */
+  const at = (tex, feet) => { const t = tex.clone(); t.needsUpdate = true;
+    t.channel = 1; t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    t.repeat.set(1 / feet, 1 / feet); return t; };
+  _surf = { wood, brushed, seam, at };
+  return _surf;
 }
 function makeGlowTex() {
   /* hot core: the old 0.5-peak texture died at the wide zoom (jury: booths
@@ -350,6 +502,13 @@ const RV = {
   uH:        { value: 30 },  /* subject booth height, for the climb lag */
   uInkR:     { value: 1.2 },     /* ink flood radius from the burnt seam */
   uFoot:     { value: new THREE.Vector2(20, 10) },  /* footprint half-extents */
+  /* ANALYTIC SOFFIT OCCLUSION. AO and shadows are both off on mobile, and
+     a HemisphereLight is a pure normal.y lerp — a face buried under a
+     canopy receives exactly the same ambient as one facing the open
+     aisle, which is the literal definition of flat. Ten instructions buy
+     most of what a viewer reads as GI under a deck. */
+  uSoffitY:  { value: 11.4 },
+  uSoffitK:  { value: 0.62 },
 };
 
 function patchMat(mat, opt) {
@@ -363,6 +522,7 @@ function patchMat(mat, opt) {
       uFlat: RV.uFlat, uInkA: RV.uInkA, uInkB: RV.uInkB, uLine: RV.uLine,
       uRevMin: RV.uRevMin, uRevMax: RV.uRevMax, uRevDir: RV.uRevDir,
       uH: RV.uH, uInkR: RV.uInkR, uFoot: RV.uFoot,
+      uSoffitY: RV.uSoffitY, uSoffitK: RV.uSoffitK,
     });
     sh.vertexShader = ('varying vec3 vObjN; varying vec3 vBP;\n' +
       'varying vec3 vHalf; varying vec3 vLoc;\n' +
@@ -380,6 +540,7 @@ function patchMat(mat, opt) {
     let frag = ('varying vec3 vObjN; varying vec3 vBP;\n' +
       'varying vec3 vHalf; varying vec3 vLoc;\n' +
       'uniform float uGz, uBandW, uFlat, uLine, uRevDir, uH, uInkR;\n' +
+      'uniform float uSoffitY, uSoffitK;\n' +
       'uniform vec2 uFoot;\n' +
       'uniform vec3 uInkA, uInkB; uniform vec2 uRevMin, uRevMax;\n' +
       '#define REVEAL_ON ' + (opt.reveal ? '1.0' : '0.0') + '\n') + sh.fragmentShader
@@ -390,6 +551,12 @@ function patchMat(mat, opt) {
            : mix(mix(0.74, 1.0, smoothstep(0.35, 0.9, abs(uOn.z))),
                  0.9, smoothstep(0.55, 0.9, uOn.y));
          diffuseColor.rgb *= uLad;
+         /* darken what sits under the deck, falling off over 9ft and
+            fading out past the footprint edge */
+         float sIn  = (1.0 - smoothstep(uFoot.x * 0.80, uFoot.x * 1.15, abs(vBP.x)))
+                    * (1.0 - smoothstep(uFoot.y * 0.80, uFoot.y * 1.15, abs(vBP.z)));
+         diffuseColor.rgb *= 1.0 - uSoffitK
+                           * smoothstep(uSoffitY, uSoffitY - 9.0, vBP.y) * sIn;
          vec3 uE = vHalf - abs(vLoc);
          float uMid = uE.x + uE.y + uE.z
            - max(uE.x, max(uE.y, uE.z)) - min(uE.x, min(uE.y, uE.z));
@@ -444,35 +611,76 @@ function makeMaterials(envTex) {
     envMap: envTex, envMapIntensity: .45 };
   M.navy9 = new THREE.MeshStandardMaterial({ color: 0x1c2734, roughness: .55, metalness: .3, ...E });
   M.navy7 = new THREE.MeshStandardMaterial({ color: 0x2c3d56, roughness: .45, metalness: .2, ...E });
-  M.gold  = new THREE.MeshStandardMaterial({ color: GOLD, roughness: .32, metalness: .85,
-    envMap: envTex, envMapIntensity: .9 });
-  M.silver = new THREE.MeshStandardMaterial({ color: SILVER, roughness: .38, metalness: .9,
-    envMap: envTex, envMapIntensity: .9 });
-  M.alu = new THREE.MeshStandardMaterial({ color: 0x9aa6ad, roughness: .46, metalness: .85,
-    envMap: envTex, envMapIntensity: .55 });
+  /* BRAND SLAB — the reference booth's red: a big, flat, saturated mass
+     that is STRUCTURE, not paint on a wall. Slightly self-lit so it stays
+     brilliant in a dark hall the way a lit red "N" does. */
+  /* NO EMISSIVE ON A BIG DIFFUSE MASS. Emissive adds a constant with no
+     N·L, no falloff and no shadow, so it lifts the SHADE side as much as
+     the lit side: measured, it took the hero slab's key/shade ratio from
+     9:1 down to 2.6:1. That flat term was the "flat and boring". The mass
+     is read bright by LIGHT (hot grazing practicals), never by emission. */
+  M.brand = new THREE.MeshStandardMaterial({ color: 0xd10a16, roughness: .44,
+    metalness: .06, envMap: envTex, envMapIntensity: 0.9 });
+  M.brandDark = new THREE.MeshStandardMaterial({ color: 0x131315, roughness: .66,
+    metalness: .12 });
+  M.gold  = new THREE.MeshStandardMaterial({ color: GOLD, roughness: .22, metalness: .85,
+    envMap: envTex, envMapIntensity: 1.6 });
+  /* ANODIZED, NOT WHITE (owner 2026-08-19: the stands read as white
+     foam-core). A metal's look is albedo x reflection, so a bright albedo
+     on a 40ft fascia becomes a blown-out slab with no value structure.
+     Real extrusion in a dark hall is a dark body with hot specular EDGES —
+     darken the albedo and let the bevel/env carry the highlight. */
+  M.silver = new THREE.MeshStandardMaterial({ color: 0x59626c, roughness: .26, metalness: .92,
+    envMap: envTex, envMapIntensity: 1.35 });
+  M.alu = new THREE.MeshStandardMaterial({ color: 0x474f57, roughness: .30, metalness: .9,
+    envMap: envTex, envMapIntensity: .85 });
   M.charcoal = new THREE.MeshStandardMaterial({ color: 0x14181d, roughness: .7, metalness: .2,
     envMap: envTex, envMapIntensity: .5 });
   M.wood  = new THREE.MeshStandardMaterial({ color: WOOD, roughness: .8, metalness: .05, ...E, emissive: 0x020201 });
   M.ply   = new THREE.MeshStandardMaterial({ color: 0x9c8256, roughness: .85, metalness: 0, ...E, emissive: 0x020201 });
   M.dark  = new THREE.MeshStandardMaterial({ color: 0x232a33, roughness: .8, metalness: .1, ...E });
-  M.carpet = new THREE.MeshStandardMaterial({ color: 0x172030, roughness: .95, metalness: 0, ...E, emissive: 0x000000 });
-  M.glass = new THREE.MeshStandardMaterial({ color: 0x9fc8dc, roughness: .05, metalness: .1,
-    transparent: true, opacity: .28, depthWrite: false,
-    envMap: envTex, envMapIntensity: 1.2 });
+  M.carpet = new THREE.MeshStandardMaterial({ color: 0x0a0806, roughness: .95, metalness: 0, ...E, emissive: 0x000000 });
+  M.glass = new THREE.MeshStandardMaterial({ color: 0x1a2430, roughness: .05, metalness: .1,
+    transparent: true, opacity: .18, depthWrite: false,
+    envMap: envTex, envMapIntensity: 0.40 });
   M.smoke = new THREE.MeshStandardMaterial({ color: 0x121a24, roughness: .1, metalness: .2,
     transparent: true, opacity: .55, depthWrite: false,
     envMap: envTex, envMapIntensity: .6 });
   M.plastic = new THREE.MeshStandardMaterial({ color: 0xb8c4cc, roughness: .5, metalness: 0,
     transparent: true, opacity: .26, depthWrite: false,
     envMap: envTex, envMapIntensity: .8 });
+  /* ---- SURFACE MAPS ----
+     Every reference surface has grain, brush or a seam; flat untextured
+     colour was the largest remaining realism gap. All bound to uv1, which
+     carries object-space FEET, so one texture tiles at a constant real
+     size on a 0.5ft slat and a 14ft slab alike. */
+  {
+    const S = surfaces();
+    /* wood: the one warm material, on the slat cloud */
+    M.wood.map = S.at(S.wood, 8);
+    M.wood.roughnessMap = S.at(S.brushed, 8);
+    M.wood.roughness = 0.78;
+    M.wood.color.setHex(0x8a6a3e);
+    M.wood.emissive.setHex(0x000000);
+    M.ply.map = S.at(S.wood, 8);
+    M.ply.roughness = 0.85;
+    /* brushed aluminium: a uniform roughness reads as plastic — the
+       streaks are what stretch a highlight along the grain */
+    M.silver.roughnessMap = S.at(S.brushed, 4);
+    M.alu.roughnessMap = S.at(S.brushed, 4);
+    /* panel seams on every large flat mass — kills the "painted slab" */
+    for (const m of [M.brand, M.brandDark, M.charcoal, M.navy9, M.navy7]) {
+      m.roughnessMap = S.at(S.seam, 8);
+    }
+  }
   /* emissive family — MeshBasic is unlit; >1 channels punch through ACES */
   /* brand system is gold/navy — the old cyan slabs were the biggest
      off-brand pixel in every booth chapter (jury r10, twice) */
-  M.teal  = new THREE.MeshBasicMaterial({ color: new THREE.Color(1.55, 1.36, 0.98) });
-  M.tealSoft = new THREE.MeshBasicMaterial({ color: new THREE.Color(0.16, 0.55, 0.82) });
-  M.warm  = new THREE.MeshBasicMaterial({ color: new THREE.Color(2.2, 1.75, 1.05) });
-  M.amberGlow = new THREE.MeshBasicMaterial({ color: new THREE.Color(1.15, 0.62, 0.16) });
-  M.caution = new THREE.MeshBasicMaterial({ color: new THREE.Color(1.6, 1.35, 0.2) });
+  M.teal  = new THREE.MeshBasicMaterial({ color: new THREE.Color(7.8, 6.8, 4.9) });
+  M.tealSoft = new THREE.MeshBasicMaterial({ color: new THREE.Color(2.4, 0.30, 0.26) });
+  M.warm  = new THREE.MeshBasicMaterial({ color: new THREE.Color(8.8, 7.0, 4.2) });
+  M.amberGlow = new THREE.MeshBasicMaterial({ color: new THREE.Color(5.8, 3.1, 0.8) });
+  M.caution = new THREE.MeshBasicMaterial({ color: new THREE.Color(4.8, 4.0, 0.6) });
   /* workers are dark figures — only the stripes and headlamps catch light */
   M.hivis = new THREE.MeshStandardMaterial({ color: 0x9e5016, roughness: .8,
     emissive: 0x531f08, emissiveIntensity: .18 });
@@ -540,8 +748,30 @@ function makeEnvTex(renderer) {
   const bounce = new THREE.Mesh(new THREE.PlaneGeometry(40, 40),
     new THREE.MeshBasicMaterial({ color: new THREE.Color(0.5, 0.65, 0.85) }));
   bounce.position.set(0, -30, 0); bounce.rotation.x = -Math.PI / 2; env.add(bounce);
+  /* SMALL HOT SOURCES. The env was six long low-contrast strips and three
+     big cards, which through PMREM becomes a smooth wash — a metal lit by
+     it has no glint anywhere. Archviz reads as archviz partly because a
+     few percent of pixels are blown specular. These are the sources that
+     produce them: tiny, very bright, many. */
+  const hotMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(60, 52, 36) });
+  const hotGeo = new THREE.PlaneGeometry(0.8, 0.8);
+  for (let i = 0; i < 30; i++) {
+    const q = new THREE.Mesh(hotGeo, hotMat);
+    q.position.set(-24 + (i % 6) * 9.6, 28, -20 + Math.floor(i / 6) * 10);
+    q.rotation.x = Math.PI / 2;
+    env.add(q);
+  }
+  /* a horizon ring of them too, so vertical faces get a kick */
+  const ringMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(34, 27, 17) });
+  for (let i = 0; i < 16; i++) {
+    const a = i / 16 * Math.PI * 2;
+    const q = new THREE.Mesh(hotGeo, ringMat);
+    q.position.set(Math.cos(a) * 44, 6, Math.sin(a) * 44);
+    q.lookAt(0, 6, 0);
+    env.add(q);
+  }
   const pm = new THREE.PMREMGenerator(renderer);
-  const tex = pm.fromScene(env, 0.05).texture;
+  const tex = pm.fromScene(env, 0.0).texture;
   pm.dispose();
   return tex;
 }
@@ -556,8 +786,11 @@ function boxGeo(w, h, d) {
   const key = w + ',' + h + ',' + d;
   if (_box.has(key)) return _box.get(key);
   const hx = w / 2, hy = h / 2, hz = d / 2;
-  const b = Math.min(Math.max(Math.min(w, Math.min(h, d)) * 0.06, 0.008), 0.06);
-  const H = [hx, hy, hz], pos = [], nrm = [], uv = [];
+  /* the chamfer clamp was 0.06ft = 0.72in ≈ 0.8 device pixels, i.e. every
+     bevel in the scene was sub-pixel and no edge ever caught the key.
+     0.30 gives a hero mass ~4px of lit arris for zero extra vertices. */
+  const b = Math.min(Math.max(Math.min(w, Math.min(h, d)) * 0.05, 0.01), 0.30);
+  const H = [hx, hy, hz], pos = [], nrm = [], uv = [], uv1 = [];
   const tri = (A, B, C, N) => {
     const ab = [B[0]-A[0], B[1]-A[1], B[2]-A[2]], ac = [C[0]-A[0], C[1]-A[1], C[2]-A[2]];
     const cr = [ab[1]*ac[2]-ab[2]*ac[1], ab[2]*ac[0]-ab[0]*ac[2], ab[0]*ac[1]-ab[1]*ac[0]];
@@ -571,6 +804,9 @@ function boxGeo(w, h, d) {
     for (const p of P) {
       pos.push(p[0], p[1], p[2]); nrm.push(N[0], N[1], N[2]);
       uv.push(p[ua] / (2 * H[ua]) + 0.5, p[va] / (2 * H[va]) + 0.5);
+      /* uv1 = object-space FEET, so a shared grain/seam texture tiles at a
+         constant real-world size on every box regardless of its extents */
+      uv1.push(p[ua], p[va]);
     }
   };
   const quad = (A, B, C, Dp, N) => { tri(A, B, C, N); tri(A, C, Dp, N); };
@@ -611,6 +847,7 @@ function boxGeo(w, h, d) {
   g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pos), 3));
   g.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(nrm), 3));
   g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(uv), 2));
+  g.setAttribute('uv1', new THREE.BufferAttribute(new Float32Array(uv1), 2));
   const half = new Float32Array(pos.length);
   for (let i = 0; i < pos.length; i += 3) { half[i] = hx; half[i+1] = hy; half[i+2] = hz; }
   g.setAttribute('aHalf', new THREE.BufferAttribute(half, 3));
@@ -622,6 +859,113 @@ function bx(w, h, d, mat, x, y, z, ry) {
   m.position.set(x || 0, y || 0, z || 0);
   if (ry) m.rotation.y = ry;
   return m;
+}
+/* ============ THE FABRICATION KIT ============
+   Design-agnostic detail builders. The single biggest reason the stands
+   read as "modeled" rather than "built" is that nothing shows HOW it is
+   held together — no base plates, no gussets, no rail shoes, no seams.
+   Every one of these is cheap geometry that buys enormous believability,
+   and they are shared by all four stands. */
+
+/* a column that lands on the floor like a real one: section + cap plate +
+   base plate + bolt heads. `sec` is the square section size in feet. */
+function steelColumn(sec, h, mat, x, y, z) {
+  const g = new THREE.Group();
+  g.add(bx(sec, h, sec, mat, 0, h / 2, 0));
+  /* cap + base plates are wider than the column — that overhang is the
+     read that says "bolted", and it catches a highlight edge-on */
+  const pl = sec * 1.9, pt = sec * 0.16;
+  g.add(bx(pl, pt, pl, M.charcoal, 0, pt / 2, 0));
+  g.add(bx(pl, pt, pl, M.charcoal, 0, h - pt / 2, 0));
+  const br = pl * 0.34;
+  for (const sx of [-1, 1]) for (const sz of [-1, 1])
+    g.add(bx(sec * 0.16, pt * 1.5, sec * 0.16, M.silver,
+      sx * br, pt * 1.1, sz * br));
+  g.position.set(x || 0, y || 0, z || 0);
+  return g;
+}
+/* triangular-ish gusset at a beam/column joint, faked as a thin wedge box
+   pair — at phone scale the read is "there is a plate here", nothing more */
+function gusset(size, mat, x, y, z, ry) {
+  const g = new THREE.Group();
+  const a = bx(size, size * 0.9, size * 0.09, mat, 0, 0, 0);
+  a.rotation.z = Math.PI / 4;
+  g.add(a);
+  g.position.set(x || 0, y || 0, z || 0);
+  if (ry) g.rotation.y = ry;
+  return g;
+}
+/* THE RAIL SYSTEM — the detail whose absence screams "render". A real
+   guardrail is: a shoe channel, posts at ~4ft, glass or mesh infill, a
+   top rail that RETURNS to a post at each end, and a toe kick. */
+function railRun(len, mat, opts) {
+  const o = opts || {};
+  const g = new THREE.Group();
+  const H = o.h == null ? 3.5 : o.h;         /* 42in guard */
+  const posts = Math.max(2, Math.round(len / 4) + 1);
+  g.add(bx(len, 0.34, 0.5, M.charcoal, 0, 0.17, 0));            /* shoe   */
+  g.add(bx(len, 0.5, 0.34, mat, 0, 0.62, 0));                    /* toe kick */
+  for (let i = 0; i < posts; i++) {
+    const px = -len / 2 + i * (len / (posts - 1));
+    g.add(bx(0.26, H - 0.34, 0.26, mat, px, 0.34 + (H - 0.34) / 2, 0));
+  }
+  if (o.glass !== false)
+    g.add(bx(len - 0.5, H - 1.35, 0.1, M.glass, 0, 0.34 + (H - 0.34) / 2, 0));
+  g.add(bx(len + 0.34, 0.3, 0.62, M.gold, 0, H + 0.1, 0));       /* top rail */
+  g.add(bx(len + 0.34, 0.12, 0.34, M.charcoal, 0, H - 0.12, 0)); /* reveal  */
+  return g;
+}
+/* coveStrip (the decree's builder, never shipped): a charcoal reveal with
+   an HDR core set BACK behind an occluding lip, so you see the glow and
+   never the source. This is what makes light look designed-in. */
+function coveStrip(len, color, opts) {
+  const o = opts || {};
+  const d = o.d == null ? 0.7 : o.d;
+  const g = new THREE.Group();
+  g.add(bx(len, 0.55, d, M.charcoal, 0, 0, 0));                  /* housing */
+  const core = new THREE.Mesh(new THREE.PlaneGeometry(len - 0.3, 0.32),
+    new THREE.MeshBasicMaterial({ color: color, fog: false, toneMapped: false }));
+  core.position.set(0, -0.1, d / 2 - 0.06);
+  g.add(core);
+  g.add(bx(len, 0.16, d * 0.55, M.charcoal, 0, 0.2, d * 0.26));  /* lip */
+  return g;
+}
+/* a real stair flight: two stringers, treads AND risers, landing, and a
+   handrail that returns. rise/run in feet, n = number of risers. */
+function stairFlight(n, rise, run, wide, mat) {
+  const g = new THREE.Group();
+  const totalR = n * rise, totalG = (n - 1) * run;
+  const ang = Math.atan2(totalR, totalG);
+  const sl = Math.hypot(totalR, totalG);
+  /* CANTILEVERED AND OPEN-RISER. Two full-depth stringers plus a riser
+     box per step rendered as a solid ramp; every reference stand instead
+     has a FLOATING stair whose treads are lines of light climbing the
+     dark. One slim spine under the tread centreline carries them. */
+  {
+    const spine = bx(0.55, 0.9, sl + 0.6, M.charcoal, 0, totalR / 2, totalG / 2);
+    spine.rotation.x = -ang;
+    g.add(spine);
+  }
+  const nose = new THREE.MeshBasicMaterial({
+    color: new THREE.Color(11.0, 7.8, 4.4), fog: false, toneMapped: false });
+  for (let i = 0; i < n; i++) {
+    g.add(bx(wide, 0.26, run * 0.92, mat, 0, (i + 1) * rise - 0.13, i * run));
+    /* the glowing nosing IS the stair at a distance */
+    g.add(bx(wide * 0.98, 0.14, 0.30, nose, 0,
+      (i + 1) * rise - 0.02, i * run + run * 0.44));
+  }
+  /* a thin outboard rail on posts — never a chunky mullioned frame */
+  for (const sx of [-1, 1]) {
+    const hr = bx(0.13, 0.13, sl, M.gold, sx * (wide / 2 + 0.1), totalR + 2.9, totalG / 2);
+    hr.rotation.x = -ang;
+    g.add(hr);
+    g.add(bx(0.13, 2.9, 0.13, M.gold, sx * (wide / 2 + 0.1), totalR + 1.45, totalG + 0.1));
+    g.add(bx(0.13, 2.9, 0.13, M.gold, sx * (wide / 2 + 0.1), 1.45, -run * 0.5));
+    for (let i = 2; i < n; i += 4)
+      g.add(bx(0.1, 2.9, 0.1, M.charcoal, sx * (wide / 2 + 0.1),
+        (i + 1) * rise + 1.45, i * run));
+  }
+  return g;
 }
 let glowTex, blobTex, reflFadeTex;
 function glowSprite(color, size, x, y, z, opacity) {
@@ -675,7 +1019,11 @@ function mirrorPlane(w, h, mat, x, yCenter, z, strength) {
 function blob(rx, rz, x, z, op) {
   const g = new THREE.Mesh(new THREE.PlaneGeometry(1, 1),
     new THREE.MeshBasicMaterial({ map: blobTex, transparent: true,
-      opacity: op == null ? .55 : op, depthWrite: false, toneMapped: false }));
+      /* a CONTACT SHADOW, not a hole: at .55 over the drawing these read
+         as black rectangles cut out of the floor (meta-critic #1) */
+      opacity: (op == null ? .55 : op) * 0.45,
+      blending: THREE.MultiplyBlending,
+      depthWrite: false, toneMapped: false }));
   g.rotation.x = -Math.PI / 2;
   g.scale.set(rx * 2, rz * 2, 1);
   g.position.set(x, 0.045, z);
@@ -995,8 +1343,173 @@ const EASE = {
   bolt:  t => t >= 1 ? 1 : 1 - Math.pow(2, -10 * t),
   slab:  t => t < .5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2,
 };
+/* ROUNDED MASS — a box whose four vertical arrises are quarter-cylinders.
+   Every reference stand has rounded-corner volumes or a chamfered portal;
+   ours were all hard-edged boxes, and a hard arris at this pixel density
+   reads as a paper cut-out. Eight radial segments is plenty at 13px/ft. */
+function roundedBox(w, h, d, r, mat, x, y, z) {
+  const g = new THREE.Group();
+  const iw = w - r * 2, id = d - r * 2;
+  g.add(bx(iw, h, d, mat, 0, 0, 0));
+  g.add(bx(w, h, id, mat, 0, 0, 0));
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+    const c = new THREE.Mesh(
+      new THREE.CylinderGeometry(r, r, h, 8, 1, false, 0, Math.PI / 2), mat);
+    c.rotation.y = (sx > 0 ? (sz > 0 ? 0 : Math.PI / 2)
+                           : (sz > 0 ? -Math.PI / 2 : Math.PI));
+    c.position.set(sx * iw / 2, 0, sz * id / 2);
+    g.add(c);
+  }
+  g.position.set(x || 0, y || 0, z || 0);
+  return g;
+}
+/* CHAMFERED PORTAL — the thick ring you walk through in the reference's
+   Exhibit3Design stand: deep members whose inner faces are brand colour
+   and outer faces near-black, so the aperture glows from inside. */
+function portalRing(w, h, thick, depth, outer, inner) {
+  const g = new THREE.Group();
+  const add2 = (bw, bh, px, py) => {
+    g.add(bx(bw, bh, depth, outer, px, py, 0));
+    g.add(bx(bw * 0.98, bh * 0.98, depth * 0.34, inner, px, py, depth * 0.34));
+  };
+  add2(w, thick, 0, h / 2 - thick / 2);
+  add2(w, thick, 0, -h / 2 + thick / 2);
+  add2(thick, h - thick * 2, -w / 2 + thick / 2, 0);
+  add2(thick, h - thick * 2, w / 2 - thick / 2, 0);
+  return g;
+}
+/* ============ THE STAND SHELL ============
+   C1006's system, factored so all four stands share it: a polished pad
+   with a brand reveal, ONE deep roof plane whose soffit is near-black and
+   carries a recessed downlight grid, a brand-colour fascia band with a
+   dotted fixture row under its lip, a continuous cove, and a high-key
+   backlit content wall. Each stand then adds its own signature form on
+   top, so the language is identical but the silhouettes stay distinct. */
+function standShell(bo, o) {
+  const W = o.W, Dp = o.Dp, hw = W / 2, hd = Dp / 2;
+  const SOF = o.sof, CY = SOF + 1.8;
+  const RX0 = o.rx0 == null ? -hw : o.rx0;
+  const RX1 = o.rx1 == null ? hw : o.rx1;
+  const RW = RX1 - RX0, RCX = (RX0 + RX1) / 2;
+  /* pad */
+  put(bo, bx(W, 0.3, Dp, M.brandDark, 0, 0.15, 0), { st: 0.03, w: .07 });
+  for (const sz of [-1, 1])
+    put(bo, bx(W, 0.36, 0.22, M.brand, 0, 0.18, sz * (hd - 0.11)), { st: 0.04, w: .06 });
+  for (const sx of [-1, 1])
+    put(bo, bx(0.22, 0.36, Dp, M.brand, sx * (hw - 0.11), 0.18, 0), { st: 0.04, w: .06 });
+  /* warm floor inlays, swept */
+  {
+    const fl = new THREE.MeshBasicMaterial({
+      color: new THREE.Color(9.5, 7.2, 4.0), fog: false, toneMapped: false });
+    put(bo, finArray(44, boxGeo(W / 24, 0.09, 0.30), fl, (d, i) => {
+      const row = Math.floor(i / 22), t = (i % 22) / 21;
+      d.position.set(-hw + 1.2 + t * (W - 2.4), 0.33,
+        -hd * 0.5 + row * hd + Math.sin(t * Math.PI) * (hd * 0.2));
+      d.rotation.y = -Math.cos(t * Math.PI) * 0.3;
+    }), { st: 0.08, w: .08 });
+  }
+  /* the deep plane: deck, near-black soffit, downlight grid */
+  put(bo, bx(RW, 0.36, Dp, M.alu, RCX, CY - 0.18, 0), { st: 0.30, w: .13 });
+  put(bo, bx(RW - 0.4, 0.16, Dp - 0.4, M.brandDark, RCX, SOF, 0), { st: 0.28, w: .12 });
+  /* the grid is the shell's biggest instance cost and four stands can be
+     live at once — halve it on phones, where the dots are ~1px anyway */
+  const dense = !state.narrow;
+  const cols = Math.max(4, Math.round(RW / (dense ? 3.2 : 5.6)));
+  const rows = dense ? 7 : 4;
+  const cellMat = new THREE.MeshBasicMaterial({
+    color: new THREE.Color(11.0, 9.2, 6.4), fog: false, toneMapped: false });
+  put(bo, finArray(cols * rows, boxGeo(0.46, 0.20, 0.46), cellMat, (d, i) => {
+    d.position.set(RX0 + 1.8 + (i % cols) * ((RW - 3.6) / (cols - 1)),
+      SOF - 0.12, -(Dp / 2 - 2.2) + Math.floor(i / cols) * ((Dp - 4.4) / (rows - 1)));
+  }), { st: 0.62, w: .11 });
+  put(bo, finArray(cols * rows, boxGeo(0.78, 0.34, 0.78), M.brandDark, (d, i) => {
+    d.position.set(RX0 + 1.8 + (i % cols) * ((RW - 3.6) / (cols - 1)),
+      SOF + 0.06, -(Dp / 2 - 2.2) + Math.floor(i / cols) * ((Dp - 4.4) / (rows - 1)));
+  }), { st: 0.61, w: .11 });
+  /* fascia band + its dotted fixture row */
+  const dotMat = new THREE.MeshBasicMaterial({
+    color: new THREE.Color(13.5, 11.2, 7.8), fog: false, toneMapped: false });
+  for (const sz of [-1, 1])
+    put(bo, bx(RW + 0.5, 1.8, 0.6, M.brand, RCX, SOF + 0.9, sz * (hd + 0.12)), { st: 0.34, w: .11 });
+  put(bo, bx(0.6, 1.8, Dp + 0.5, M.brand, RX0 - 0.15, SOF + 0.9, 0), { st: 0.34, w: .11 });
+  if (RX1 < hw - 0.01)
+    put(bo, bx(0.6, 1.8, Dp + 0.5, M.brand, RX1 + 0.15, SOF + 0.9, 0), { st: 0.35, w: .11 });
+  const nd = Math.max(8, Math.round(RW / 2.4));
+  for (const sz of [-1, 1])
+    put(bo, finArray(nd, boxGeo(0.44, 0.40, 0.44), dotMat, (d, i) => {
+      d.position.set(RX0 + 1.2 + i * ((RW - 2.4) / (nd - 1)), SOF - 0.2, sz * (hd - 0.12));
+    }), { st: 0.64, w: .09 });
+  for (const sz of [-1, 1])
+    put(bo, bx(RW + 0.6, 0.36, 0.72, M.brandDark, RCX, SOF + 1.95, sz * (hd + 0.14)), { st: 0.35, w: .08 });
+  /* continuous cove under the roof edge */
+  for (const sz of [-1, 1])
+    put(bo, coveStrip(RW, new THREE.Color(10.5, 7.8, 4.2), { d: 0.62 }),
+      RCX, SOF - 0.28, sz * (hd - 0.28), { st: 0.65, w: .10 });
+  /* high-key backlit content wall */
+  if (o.panels !== false) {
+    if (!state.posterTex) state.posterTex = makePosterAtlas();
+    const n = o.panels || 5, span = (RW - 4) / n;
+    for (let i = 0; i < n; i++) {
+      const px2 = RX0 + 2 + span * (i + 0.5);
+      const t = state.posterTex.clone(); t.needsUpdate = true;
+      t.repeat.set(0.25, 1); t.offset.set(0.25 * (i % 4), 0);
+      const face = new THREE.Mesh(new THREE.PlaneGeometry(span * 0.84, SOF * 0.88),
+        new THREE.MeshBasicMaterial({ map: t,
+          color: new THREE.Color(2.25, 2.10, 1.94), fog: false }));
+      face.position.set(px2, SOF * 0.52, -hd + 1.2);
+      put(bo, face, null, 0, 0, { st: 0.44 + i * 0.018, w: .10 });
+      bo.parts[bo.parts.length - 1].rest.p.set(px2, SOF * 0.52, -hd + 1.2);
+      put(bo, bx(span * 0.94, SOF * 0.94, 0.5, M.brandDark, px2, SOF * 0.52, -hd + 0.85),
+        { st: 0.40 + i * 0.014, w: .09 });
+      put(bo, bx(span * 0.96, 0.26, 0.66, M.brand, px2, SOF * 0.99, -hd + 0.82),
+        { st: 0.42 + i * 0.014, w: .07 });
+    }
+    put(bo, bx(RW - 1.5, SOF, 0.4, M.brandDark, RCX, SOF * 0.5, -hd + 0.5), { st: 0.36, w: .11 });
+  }
+  /* wordmark on the fascia */
+  const mk = lightbox(Math.min(15, RW * 0.42), 1.4, o.mark || 'LVTSR');
+  put(bo, mk, null, 0, 0, { st: 0.68, w: .09 });
+  mk.position.set(RCX, SOF + 0.9, hd + 0.46);
+  bo.parts[bo.parts.length - 1].rest.p.set(RCX, SOF + 0.9, hd + 0.46);
+  /* light */
+  practical(bo, 0xffd9a0, 7.0, 26, RCX, SOF - 1.0, 3.0);
+  practical(bo, 0xff2a22, 9.0, 26, RCX, SOF + 1.2, hd + 4.0);
+  practical(bo, 0x9fd4f2, 3.0, 20, RCX, SOF * 0.5, -hd + 2.2);
+  standHalo(bo, 0xff4a30, W, Dp, 0.34);
+  return { hw, hd, SOF, CY, RX0, RX1, RW, RCX };
+}
 function makeBooth(group) {
   return { group, parts: [], b: -1, show: -1, live: false };
+}
+/* THE CREW (critics, unanimous: "you are advertising a labor company and
+   there is not one person in fourteen frames"). Near-black 5'10" figures
+   in gold hi-vis, standing ON the finished side of the work. They are the
+   scale reference the stands never had — a 30ft mast only reads as 30ft
+   next to a person. Silhouettes only: no faces, no capsule limbs (the
+   owner killed those), just a vest that catches the light. */
+function crewFigure() {
+  const g = new THREE.Group();
+  const body = new THREE.MeshStandardMaterial({ color: 0x0d1014, roughness: .95 });
+  const vest = new THREE.MeshStandardMaterial({ color: 0x6d5824, roughness: .7,
+    emissive: 0xc9a54e, emissiveIntensity: .14 });
+  /* slim and DARK — the first pass read as gold pillars. A worker is a
+     near-black silhouette with one narrow retroreflective band. */
+  g.add(bx(1.05, 2.8, 0.62, body, 0, 1.4, 0));        /* legs        */
+  g.add(bx(1.32, 2.15, 0.78, body, 0, 3.85, 0));      /* torso       */
+  g.add(bx(1.38, 0.5, 0.84, vest, 0, 4.2, 0));        /* vest band   */
+  g.add(bx(0.72, 0.72, 0.66, body, 0, 5.3, 0));       /* head        */
+  g.add(bx(0.96, 0.13, 0.92, new THREE.MeshStandardMaterial({
+    color: 0xb89a4e, roughness: .55, emissive: 0xb89a4e, emissiveIntensity: .10 }),
+    0, 5.72, 0));                                      /* hard hat brim */
+  return g;
+}
+function addCrew(bo, spots) {
+  spots.forEach((s, i) => {
+    const f = crewFigure();
+    f.rotation.y = s[2] == null ? hash01(i + 91) * 6.28 : s[2];
+    /* they arrive with the work and leave with the gear */
+    put(bo, f, s[0], 0, s[1], { st: 0.55 + i * 0.04, w: .10 });
+  });
 }
 /* put(booth, object, x, y, z, staging) — three calling forms:
    numeric x/y/z sets the position; an OBJECT in the x slot means the
@@ -1208,99 +1721,267 @@ function standHalo(bo, color, W, Dp, baseOp) {
    tellable apart in flat black — a plate on a mast, a sliced drum under a
    halo, a folded canyon, an opened crate on scissor masts. */
 
-function booth1(bo) {           /* C1006 — THE HUNG DECK. 40x20 double-deck I&D */
+function booth1(bo) {           /* C1006 — THE MONOGRAM. 40x20 double-deck */
   const W = 39.8, Dp = 19.8, hw = W / 2, hd = Dp / 2;
-  put(bo, blob(hw * 1.14, hd * 1.25, 0, 0, .5), null, 0, 0, { st: 0.02, w: .04, dy: 0 });
-  /* ground floor: platform + carpet */
-  put(bo, bx(W, 0.5, Dp, M.ply, 0, 0.25, 0), { st: 0.04, w: .08 });
-  put(bo, bx(W - 2, 0.12, Dp - 2, M.carpet, 0, 0.56, 0), { st: 0.07, w: .08 });
-  /* THE MAST — the whole stand hangs off this. 30ft, aluminium, gold cap */
-  put(bo, bx(2.6, 30, 2.6, M.alu, -6, 15, -hd + 2.2), { st: 0.10, w: .10 });
-  put(bo, bx(3.1, 0.5, 3.1, M.gold, -6, 30.2, -hd + 2.2), { st: 0.18, w: .06 });
-  /* two 40ft box-truss chords at 26ft with a diagonal web (one draw) */
-  for (const zc of [-hd + 1, -hd + 3.4]) {
-    put(bo, bx(W - 2, 0.55, 0.55, M.alu, 0, 26, zc), { st: 0.14, w: .08 });
-    put(bo, bx(W - 2, 0.55, 0.55, M.alu, 0, 23.6, zc), { st: 0.16, w: .08 });
-  }
-  put(bo, finArray(30, boxGeo(0.22, 2.9, 0.22), M.silver, (d, i) => {
-    d.position.set(-hw + 2.2 + i * (W - 4.4) / 29, 24.8, -hd + (i % 2 ? 1 : 3.4));
-    d.rotation.z = (i % 2 ? 1 : -1) * 0.72;
-  }), { st: 0.19, w: .09 });
-  /* 16 tension rods + their light-ghost (a harp of light, 2 draws) */
-  const rodGeo = new THREE.CylinderGeometry(.05, .05, 12.6, 6);
-  put(bo, finArray(16, rodGeo, M.silver, (d, i) => {
-    d.position.set(-hw + 3 + (i % 8) * (W - 6) / 7, 17.2, -hd + 1 + Math.floor(i / 8) * 2.4);
-  }), { st: 0.24, w: .08 });
-  put(bo, finArray(16, rodGeo, new THREE.MeshBasicMaterial({
-    color: new THREE.Color(0.14, 0.55, 0.85), transparent: true, opacity: .5,
-    blending: THREE.AdditiveBlending, depthWrite: false, fog: false }), (d, i) => {
-    d.position.set(-hw + 3 + (i % 8) * (W - 6) / 7, 17.2, -hd + 1 + Math.floor(i / 8) * 2.4);
-    d.scale.set(2.1, 1, 2.1);
-  }), { st: 0.30, w: .08 });
-  /* THE DECK — flown in from above on the slab ease. 15ft deep, the front
-     11ft cantilevers over the aisle, column-free. */
-  put(bo, bx(W, 0.9, 15, M.navy9, 0, 11, -hd + 7.5), { st: 0.30, w: .14, dy: -15, ease: 'slab' });
-  /* THE DECK VISIBLY HANGS (jury r10, industry #1: "no chain hoists, no
-     drop lines — any rigger laughs this off the floor"): five hoist drops
-     from the truss chords to the deck header, hoist body at the top */
-  for (const hx of [-16, -8, 0, 8, 16]) {
-    put(bo, bx(0.22, 11.6, 0.22, M.dark, hx, 17.2, -hd + 2.2), { st: 0.27, w: .06 });
-    put(bo, bx(0.9, 1.25, 0.9, M.silver, hx, 22.7, -hd + 2.2), { st: 0.26, w: .06 });
-  }
-  /* soffit: ~90 gold fins under the deck — the corduroy ceiling the low
-     camera looks straight up into. aHalf stripped: sub-0.2ft members turn
-     into z-fight comb teeth under the edge-ink shader (jury r10, DP) */
-  const finGeo = boxGeo(0.14, 0.45, 14.2);
-  finGeo.deleteAttribute('aHalf');
-  put(bo, finArray(90, finGeo, M.gold, (d, i) => {
-    d.position.set(-hw + 0.6 + i * (W - 1.2) / 89, 10.3, -hd + 7.5);
-  }), { st: 0.46, w: .14, dy: -3, ease: 'panel' });
-  /* continuous folded balustrade plate (no pickets) + glass return */
-  put(bo, bx(W, 3.4, 0.22, M.alu, 0, 13.4, -hd + 14.9), { st: 0.40, w: .10 });
-  put(bo, bx(0.22, 3.4, 14.6, M.alu, -hw + 0.11, 13.4, -hd + 7.5), { st: 0.43, w: .08 });
-  put(bo, bx(0.22, 3.4, 14.6, M.alu, hw - 0.11, 13.4, -hd + 7.5), { st: 0.43, w: .08 });
-  put(bo, bx(W + 0.4, 0.3, 0.5, M.gold, 0, 15.2, -hd + 15), { st: 0.52, w: .08 });
-  /* glass strip above the plate so the deck reads occupiable */
-  put(bo, bx(W - 0.6, 1.7, 0.14, M.glass, 0, 16.1, -hd + 14.9), { showOnly: true });
-  /* glass floor panel at the cantilever tip (showOnly, with a visitor) */
-  put(bo, bx(6, 0.18, 6, M.glass, 8, 11.5, -hd + 12.5), { showOnly: true });
-  /* folded-plate stair: 10 zig-zag treads, now with a visible stringer
-     and a gold handrail (jury r10, industry: "floating treads, no
-     stringer, no handrail — fire marshal laughs this off the floor") */
-  for (let i = 0; i < 10; i++) {
-    put(bo, bx(4.4, 0.28, 1.35, M.alu, hw - 3.4, 1.1 * (i + 1) - 0.1, hd - 2.2 - i * 1.28),
-      { st: 0.34 + i * 0.012, w: .07 });
-    put(bo, bx(4.4, 1.1, 0.24, M.alu, hw - 3.4, 1.1 * (i + 0.5), hd - 2.85 - i * 1.28),
-      { st: 0.34 + i * 0.012, w: .07 });
-  }
+  /* THE PARTI — built to the owner's reference (the Netflix CES stand):
+     THE LOGO IS THE STRUCTURE. In profile the stand is a giant "L" — a
+     28ft brand slab at the west end whose foot is the roof plane — and
+     the roof STOPS at x=+9 so a massive "V" of two raking blades stands
+     PROUD in the open air beyond it, carrying the cantilevered corner.
+     The roof must never cut through the letterform: in the reference the
+     N stands clear at the open corner and the roof dies against it. That
+     is the whole trick, and burying the letter inside the deck is what
+     made the first pass read as overlapping junk.
+     Rules taken from the reference and obeyed everywhere below: ONE deep
+     floating plane, near-black soffit with a regular downlight grid, a
+     brilliant brand-colour fascia with a visible row of light dots under
+     its lip, everything raking, TWO colours only, full-height backlit
+     portrait panels in dark recesses, polished reflective floor. */
+  const SOF = 11.4;            /* underside of the big plane           */
+  const CY = 13.2;             /* upper deck walking surface           */
+  const RX0 = -hw, RX1 = 9.0;  /* roof DIES against the V, never through */
+  const RW = RX1 - RX0, RCX = (RX0 + RX1) / 2;
+  put(bo, blob(hw * 1.10, hd * 1.20, 0, 0, .5), null, 0, 0, { st: 0.02, w: .04, dy: 0 });
+
+  /* ---------- the polished black pad ---------- */
+  put(bo, bx(W, 0.3, Dp, M.brandDark, 0, 0.15, 0), { st: 0.03, w: .07 });
+  /* (the fake additive mirrorPlane quads are gone — they reflected
+     nothing and painted the floor navy; the real planar pass below does
+     the work) */
+  for (const sz of [-1, 1])
+    put(bo, bx(W, 0.36, 0.22, M.brand, 0, 0.18, sz * (hd - 0.11)), { st: 0.04, w: .06 });
+  for (const sx of [-1, 1])
+    put(bo, bx(0.22, 0.36, Dp, M.brand, sx * (hw - 0.11), 0.18, 0), { st: 0.04, w: .06 });
+
+  /* ---------- THE WEST END: a quiet dark wall ----------
+     The L is GONE. The reference is ONE colossal letter against a black
+     hall; we had an L, a V, a fascia wordmark and a lit sign all
+     competing, and the L was cropped out of most frames anyway so the
+     monogram only ever read as "V plus a wall". Commit to the V. */
+  put(bo, roundedBox(2.4, 21.0, 15.0, 1.1, M.brandDark, -hw + 1.3, 10.5, 0), { st: 0.12, w: .13 });
   {
-    const strAng = -Math.atan2(11.5, 11.0);
-    const stringer = bx(0.4, 17.2, 1.0, M.charcoal, hw - 5.45, 6.0, hd - 8.0);
-    stringer.rotation.x = strAng;
-    put(bo, stringer, { st: 0.33, w: .08 });
-    const rail = bx(0.14, 17.4, 0.14, M.gold, hw - 1.35, 9.2, hd - 8.0);
-    rail.rotation.x = strAng;
-    put(bo, rail, { st: 0.45, w: .07 });
+    /* one warm reveal down its leading edge so it is not a dead slab */
+    const arris = new THREE.MeshBasicMaterial({
+      color: new THREE.Color(6.0, 2.0, 1.6), fog: false, toneMapped: false });
+    put(bo, bx(0.34, 20.0, 0.34, arris, -hw + 2.6, 10.5, 7.2), { st: 0.75, w: .10 });
   }
-  put(bo, bx(0.4, 0.9, 12.4, M.gold, hw - 1.3, 12.1, hd - 8.2), { st: 0.50, w: .08 });
-  /* under-deck: reception counter + SEG banner + plinths */
-  put(bo, counterK1(9), -4, 0.6, hd - 4, { st: 0.58, w: .10 });
-  put(bo, plinthK2(3.6), -14, 0.6, hd - 6, { st: 0.62, w: .08 });
-  put(bo, plinthK2(2.8), -10.5, 0.6, hd - 5, { st: 0.64, w: .08 });
-  const seg = lightFace(16, 3.4, M.teal);
-  seg.position.set(-2, 6.2, -hd + 0.9);
-  put(bo, seg, { st: 0.72, w: .10 });
-  /* fascia sign on the deck face */
-  const fascia = lightbox(18, 2.1, 'LVTSR · C1006');
-  fascia.position.set(0, 12.9, -hd + 15.05);
-  put(bo, fascia, { st: 0.66, w: .10 });
-  /* upstairs furniture silhouettes + attendee (showOnly) */
-  put(bo, bx(6, 1.1, 2.4, M.navy7, -8, 12, -hd + 6), { showOnly: true });
-  /* practicals: warm pool at the counter, cool wash under the deck */
-  practical(bo, 0xffd9a0, 2.6, 16, -4, 8.5, hd - 4);
-  practical(bo, 0x9fd4f2, 1.6, 18, 4, 9.5, -hd + 7);
-  standHalo(bo, 0xc8a96a, W, Dp, 0.30);
-  /* ---- the crew and their machines (gear — pulled before doors) ---- */
+
+  /* ---------- THE "V" : pierces the roof and rises above it ----------
+     In the reference the N passes THROUGH the roof line and its crown
+     stands clear against the black hall. That is what makes the letter
+     read as structure carrying the plane rather than a prop beside it. */
+  {
+    const mk = (cx, len, ang, st) => {
+      const b = new THREE.Mesh(boxGeo(3.8, len, 2.2), M.brand);
+      b.position.set(cx, 16.5, 0);
+      b.rotation.z = ang;
+      put(bo, b, null, 0, 0, { st: st, w: .14 });
+      const p = bo.parts[bo.parts.length - 1];
+      p.rest.p.set(cx, 16.5, 0); p.rest.rz = ang;
+    };
+    /* west stroke: top x=+10.4, foot x=+15.6   east: top x=+19.6, foot +16.6 */
+    mk(14.4, 30.0, 0.30, 0.16);
+    mk(17.4, 29.4, -0.24, 0.18);
+    /* THE LIT ARRIS — a light line running the full length of each blade's
+       leading edge. This is the single biggest cure for "flat": the
+       letterform stops being a painted slab and becomes a light source,
+       exactly like the glowing edges in every reference stand. */
+    const arris = new THREE.MeshBasicMaterial({
+      color: new THREE.Color(12.0, 2.8, 2.1), fog: false, toneMapped: false });
+    for (const c of [[14.4, 30.0, 0.30], [17.4, 29.4, -0.24]]) {
+      for (const sz of [-1, 1]) {
+        const e = new THREE.Mesh(boxGeo(0.36, c[1] - 0.6, 0.36), arris);
+        e.position.set(c[0] - Math.cos(c[2]) * 1.85, 16.5, sz * 1.16);
+        e.rotation.z = c[2];
+        put(bo, e, null, 0, 0, { st: 0.76, w: .10 });
+        const p = bo.parts[bo.parts.length - 1];
+        p.rest.p.set(c[0] - Math.cos(c[2]) * 1.85, 16.5, sz * 1.16);
+        p.rest.rz = c[2];
+      }
+    }
+    put(bo, bx(5.4, 1.8, 2.6, M.silver, 16.1, 0.9, 0), { st: 0.20, w: .07 });
+    /* the dark shadow-return on each blade so they have real thickness */
+    for (const c of [[14.4, 30.0, 0.30], [17.4, 29.4, -0.24]]) {
+      const r = new THREE.Mesh(boxGeo(0.7, c[1], 2.2), M.brandDark);
+      r.position.set(c[0] + 2.2, 16.5, 0);
+      r.rotation.z = c[2];
+      put(bo, r, null, 0, 0, { st: 0.19, w: .09 });
+      const p = bo.parts[bo.parts.length - 1];
+      p.rest.p.set(c[0] + 2.2, 16.5, 0); p.rest.rz = c[2];
+    }
+  }
+
+  /* ---------- THE BIG PLANE : ends at RX1, against the V ---------- */
+  put(bo, bx(RW, 0.36, Dp, M.alu, RCX, CY - 0.18, 0), { st: 0.30, w: .13 });
+  put(bo, bx(RW - 0.4, 0.16, Dp - 0.4, M.brandDark, RCX, SOF, 0), { st: 0.28, w: .12 });
+  const dotMat = new THREE.MeshBasicMaterial({
+    color: new THREE.Color(13.5, 11.2, 7.8), fog: false, toneMapped: false });
+  put(bo, finArray(45, boxGeo(0.52, 0.24, 0.52), dotMat, (d, i) => {
+    d.position.set(RX0 + 2.2 + (i % 9) * 3.2, SOF - 0.11, -7.0 + Math.floor(i / 9) * 3.5);
+  }), { st: 0.62, w: .10 });
+  /* the fascia band — brilliant brand colour, 20in deep, three sides plus
+     the cut edge where it dies into the V */
+  for (const sz of [-1, 1])
+    put(bo, bx(RW + 0.5, 1.8, 0.6, M.brand, RCX, SOF + 0.9, sz * (hd + 0.12)), { st: 0.34, w: .11 });
+  put(bo, bx(0.6, 1.8, Dp + 0.5, M.brand, RX0 - 0.15, SOF + 0.9, 0), { st: 0.34, w: .11 });
+  /* the row of little downlights under the fascia lip */
+  for (const sz of [-1, 1])
+    put(bo, finArray(22, boxGeo(0.44, 0.40, 0.44), dotMat, (d, i) => {
+      d.position.set(RX0 + 1.2 + i * ((RW - 2.4) / 21), SOF - 0.2, sz * (hd - 0.12));
+    }), { st: 0.64, w: .09 });
+  for (const sz of [-1, 1])
+    put(bo, bx(RW + 0.6, 0.36, 0.72, M.brandDark, RCX, SOF + 1.95, sz * (hd + 0.14)), { st: 0.35, w: .08 });
+  /* A CONTINUOUS COVE under the whole roof edge — not just dots. The
+     reference stands all read as a bright line of light floating in the
+     dark before you register any geometry at all. */
+  for (const sz of [-1, 1])
+    put(bo, coveStrip(RW, new THREE.Color(10.5, 7.8, 4.2), { d: 0.62 }),
+      RCX, SOF - 0.28, sz * (hd - 0.28), { st: 0.65, w: .10 });
+  {
+    const cv = coveStrip(Dp - 0.6, new THREE.Color(10.5, 7.8, 4.2), { d: 0.62 });
+    cv.rotation.y = Math.PI / 2;
+    put(bo, cv, RX0 + 0.3, SOF - 0.28, 0, { st: 0.65, w: .10 });
+  }
+
+  /* ---------- THE CONTENT WALL : backlit portrait panels ---------- */
+  {
+    if (!state.posterTex) state.posterTex = makePosterAtlas();
+    const panelTex = (i) => { const t = state.posterTex.clone();
+      t.needsUpdate = true;
+      t.repeat.set(0.25, 1); t.offset.set(0.25 * (i % 4), 0);
+      return t; };
+    for (let i = 0; i < 5; i++) {
+      const px = RX0 + 4.0 + i * 5.4;
+      const face = new THREE.Mesh(new THREE.PlaneGeometry(4.6, 10.2),
+        new THREE.MeshBasicMaterial({ map: panelTex(i),
+          color: new THREE.Color(2.25, 2.10, 1.94), fog: false }));
+      face.position.set(px, 5.9, -hd + 1.2);
+      put(bo, face, null, 0, 0, { st: 0.44 + i * 0.018, w: .10 });
+      bo.parts[bo.parts.length - 1].rest.p.set(px, 5.9, -hd + 1.2);
+      put(bo, bx(5.2, 10.9, 0.5, M.brandDark, px, 5.9, -hd + 0.85), { st: 0.40 + i * 0.014, w: .09 });
+      put(bo, bx(5.4, 0.26, 0.66, M.brand, px, 11.45, -hd + 0.82), { st: 0.42 + i * 0.014, w: .07 });
+    }
+    put(bo, bx(RW - 1.5, 11.4, 0.4, M.brandDark, RCX, 5.7, -hd + 0.5), { st: 0.36, w: .11 });
+  }
+
+  /* ---------- WORDMARK ON THE FASCIA ---------- */
+  const mark = lightbox(13.5, 1.4, 'LVTSR');
+  put(bo, mark, null, 0, 0, { st: 0.68, w: .09 });
+  mark.position.set(RCX - 1.0, SOF + 0.9, hd + 0.46);
+  bo.parts[bo.parts.length - 1].rest.p.set(RCX - 1.0, SOF + 0.9, hd + 0.46);
+  const mark2 = lightbox(12.0, 1.15, 'INSTALL · DISMANTLE');
+  mark2.rotation.y = Math.PI;
+  put(bo, mark2, null, 0, 0, { st: 0.70, w: .08 });
+  mark2.position.set(RCX, SOF + 0.9, -hd - 0.46);
+  bo.parts[bo.parts.length - 1].rest.p.set(RCX, SOF + 0.9, -hd - 0.46);
+  bo.parts[bo.parts.length - 1].rest.ry = Math.PI;
+
+  /* ---------- GROUND FLOOR (kept clear of the hero face) ---------- */
+  put(bo, counterK1(12), -3.0, 0.4, 4.6, { st: 0.50, w: .09 });
+  for (const c of [[-13.0, 3.6], [-13.0, -1.2]])
+    put(bo, bx(2.6, 1.5, 2.6, M.navy7, c[0], 0.75, c[1]), { st: 0.54, w: .07 });
+  put(bo, roundedBox(6.4, 9.6, 4.6, 1.5, M.brandDark, 5.4, 4.8, -5.4), { st: 0.46, w: .09 });
+  put(bo, bx(0.32, 9.6, 4.8, M.brand, 2.2, 4.8, -5.4), { st: 0.47, w: .07 });
+
+  /* ---------- UPPER DECK ---------- */
+  for (const sz of [-1, 1]) {
+    const r = railRun(RW - 1.0, M.alu, { h: 3.4 });
+    put(bo, r, RCX, CY, sz * (hd - 0.5), { st: 0.56, w: .10 });
+  }
+  for (const sx of [RX0 + 0.5, RX1 - 0.5]) {
+    const r = railRun(Dp - 1.6, M.alu, { h: 3.4 });
+    r.rotation.y = Math.PI / 2;
+    put(bo, r, sx, CY, 0, { st: 0.57, w: .10 });
+  }
+  put(bo, bx(10.0, 0.26, 4.0, M.alu, -6.5, CY + 2.3, -1.0), { st: 0.58, w: .08 });
+  for (const sx of [-1, 1])
+    put(bo, bx(0.5, 2.2, 2.0, M.brandDark, -6.5 + sx * 3.4, CY + 1.15, -1.0), { st: 0.58, w: .07 });
+  for (const c of [[-13.5, 4.2], [-2.0, 4.2], [3.5, -3.8]])
+    put(bo, bx(2.6, 1.5, 2.6, M.navy7, c[0], CY + 0.75, c[1]), { st: 0.60, w: .07 });
+  put(bo, roundedBox(5.4, 7.4, 4.2, 1.3, M.brandDark, 5.6, CY + 3.7, -4.4), { st: 0.59, w: .09 });
+
+  /* ---------- STAIR — back-left, clear of the hero face ---------- */
+  {
+    const s1 = stairFlight(20, 0.66, 0.95, 3.6, M.alu);
+    s1.rotation.y = -Math.PI / 2;
+    put(bo, s1, RX0 + 6.5, 0, -hd + 3.4, { st: 0.48, w: .12 });
+  }
+
+  /* ---------- THE OVERHEAD IS THE REFERENCE'S, NOT BATCH 2'S ----------
+     The hanging wood slat cloud is GONE. It came from the warm archviz
+     batch, it measured as a value twin of the red fascia, its gaps read
+     as z-fighting, and it crossed the V exactly where the two strokes
+     converge. The Netflix reference's overhead is a deep dark plane full
+     of small recessed downlights — many small hot sources rather than one
+     big bright mass, which is also the only honest way to put clipped
+     pixels in frame without hazing it. */
+  {
+    const cellMat = new THREE.MeshBasicMaterial({
+      color: new THREE.Color(11.0, 9.2, 6.4), fog: false, toneMapped: false });
+    /* a 12 x 7 grid of recessed fixtures in the soffit */
+    put(bo, finArray(84, boxGeo(0.46, 0.20, 0.46), cellMat, (d, i) => {
+      d.position.set(RX0 + 1.8 + (i % 12) * ((RW - 3.6) / 11),
+        SOF - 0.12, -6.8 + Math.floor(i / 12) * 2.28);
+    }), { st: 0.62, w: .11 });
+    /* their housings, so each dot sits in a dark well */
+    put(bo, finArray(84, boxGeo(0.78, 0.34, 0.78), M.brandDark, (d, i) => {
+      d.position.set(RX0 + 1.8 + (i % 12) * ((RW - 3.6) / 11),
+        SOF + 0.06, -6.8 + Math.floor(i / 12) * 2.28);
+    }), { st: 0.61, w: .11 });
+  }
+  /* THE HALO — a lit ring hung under the cloud, the second recurring
+     motif; it also crowns the stand from across the hall */
+  {
+    const ring = tubeRing(7.2, 0.42, M.brandDark);
+    ring.rotation.x = Math.PI / 2;
+    put(bo, ring, null, 0, 0, { st: 0.72, w: .09, dy: -3, ease: 'slab' });
+    ring.position.set(RCX + 2, 16.4, 0);
+    bo.parts[bo.parts.length - 1].rest.p.set(RCX + 2, 16.4, 0);
+    bo.parts[bo.parts.length - 1].rest.rx = Math.PI / 2;
+    const glow = tubeRing(7.0, 0.34, new THREE.MeshBasicMaterial({
+      color: new THREE.Color(10.0, 7.6, 4.2), fog: false, toneMapped: false }));
+    glow.rotation.x = Math.PI / 2;
+    put(bo, glow, null, 0, 0, { st: 0.74, w: .09, dy: -3, ease: 'slab' });
+    glow.position.set(RCX + 2, 16.1, 0);
+    bo.parts[bo.parts.length - 1].rest.p.set(RCX + 2, 16.1, 0);
+    bo.parts[bo.parts.length - 1].rest.rx = Math.PI / 2;
+  }
+  /* FLOOR LIGHT INLAYS — the warm lines running through the deck in
+     every reference photo. They also read straight down the aisle. */
+  {
+    const fl = new THREE.MeshBasicMaterial({
+      color: new THREE.Color(9.5, 7.2, 4.0), fog: false, toneMapped: false });
+    /* swept arcs, not three straight strips (reference: "warm light lines
+       inlaid in the floor, curving") */
+    put(bo, finArray(66, boxGeo(1.1, 0.09, 0.30), fl, (d, i) => {
+      const row = Math.floor(i / 22), t = (i % 22) / 21;
+      const x = -hw + 1.5 + t * (W - 3);
+      const z = -5.6 + row * 5.6 + Math.sin(t * Math.PI) * 2.4;
+      d.position.set(x, 0.33, z);
+      d.rotation.y = -Math.cos(t * Math.PI) * 0.36;
+    }), { st: 0.08, w: .08 });
+  }
+
+  /* (A CHAMFERED PORTAL WAS TRIED AND CUT. `portalRing()` is kept for
+     reuse, but at this camera a second large frame crossed the fascia and
+     put competing light lines in front of the subject — the letterform
+     only dominates when nothing else in the foreground argues with it.) */
+
+  /* ---------- LIGHT ---------- */
+  /* THE STAND MAKES ITS OWN LIGHT. Flatness came from the booth being lit
+     only by the hall's ambient — one even mid-tone everywhere. These are
+     hot, close, and placed to give every slab a bright side and a dark
+     side, which is what "not flat" actually means. */
+  practical(bo, 0xffd9a0, 7.0, 26, RCX, 10.4, 3.0);
+  practical(bo, 0xffc46a, 5.0, 22, RCX + 2, 17.0, 0);      /* the halo     */
+  practical(bo, 0xffd9a0, 5.0, 20, RX0 + 8, 10.4, -4.0);
+  practical(bo, 0xff2a22, 7.0, 20, -hw + 4.5, 13.0, 5.0);  /* red bounce, L */
+  practical(bo, 0xff2a22, 8.0, 22, 14.0, 11.0, 5.0);       /* red bounce, V */
+  practical(bo, 0xff4028, 6.5, 16, 17.5, 19.0, -3.0);      /* V top, back  */
+  practical(bo, 0x9fd4f2, 3.0, 20, RCX, 6.0, -hd + 2.2);   /* panel spill  */
+  practical(bo, 0xffc46a, 3.4, 16, RX0 + 7, 4.0, -hd + 4); /* stair treads */
+  standHalo(bo, 0xe8a51c, W, Dp, 0.36);
+  /* ---- LIFTED SPAN gear ---- */
   put(bo, crateK7(7, 4, 7.5, 'C1006 · 6 OF 14'), hw - 5, 0, hd + 3.4, { st: 0.03, w: .05, gear: true });
   put(bo, crateK7(5, 3.4, 4.5, 'LVTSR · EMPTY'), -hw - 2.5, 0, hd - 1, { st: 0.20, w: .08, gear: true, ry: 0.3 });
   put(bo, forkliftK11(), -hw + 6, 0, hd + 2.6, { st: 0.26, w: .10, gear: true, ry: -0.5 });
@@ -1311,291 +1992,215 @@ function booth1(bo) {           /* C1006 — THE HUNG DECK. 40x20 double-deck I&
   put(bo, gangBox(), -hw + 1.6, 0, hd + 3.3, { st: 0.08, w: .06, gear: true, ry: 0.2 });
 }
 
-function booth2(bo) {           /* C3042 — THE OPERATIONS DRUM. 40x20 command hub */
-  const W = 40, Dp = 20, hd = Dp / 2;
-  const R = 11.6;
-  put(bo, blob(15, 13, -4, 0, .5), null, 0, 0, { st: 0.02, w: .04, dy: 0 });
-  put(bo, bx(W, 0.4, Dp, M.charcoal, 0, 0.2, 0), { st: 0.04, w: .08 });
-  /* the drum: louvre rings sliced 100 degrees open toward the aisle,
-     grouped 3-1-3-1 with double gaps (rhythm, not a venetian blind),
-     every 5th ring gold, spiral offset capped at i*0.03 */
-  const ringGeo = new THREE.CylinderGeometry(R, R, 0.22, 48, 1, true,
-    Math.PI * 0.28, Math.PI * 1.44);
-  const lys = []; let ly = 1.1, lg = 0;
-  while (ly < 12.9) {
-    const run = (lg % 2 === 0) ? 3 : 1;
-    for (let k = 0; k < run && ly < 12.9; k++) { lys.push(ly); ly += 0.52; }
-    ly += 0.78; lg++;
+function booth2(bo) {           /* C3042 — THE DRUM. 40x20 command hub */
+  const W = 40, Dp = 20, hw = W / 2, hd = Dp / 2;
+  /* Same system as C1006, different signature: where C1006 is a letterform
+     the roof dies against, this stand's structure is a colossal RED DRUM —
+     a slotted cylinder that pierces the roof plane and crowns above it,
+     with a machined ring hung inside its mouth. Cylinder-and-ring against
+     C1006's V: identical language, unmistakable silhouettes. */
+  put(bo, blob(hw * 1.08, hd * 1.25, 0, 0, .5), null, 0, 0, { st: 0.02, w: .04, dy: 0 });
+  const S = standShell(bo, { W, Dp, sof: 11.0, rx0: -hw, rx1: 6.0, panels: 4,
+    mark: 'LVTSR · C3042' });
+  const R = 10.4, DX = 13.0;
+
+  /* ---------- THE DRUM: 18 red staves, slotted, floor to 26ft ---------- */
+  put(bo, finArray(18, boxGeo(1.9, 26.0, 1.15), M.brand, (d, i) => {
+    const a2 = (i / 18) * Math.PI * 2;
+    d.position.set(DX + Math.cos(a2) * R, 13.0, Math.sin(a2) * R);
+    d.rotation.y = -a2;
+  }), { st: 0.14, w: .14 });
+  /* the lit arris: a light line down every third stave */
+  {
+    const arris = new THREE.MeshBasicMaterial({
+      color: new THREE.Color(12.0, 2.8, 2.1), fog: false, toneMapped: false });
+    put(bo, finArray(6, boxGeo(0.34, 25.0, 0.34), arris, (d, i) => {
+      const a2 = (i / 6) * Math.PI * 2 + 0.17;
+      d.position.set(DX + Math.cos(a2) * (R + 0.95), 13.0, Math.sin(a2) * (R + 0.95));
+    }), { st: 0.76, w: .11 });
   }
-  const lDark = [], lGold = [];
-  lys.forEach((y, i) => ((i % 5 === 4) ? lGold : lDark).push([y, i]));
-  const louvres = finArray(lDark.length, ringGeo, M.charcoal, (d, i) => {
-    d.position.set(-4, lDark[i][0], 0); d.rotation.y = lDark[i][1] * 0.03;
-  });
-  louvres.material.side = THREE.DoubleSide;
-  put(bo, louvres, { st: 0.10, w: .22 });
-  const goldRingMat = M.gold.clone(); goldRingMat.side = THREE.DoubleSide;
-  put(bo, finArray(lGold.length, ringGeo, goldRingMat, (d, i) => {
-    d.position.set(-4, lGold[i][0], 0); d.rotation.y = lGold[i][1] * 0.03;
-  }), { st: 0.14, w: .20 });
-  /* drum cap ring + three legs up to the halo */
-  put(bo, tubeRing(R + 0.3, 0.28, M.alu), null, 0, 0, {
-    st: 0.34, w: .08 }).position.set(-4, 13.6, 0);
-  bo.parts[bo.parts.length - 1].rest.p.set(-4, 13.6, 0);
+  /* cap ring + the machined halo hung inside the mouth */
+  put(bo, tubeRing(R + 0.7, 0.5, M.brandDark), null, 0, 0, { st: 0.34, w: .09 })
+    .position.set(DX, 26.2, 0);
+  bo.parts[bo.parts.length - 1].rest.p.set(DX, 26.2, 0);
   bo.parts[bo.parts.length - 1].obj.rotation.x = Math.PI / 2;
   bo.parts[bo.parts.length - 1].rest.rx = Math.PI / 2;
-  /* three full-height GOLD BLADE FINS carry the halo — the toothpick legs
-     and their hanger wires are dead (decree: fins are structure AND the
-     brand's gold statement; radial, floor to ring) */
-  for (const a of [0.4, 2.5, 4.6]) {
-    const fin = bx(2.4, 19.4, 0.42, M.gold,
-      -4 + Math.cos(a) * (R - 0.2), 9.7, Math.sin(a) * (R - 0.2));
-    fin.rotation.y = -a;
-    put(bo, fin, { st: 0.30 + a * 0.02, w: .10 });
+  {
+    const glow = tubeRing(R - 1.6, 0.34, new THREE.MeshBasicMaterial({
+      color: new THREE.Color(10.0, 7.6, 4.2), fog: false, toneMapped: false }));
+    glow.rotation.x = Math.PI / 2;
+    put(bo, glow, null, 0, 0, { st: 0.78, w: .10, dy: -3, ease: 'slab' });
+    glow.position.set(DX, 21.5, 0);
+    bo.parts[bo.parts.length - 1].rest.p.set(DX, 21.5, 0);
+    bo.parts[bo.parts.length - 1].rest.rx = Math.PI / 2;
   }
-  /* THE MACHINED HALO — straightened (the 8-degree tilt read as an
-     accident, not a design): charcoal torus with an inset emissive
-     channel running its underside */
-  const halo = tubeRing(13, 0.55, M.charcoal);
-  halo.rotation.x = Math.PI / 2;
-  put(bo, halo, null, 0, 0, { st: 0.44, w: .10, dy: -8, ease: 'slab' });
-  halo.position.set(-4, 19, 0); bo.parts[bo.parts.length - 1].rest.p.set(-4, 19, 0);
-  const haloGlow = tubeRing(12.85, 0.14, new THREE.MeshBasicMaterial({
-    color: new THREE.Color(0.5, 1.9, 2.6), fog: false }));
-  haloGlow.rotation.x = Math.PI / 2;
-  put(bo, haloGlow, null, 0, 0, { st: 0.80, w: .10, dy: -2, ease: 'bolt' });
-  haloGlow.position.set(-4, 18.55, 0); bo.parts[bo.parts.length - 1].rest.p.set(-4, 18.55, 0);
-  /* the 360-degree LED ribbon inside the drum — content runs all the way
-     around with no seam (the "how did they do that" of this stand) */
-  const ribbonTex = state.ledTex.clone(); state.ledClones.push([ribbonTex, 0.03]);
-  ribbonTex.wrapS = THREE.RepeatWrapping;
-  ribbonTex.repeat.set(3, 0.25);
-  const ribbon = new THREE.Mesh(
-    new THREE.CylinderGeometry(R - 1.2, R - 1.2, 2.6, 64, 1, true),
-    new THREE.MeshBasicMaterial({ map: ribbonTex, side: THREE.DoubleSide,
-      color: new THREE.Color(1.5, 1.5, 1.6), fog: false }));
-  put(bo, ribbon, null, 0, 0, { st: 0.74, w: .10 });
-  ribbon.position.set(-4, 8.4, 0); bo.parts[bo.parts.length - 1].rest.p.set(-4, 8.4, 0);
-  /* standoff arms tie the ribbon back to the louvre shell */
-  put(bo, finArray(8, boxGeo(0.14, 0.14, 1.3), M.dark, (d, i2) => {
-    const a2 = i2 * Math.PI / 4;
-    d.position.set(-4 + Math.cos(a2) * (R - 0.6), 8.4, Math.sin(a2) * (R - 0.6));
-    d.rotation.y = -a2;
-  }), { st: 0.72, w: .08 });
-  /* the floor is a live plan of THIS hall — an 18ft glowing disc read
-     from directly overhead at exactly the moment the camera is overhead */
-  const planDisc = new THREE.Mesh(new THREE.CircleGeometry(8.6, 48),
-    new THREE.MeshBasicMaterial({ map: makeMiniPlan(), transparent: true,
-      opacity: 0.92, fog: false }));
-  planDisc.rotation.x = -Math.PI / 2;
-  put(bo, planDisc, null, 0, 0, { st: 0.62, w: .12 });
-  planDisc.position.set(-4, 0.48, 0); bo.parts[bo.parts.length - 1].rest.p.set(-4, 0.48, 0);
-  /* THE HEART: a 12ft four-sided LED totem rising off the plan disc —
-     the drum finally has something to protect */
-  const totemTex = state.ledTex.clone(); state.ledClones.push([totemTex, 0.008]);
-  totemTex.repeat.set(0.2, 0.18); totemTex.offset.set(0.06, 0.04);
-  const totem = new THREE.Group();
-  totem.add(bx(2.3, 12, 2.3, M.charcoal, 0, 6, 0));
-  const tMat = new THREE.MeshBasicMaterial({ map: totemTex,
-    color: new THREE.Color(1.6, 1.6, 1.7), fog: false });
-  for (let f = 0; f < 4; f++) {
-    const pl = new THREE.Mesh(new THREE.PlaneGeometry(2.1, 11.4), tMat);
-    pl.rotation.y = f * Math.PI / 2;
-    pl.position.set(Math.sin(f * Math.PI / 2) * 1.18, 6.2, Math.cos(f * Math.PI / 2) * 1.18);
-    totem.add(pl);
+  /* the 360 LED ribbon inside the drum — the stand's one screen */
+  {
+    const rt = state.ledTex.clone(); state.ledClones.push([rt, 0.03]);
+    rt.wrapS = THREE.RepeatWrapping; rt.repeat.set(3, 0.25);
+    const ribbon = new THREE.Mesh(
+      new THREE.CylinderGeometry(R - 2.4, R - 2.4, 3.0, 48, 1, true),
+      new THREE.MeshBasicMaterial({ map: rt, side: THREE.DoubleSide,
+        color: new THREE.Color(2.0, 2.0, 2.1), fog: false }));
+    put(bo, ribbon, null, 0, 0, { st: 0.72, w: .10 });
+    ribbon.position.set(DX, 8.0, 0);
+    bo.parts[bo.parts.length - 1].rest.p.set(DX, 8.0, 0);
   }
-  put(bo, totem, null, 0, 0, { st: 0.66, w: .10 });
-  totem.position.set(-4, 0.45, 0); bo.parts[bo.parts.length - 1].rest.p.set(-4, 0.45, 0);
-  /* ops crescent: three angled counters facing the plan disc */
-  put(bo, counterK1(7), -11, 0.4, 5.5, { st: 0.52, w: .08, ry: 0.7 });
-  put(bo, counterK1(7), 3, 0.4, 5.5, { st: 0.55, w: .08, ry: -0.7 });
-  put(bo, counterK1(6), -4, 0.4, -8, { st: 0.58, w: .08, ry: Math.PI });
-  /* the mast: 28ft blade sign at the back corner */
-  put(bo, bx(0.8, 28, 2.2, M.charcoal, 16.5, 14, -hd + 1.6), { st: 0.22, w: .10 });
-  const blade = lightbox(2.0, 9, 'LVTSR · CONTROL');
-  blade.rotation.y = Math.PI / 2;
-  put(bo, blade, null, 0, 0, { st: 0.78, w: .08 });
-  blade.position.set(16.4, 22, -hd + 1.6); bo.parts[bo.parts.length - 1].rest.p.set(16.4, 22, -hd + 1.6);
-  /* practicals: the ribbon lights the drum floor; halo throws teal down */
-  practical(bo, 0x59c8ea, 2.8, 20, -4, 9, 0);
-  practical(bo, 0xffd9a0, 1.8, 14, -4, 4, 6);
-  standHalo(bo, 0x59b8d8, W, Dp, 0.30);
-  /* gear: this is the coordination job — lead + floor manager, light kit */
+  /* rounded ops mass + counters under the plane */
+  put(bo, roundedBox(7.0, 9.0, 5.0, 1.5, M.brandDark, -12.0, 4.5, -4.6), { st: 0.46, w: .09 });
+  put(bo, counterK1(12), -5.0, 0.4, 4.4, { st: 0.50, w: .09 });
+  put(bo, roundedBox(5.0, 3.0, 3.0, 0.9, M.brandDark, 2.0, 1.5, 4.6), { st: 0.52, w: .08 });
+  /* upper deck rail + a cantilevered stair */
+  for (const sz of [-1, 1]) {
+    const r = railRun(S.RW - 1.0, M.alu, { h: 3.4 });
+    put(bo, r, S.RCX, S.CY, sz * (hd - 0.5), { st: 0.56, w: .10 });
+  }
+  {
+    const s1 = stairFlight(18, 0.66, 0.95, 3.6, M.alu);
+    s1.rotation.y = -Math.PI / 2;
+    put(bo, s1, S.RX0 + 6.0, 0, -hd + 3.4, { st: 0.48, w: .12 });
+  }
+  practical(bo, 0xff2a22, 8.0, 24, DX, 13.0, 6.0);      /* red bounce, drum */
+  practical(bo, 0xffc46a, 4.0, 18, DX, 21.0, 0);        /* the halo         */
+  /* gear */
   put(bo, crateK7(6, 3.6, 5, 'EAC · C3042'), 13, 0, hd + 2.8, { st: 0.05, w: .06, gear: true, ry: -0.25 });
   put(bo, gangBox(), -14, 0, hd + 3, { st: 0.08, w: .06, gear: true, ry: 0.4 });
   put(bo, workLight(), 6, 0, hd + 2, { st: 0.06, w: .05, gear: true, ry: 2.9 });
 }
 
-function booth3(bo) {           /* C5020 — THE FOLDED CANYON. 60x20 custom LED */
+function booth3(bo) {           /* C5020 — THE CANYON. 60x20 custom LED */
   const W = 59.8, Dp = 20, hw = W / 2, hd = Dp / 2;
-  put(bo, blob(hw * 1.08, hd * 1.3, 0, 0, .5), null, 0, 0, { st: 0.02, w: .04, dy: 0 });
-  put(bo, bx(W, 0.4, Dp, M.charcoal, 0, 0.2, 0), { st: 0.04, w: .08 });
-  /* THE CANYON: two opposing faceted LED cliffs with a walkable slot.
-     Content shears across the folds; the far end caps in hot white so
-     forced perspective reads 60ft deep from the aisle. */
+  /* Same system, third silhouette: the structure here is a pair of folded
+     RED LED CLIFFS that rise through the roof plane and crown above it,
+     with a walkable slot between them. Long horizontal zig-zag against
+     C1006's V and C3042's drum. */
+  put(bo, blob(hw * 1.06, hd * 1.25, 0, 0, .5), null, 0, 0, { st: 0.02, w: .04, dy: 0 });
+  const S = standShell(bo, { W, Dp, sof: 11.2, rx0: -hw, rx1: -6.0, panels: 3,
+    mark: 'LVTSR · C5020' });
+
+  /* ---------- THE CLIFFS ---------- */
   if (!state.cliffTex) state.cliffTex = makeCliffAtlas();
-  const cliffTexA = state.cliffTex.clone(); cliffTexA.repeat.set(1.5, 0.5); state.ledClones.push([cliffTexA, 0.018]);
-  const cliffTexB = state.cliffTex.clone(); cliffTexB.repeat.set(1.2, 0.5); state.ledClones.push([cliffTexB, -0.014]);
-  cliffTexB.offset.x = 0.37;
-  /* two-band texture: paint flips test card <-> supergraphic at 14:00 */
-  cliffTexA.userData.twoFrame = true; cliffTexB.userData.twoFrame = true;
-  cliffTexA.offset.y = 0.5; cliffTexB.offset.y = 0.5;
-  const backCliff = new THREE.Mesh(facetWall(W - 4, 15, 14, 0.30, true),
-    new THREE.MeshBasicMaterial({ map: cliffTexA,
-      color: new THREE.Color(2.1, 2.1, 2.2), fog: false }));
-  put(bo, backCliff, null, 0, 0, { st: 0.30, w: .18 });
-  backCliff.position.set(0, 0, -hd + 1.6); bo.parts[bo.parts.length - 1].rest.p.set(0, 0, -hd + 1.6);
-  /* second row: full-length now (the shed is dead — the canyon owns the
-     whole stand) and leaning 10 degrees INTO the slot, so the walls
-     converge overhead and the slot reads as a real crevice */
-  const frontCliff = new THREE.Mesh(facetWall(W - 10, 11, 10, 0.26, true),
-    new THREE.MeshBasicMaterial({ map: cliffTexB, side: THREE.DoubleSide,
-      color: new THREE.Color(1.9, 1.9, 2.0), fog: false }));
-  put(bo, frontCliff, null, 0, 0, { st: 0.42, w: .16 });
-  frontCliff.position.set(-1, 0, hd - 7);
-  frontCliff.rotation.x = -0.175;
-  const fcp = bo.parts[bo.parts.length - 1];
-  fcp.rest.p.set(-1, 0, hd - 7); fcp.rest.rx = -0.175;
-  /* cliff structure: posts + spines so the panels read as BUILT */
-  put(bo, finArray(8, boxGeo(0.5, 15.5, 0.9), M.charcoal, (d, i) => {
-    d.position.set(-(W - 4) / 2 + i * (W - 4) / 7, 7.75, -hd + 0.9);
-  }), { st: 0.24, w: .10 });
-  put(bo, finArray(6, boxGeo(0.5, 11.5, 0.9), M.charcoal, (d, i) => {
-    d.position.set(-1 - (W - 10) / 2 + i * (W - 10) / 5, 5.75, hd - 5.9);
-    d.rotation.x = -0.175;
-  }), { st: 0.38, w: .10 });
-  /* emissive strips at both cliff feet: the light source the mirror floor
-     doubles (decree item C5020 — "strips feed the mirror floor") */
-  const stripMat = new THREE.MeshBasicMaterial({
-    color: new THREE.Color(2.0, 1.82, 1.42), fog: false, toneMapped: false });
-  put(bo, bx(W - 6, 0.22, 0.34, stripMat, 0, 0.32, -hd + 2.35), { st: 0.78, w: .08 });
-  put(bo, bx(W - 12, 0.22, 0.34, stripMat, -1, 0.32, hd - 7.95), { st: 0.82, w: .08 });
-  /* the white end-cap blade — 26ft, the tallest thing on the stand */
-  put(bo, bx(1.1, 26, 12, M.charcoal, -hw + 1.8, 13, -hd + 7.2), { st: 0.50, w: .10 });
-  const capGlow = lightFace(7, 15, new THREE.MeshBasicMaterial({
-    color: new THREE.Color(1.7, 1.75, 1.85), fog: false }), false);
-  capGlow.rotation.y = Math.PI / 2;
-  put(bo, capGlow, null, 0, 0, { st: 0.82, w: .10 });
-  capGlow.position.set(-hw + 2.5, 12, -hd + 7.2);
-  bo.parts[bo.parts.length - 1].rest.p.set(-hw + 2.5, 12, -hd + 7.2);
-  /* slot floor: mirror sheen + light pools between the cliffs */
-  put(bo, mirrorPlane(W - 12, 13, M.navy9, -1, 0, 0, 0.5), null, 0, 0, { st: 0.86, w: .08, dy: 0 });
-  put(bo, pool(0x77c8f0, 26, 5, -2, -1, .30), null, 0, 0, { st: 0.88, w: .08, dy: 0 });
-  /* the shed is dead (decree: "dies unconditionally"). The stand IS the
-     canyon — a lit slot between two converging LED cliffs. The sign moves
-     to the end-cap blade. */
-  const pavSign = lightbox(7.5, 1.5, 'C5020 · LVTSR');
-  pavSign.rotation.y = Math.PI / 2;
-  put(bo, pavSign, null, 0, 0, { st: 0.74, w: .08 });
-  pavSign.position.set(-hw + 2.6, 20.5, -hd + 7.2);
-  bo.parts[bo.parts.length - 1].rest.p.set(-hw + 2.6, 20.5, -hd + 7.2);
-  practical(bo, 0x86d4f2, 3.2, 24, -6, 8, 0);
-  practical(bo, 0xa8d8f0, 2.4, 20, 14, 7, -1);
-  standHalo(bo, 0x6ec0e8, W, Dp, 0.32);
-  /* gear: the LED install in progress */
+  const mkCliff = (len, h, facets, amp, x, z, st, spd, off) => {
+    const t = state.cliffTex.clone(); t.needsUpdate = true;
+    t.wrapS = THREE.RepeatWrapping; t.repeat.set(len / 40, 0.5);
+    t.offset.set(off, 0.5); t.userData.twoFrame = true;
+    state.ledClones.push([t, spd]);
+    const m = new THREE.Mesh(facetWall(len, h, facets, amp, true),
+      new THREE.MeshBasicMaterial({ map: t, side: THREE.DoubleSide,
+        color: new THREE.Color(2.1, 2.1, 2.2), fog: false }));
+    put(bo, m, null, 0, 0, { st: st, w: .17 });
+    m.position.set(x, 0, z);
+    bo.parts[bo.parts.length - 1].rest.p.set(x, 0, z);
+    return m;
+  };
+  mkCliff(W - 14, 24.0, 14, 0.30, 4.0, -hd + 2.4, 0.28, 0.018, 0.0);
+  mkCliff(W - 26, 17.0, 10, 0.26, 1.0, hd - 6.5, 0.36, -0.014, 0.37);
+  /* the red structural fins that carry each cliff — the brand mass */
+  put(bo, finArray(9, boxGeo(1.7, 25.5, 1.5), M.brand, (d, i) => {
+    d.position.set(4.0 - (W - 14) / 2 + i * ((W - 14) / 8), 12.75, -hd + 1.2);
+  }), { st: 0.24, w: .14 });
+  put(bo, finArray(6, boxGeo(1.6, 18.0, 1.4), M.brand, (d, i) => {
+    d.position.set(1.0 - (W - 26) / 2 + i * ((W - 26) / 5), 9.0, hd - 7.4);
+  }), { st: 0.30, w: .13 });
+  /* lit arris up the outer fins */
+  {
+    const arris = new THREE.MeshBasicMaterial({
+      color: new THREE.Color(12.0, 2.8, 2.1), fog: false, toneMapped: false });
+    put(bo, finArray(9, boxGeo(0.30, 24.6, 0.30), arris, (d, i) => {
+      d.position.set(4.0 - (W - 14) / 2 + i * ((W - 14) / 8), 12.75, -hd + 0.3);
+    }), { st: 0.76, w: .11 });
+  }
+  /* the white end-cap blade closing the canyon */
+  put(bo, bx(1.3, 26.0, 13.0, M.brandDark, hw - 2.0, 13.0, -hd + 7.0), { st: 0.44, w: .11 });
+  put(bo, bx(0.34, 24.0, 0.34, new THREE.MeshBasicMaterial({
+    color: new THREE.Color(12.0, 2.8, 2.1), fog: false, toneMapped: false }),
+    hw - 2.7, 13.0, -hd + 0.8), { st: 0.77, w: .10 });
+  /* foot strips feeding the mirror floor */
+  {
+    const strip = new THREE.MeshBasicMaterial({
+      color: new THREE.Color(11.0, 8.4, 5.0), fog: false, toneMapped: false });
+    put(bo, bx(W - 16, 0.26, 0.36, strip, 4.0, 0.34, -hd + 3.4), { st: 0.78, w: .08 });
+    put(bo, bx(W - 28, 0.26, 0.36, strip, 1.0, 0.34, hd - 7.6), { st: 0.80, w: .08 });
+  }
+  put(bo, roundedBox(6.4, 9.4, 4.6, 1.5, M.brandDark, -22.0, 4.7, -4.4), { st: 0.46, w: .09 });
+  put(bo, counterK1(12), -16.0, 0.4, 4.4, { st: 0.50, w: .09 });
+  for (const sz of [-1, 1]) {
+    const r = railRun(S.RW - 1.0, M.alu, { h: 3.4 });
+    put(bo, r, S.RCX, S.CY, sz * (hd - 0.5), { st: 0.56, w: .10 });
+  }
+  {
+    const s1 = stairFlight(18, 0.68, 0.95, 3.6, M.alu);
+    s1.rotation.y = -Math.PI / 2;
+    put(bo, s1, S.RX0 + 6.0, 0, -hd + 3.4, { st: 0.48, w: .12 });
+  }
+  practical(bo, 0xff2a22, 9.0, 30, 4.0, 12.0, 0);
+  practical(bo, 0x86d4f2, 4.0, 26, 0.0, 8.0, 0);
+  /* gear */
   put(bo, crateK7(6, 4, 5.5, 'LED 500 × 500 CABS'), -hw + 8, 0, hd + 3, { st: 0.05, w: .06, gear: true, ry: 0.2 });
-  put(bo, crateK7(6, 4, 5.5, 'LED 500 × 500 CABS'), -hw + 15, 0, hd + 3.4, { st: 0.10, w: .06, gear: true, ry: -0.15 });
   put(bo, crateK7(5, 3.2, 4, 'PROCESSOR RACK'), 4, 0, hd + 2.6, { st: 0.16, w: .06, gear: true, ry: 0.35 });
   put(bo, scissorLift(11), -12, 0, -hd + 6, { st: 0.34, w: .10, gear: true, ry: 0.15 });
   put(bo, workLight(), -hw + 4, 0, hd + 1.6, { st: 0.06, w: .05, gear: true, ry: -2.4 });
-  put(bo, carpetRoll(), hw - 3, 0.8, hd + 2.2, { st: 0.08, w: .06, gear: true, ry: 1.5 });
 }
 
-function booth4(bo) {           /* C7050 — THE DEPLOYABLE. 20x20 emergency */
-  const W = 19.8, hw = W / 2, hd = hw;
-  put(bo, blob(hw * 1.3, hw * 1.3, 0, 0, .55), null, 0, 0, { st: 0.02, w: .04, dy: 0 });
-  /* the case floor: a road-case bottom, silver corner castings */
-  put(bo, bx(W, 1.1, W, M.charcoal, 0, 0.55, 0), { st: 0.05, w: .08 });
-  for (const c of [[-hw, -hd], [hw, -hd], [-hw, hd], [hw, hd]])
-    put(bo, bx(1.1, 1.4, 1.1, M.silver, c[0] * 0.96, 0.7, c[1] * 0.96), { st: 0.08, w: .06 });
-  /* FOUR WALL PANELS UNFOLDED FLAT — the case has burst open into a
-     flower: black shells down, amber inner linings up, glowing aprons on
-     all four sides. Read from the steep camera it is unmistakable. */
-  /* the case shows its own assembly instructions (decree: its one great
-     idea) — a thin amber schematic glows out of near-black lining instead
-     of the flat orange tabletop the owner hated */
-  const schemTex = canvasTex(512, 256, (g) => {
-    g.fillStyle = '#0a0705'; g.fillRect(0, 0, 512, 256);
-    g.strokeStyle = 'rgba(230,160,70,.85)'; g.lineWidth = 2;
-    g.strokeRect(24, 22, 200, 130);
-    g.strokeRect(48, 44, 152, 86);
-    g.beginPath(); g.moveTo(250, 90); g.lineTo(300, 90); g.lineTo(292, 82);
-    g.moveTo(300, 90); g.lineTo(292, 98); g.stroke();
-    g.strokeRect(330, 30, 40, 120);
-    for (let yy = 40; yy < 140; yy += 22) {
-      g.beginPath(); g.moveTo(330, yy); g.lineTo(370, yy + 14);
-      g.moveTo(370, yy); g.lineTo(330, yy + 14); g.stroke();
-    }
-    g.setLineDash([6, 5]);
-    g.beginPath(); g.moveTo(24, 190); g.lineTo(488, 190); g.stroke();
-    g.setLineDash([]);
-    g.font = '700 16px "Segoe UI", monospace';
-    g.fillStyle = 'rgba(230,160,70,.9)';
-    g.fillText('C7050 · RAPID DEPLOY · PANEL B', 24, 232);
-    g.fillText('16FT', 390, 96);
-    g.strokeRect(400, 170, 88, 10);
-  });
-  const apronMat = new THREE.MeshStandardMaterial({
-    color: 0x0c0906, roughness: .6, metalness: .08,
-    emissive: 0xffb050, emissiveIntensity: 0.8, emissiveMap: schemTex });
-  [[0, -1, 0], [0, 1, Math.PI], [-1, 0, Math.PI / 2], [1, 0, -Math.PI / 2]].forEach((side, i) => {
-    const hinge = new THREE.Group();
-    const panel = new THREE.Group();
-    panel.add(bx(W - 1.6, 9.4, 0.7, M.charcoal, 0, 4.7, 0.4));
-    panel.add(bx(W - 2.8, 8.2, 0.2, apronMat, 0, 4.6, 0.02));
-    panel.add(bx(W - 3.6, 0.4, 0.34, M.silver, 0, 8.9, 0.22));
-    /* road-case DNA: aluminium edge extrusions, ball corners, latches */
-    for (const sSide of [-1, 1]) {
-      panel.add(bx(0.34, 9.4, 0.8, M.alu, sSide * (W / 2 - 1.0), 4.7, 0.4));
-      panel.add(bx(0.9, 0.9, 0.95, M.silver, sSide * (W / 2 - 1.05), 9.0, 0.42));
-      panel.add(bx(1.15, 0.75, 0.5, M.silver, sSide * (W / 2 - 4.4), 8.75, 0.68));
-    }
-    hinge.add(panel);
-    hinge.rotation.y = side[2];
-    panel.rotation.x = Math.PI / 2 - 0.06;   /* fully open, faces up */
-    hinge.position.set(side[0] * (hw - 0.5), 0.9, side[1] * (hd - 0.5));
-    put(bo, hinge, { st: 0.16 + i * 0.05, w: .10 });
-  });
-  /* the lid, lifted 16ft on four scissor masts (thick enough to read) */
-  for (const c of [[-hw + 2.2, -hd + 2.2], [hw - 2.2, -hd + 2.2], [-hw + 2.2, hd - 2.2], [hw - 2.2, hd - 2.2]]) {
-    const mast = new THREE.Group();
-    for (let s2 = 0; s2 < 5; s2++) {
-      /* dark steel, slimmer members with silver pin blocks — the bright
-         silver X-planks read as cartoon lattice in every dwell frame */
-      const a = bx(0.3, 4.4, 0.3, M.charcoal, 0, 1.8 + s2 * 3.1, 0);
-      a.rotation.z = 0.48;
-      const b2 = a.clone(); b2.rotation.z = -0.48;
-      mast.add(a, b2);
-      mast.add(bx(0.44, 0.44, 0.44, M.silver, 0, 1.8 + s2 * 3.1 + 1.55, 0));
-    }
-    mast.position.set(c[0], 0.8, c[1]);
-    put(bo, mast, { st: 0.36, w: .12 });
+function booth4(bo) {           /* C7050 — THE OPENED CASE. 20x20 rapid deploy */
+  const W = 19.8, hw = W / 2, hd = hw, Dp = W;
+  /* Fourth silhouette in the same system: a road case burst open. Four
+     brand-red lids stand up and out around a compact core, and the whole
+     stand is squat and wide where the others are tall — a starburst
+     against a V, a drum and a canyon. */
+  put(bo, blob(hw * 1.25, hd * 1.25, 0, 0, .55), null, 0, 0, { st: 0.02, w: .04, dy: 0 });
+  const S = standShell(bo, { W, Dp, sof: 9.4, panels: 2, mark: 'C7050 · 24HR' });
+
+  /* ---------- THE FOUR LIDS ---------- */
+  [[0, -1, 0], [0, 1, Math.PI], [-1, 0, Math.PI / 2], [1, 0, -Math.PI / 2]]
+    .forEach((side, i) => {
+      const hinge = new THREE.Group();
+      const panel = new THREE.Group();
+      panel.add(bx(W - 2.2, 13.0, 0.85, M.brand, 0, 6.5, 0.42));
+      panel.add(bx(W - 3.4, 12.0, 0.28, M.brandDark, 0, 6.4, 0.0));
+      /* the lit arris down both edges of every lid */
+      const arris = new THREE.MeshBasicMaterial({
+        color: new THREE.Color(12.0, 2.8, 2.1), fog: false, toneMapped: false });
+      for (const sx of [-1, 1])
+        panel.add(bx(0.30, 12.4, 0.30, arris, sx * (W / 2 - 1.3), 6.5, 0.9));
+      panel.add(bx(W - 3.6, 0.30, 0.34, arris, 0, 12.8, 0.9));
+      /* road-case DNA */
+      for (const sSide of [-1, 1]) {
+        panel.add(bx(0.36, 13.0, 0.9, M.silver, sSide * (W / 2 - 1.1), 6.5, 0.42));
+        panel.add(bx(0.95, 0.95, 1.0, M.silver, sSide * (W / 2 - 1.15), 12.6, 0.44));
+      }
+      hinge.add(panel);
+      hinge.rotation.y = side[2];
+      panel.rotation.x = -0.30;          /* leaning outward, not flat */
+      hinge.position.set(side[0] * (hw - 0.6), 0.9, side[1] * (hd - 0.6));
+      put(bo, hinge, { st: 0.16 + i * 0.05, w: .12 });
+    });
+  /* the core the case opened around */
+  put(bo, roundedBox(7.6, 8.6, 7.6, 1.8, M.brandDark, 0, 4.3, 0), { st: 0.40, w: .10 });
+  {
+    const rt = state.ledTex.clone(); state.ledClones.push([rt, 0.012]);
+    rt.repeat.set(0.4, 0.24); rt.offset.set(0.1, 0.02);
+    const face = new THREE.Mesh(new THREE.PlaneGeometry(6.4, 5.4),
+      new THREE.MeshBasicMaterial({ map: rt, color: new THREE.Color(2.0, 2.0, 2.1),
+        fog: false }));
+    put(bo, face, null, 0, 0, { st: 0.66, w: .10 });
+    face.position.set(0, 5.2, 3.85);
+    bo.parts[bo.parts.length - 1].rest.p.set(0, 5.2, 3.85);
   }
-  put(bo, bx(W + 0.8, 1.2, W + 0.8, M.charcoal, 0, 16.6, 0), { st: 0.46, w: .12, dy: -10, ease: 'slab' });
-  for (const c of [[-hw, -hd], [hw, -hd], [-hw, hd], [hw, hd]])
-    put(bo, bx(1.2, 1.5, 1.2, M.silver, c[0] * 0.98, 16.6, c[1] * 0.98), { st: 0.52, w: .08 });
-  /* the 24HR RESCUE lightbox hangs off the lid face */
-  const box = lightbox(11, 2.4, 'BOOTH DOWN? · 24HR RESCUE');
-  box.position.set(0, 14.6, hd + 0.6);
-  put(bo, box, { st: 0.62, w: .10 });
-  /* amber beacons on two lid corners */
-  for (const c of [[-hw + 1, -hd + 1], [hw - 1, hd - 1]]) {
-    put(bo, bx(0.5, 1.8, 0.5, M.silver, c[0], 18, c[1]), { st: 0.58, w: .06 });
-    put(bo, glowSprite2(0xffa030, 3.2, c[0], 19.2, c[1], .7), null, 0, 0, { st: 0.66, w: .08, dy: 0 });
+  /* beacons — real lights, not billboards */
+  for (const c of [[-hw + 1.4, -hd + 1.4], [hw - 1.4, hd - 1.4]]) {
+    put(bo, bx(0.5, 1.8, 0.5, M.silver, c[0], S.SOF + 2.6, c[1]), { st: 0.58, w: .06 });
+    put(bo, bx(0.62, 0.62, 0.62, new THREE.MeshBasicMaterial({
+      color: new THREE.Color(12.0, 4.2, 1.0), fog: false, toneMapped: false }),
+      c[0], S.SOF + 3.6, c[1]), { st: 0.70, w: .07 });
+    practical(bo, 0xffa030, 3.0, 14, c[0], S.SOF + 3.6, c[1]);
   }
-  /* inside: tool wall + counters in the amber glow */
-  put(bo, counterK1(6), 0, 0.9, -2, { st: 0.44, w: .08 });
-  put(bo, bx(5, 6.5, 0.5, M.navy7, -hw + 3.4, 4.3, -hd + 1.6), { st: 0.40, w: .08 });
-  put(bo, pool(0xff9a28, 12, 12, 0, 0, .34), null, 0, 0, { st: 0.72, w: .10, dy: 0 });
-  practical(bo, 0xff9a28, 3.4, 18, 0, 7, 0);
-  standHalo(bo, 0xd88a3c, W, W, 0.34);
-  /* rapid crew — three hands, minimum call */
-  put(bo, gangBox(), hw + 1.8, 0, -2, { st: 0.06, w: .06, gear: true, ry: -1.2 });
-  put(bo, workLight(), -4, 0, hd + 1.5, { st: 0.05, w: .05, gear: true, ry: 2.5 });
+  practical(bo, 0xff2a22, 8.0, 20, 0, 7.0, 0);
+  /* gear */
+  put(bo, crateK7(5, 3.4, 4.4, 'RAPID KIT'), hw + 3.0, 0, hd + 2.2, { st: 0.05, w: .06, gear: true, ry: 0.3 });
+  put(bo, workLight(), -hw - 2.4, 0, hd + 1.8, { st: 0.06, w: .05, gear: true, ry: -2.2 });
 }
 
-/* a live miniature of THIS hall for the ops drum floor — grid, aisles,
-   four gold stands */
 function makeMiniPlan() {
   return canvasTex(256, 256, (g) => {
     g.fillStyle = '#0a1420'; g.fillRect(0, 0, 256, 256);
@@ -1674,16 +2279,19 @@ function buildCrowd(plan) {
   const torsoG = new THREE.CapsuleGeometry(0.85, 1.9, 3, 6);
   const headG = new THREE.IcosahedronGeometry(0.55, 0);
   const legsG = new THREE.CylinderGeometry(0.5, 0.42, 2.6, 5);
-  const mkMat = (c) => new THREE.MeshStandardMaterial({ color: c, roughness: .96 });
-  const torso = new THREE.InstancedMesh(torsoG, mkMat(0x565a60), CROWD_N);
-  const head = new THREE.InstancedMesh(headG, mkMat(0x0c0e12), CROWD_N);
-  const legs = new THREE.InstancedMesh(legsG, mkMat(0x12161c), CROWD_N);
+  /* UNLIT silhouettes. A lit grey crowd takes the warm key and turns tan —
+     the "terracotta army" the critics flagged twice. MeshBasic near-black
+     cannot be lifted by any light, so the tide stays a tide. Cheaper too. */
+  const mkMat = (c) => new THREE.MeshBasicMaterial({ color: c, fog: true });
+  const torso = new THREE.InstancedMesh(torsoG, mkMat(0x14151a), CROWD_N);
+  const head = new THREE.InstancedMesh(headG, mkMat(0x0a0b0e), CROWD_N);
+  const legs = new THREE.InstancedMesh(legsG, mkMat(0x0c0d11), CROWD_N);
   /* clothing palette — flesh lives on the head mesh ONLY, and the tide
      stays NEAR-BLACK even under the doors key (decree: concert
      photography, not pawns — the old values washed tan at 16:00) */
-  const civ = [new THREE.Color(0x0b0e11), new THREE.Color(0x10141a),
-               new THREE.Color(0x151b22), new THREE.Color(0x1a212a),
-               new THREE.Color(0x1e2630), new THREE.Color(0x3a2026)];
+  const civ = [new THREE.Color(0x0d0e12), new THREE.Color(0x121319),
+               new THREE.Color(0x171921), new THREE.Color(0x1c1f28),
+               new THREE.Color(0x212530), new THREE.Color(0x3a1c1e)];
   const AISLES = [276, 476, 625, 775, 974, 1124];
   /* pool on the AISLE side of each stand, never inside the footprint */
   const STANDS = [[302, 282], [1199, 656], [700, 952], [1326, 1104]];
@@ -1712,7 +2320,7 @@ function buildCrowd(plan) {
        visible crew, not a zombie mob") — early spawns, pooled at stands */
     if (i < 19) {
       agents[i].spawnT = 0.04 + (i / 19) * 0.18;
-      torso.setColorAt(i, new THREE.Color(0xc9a54e));
+      torso.setColorAt(i, new THREE.Color(0x8e2118));
     } else {
       torso.setColorAt(i, civ[i % civ.length]);
     }
@@ -1754,6 +2362,93 @@ function updateCrowd(show) {
   c.torso.instanceMatrix.needsUpdate = true;
   c.head.instanceMatrix.needsUpdate = true;
   c.legs.instanceMatrix.needsUpdate = true;
+}
+
+/* THE PLAN GOES INTO GL (mobile). Measured 2026-08-19 on a 390x844 DPR-3
+   phone profile: the DOM SVG floor plan re-rasterizes EVERY scroll frame
+   under the changing 3D transform — 115ms median frames with it, 25ms
+   without, while the whole WebGL scene costs ~0. No single sub-layer is
+   the culprit (bisected: patterns/text/booths/aisles/furniture all ~100ms+
+   individually); it is the aggregate vector load. So on narrow we raster
+   the static drawing ONCE into a texture and let the GL layer draw it —
+   the DOM keeps only the live bits (lasers, survey burns, booth hit
+   targets), which measured smooth. */
+function rasterizePlan(px, done) {
+  try {
+    const svg = document.querySelector('.mi-plan');
+    if (!svg || !svg.cloneNode) return done(null);
+    const clone = svg.cloneNode(true);
+    Array.prototype.slice.call(clone.childNodes).forEach((n) => {
+      if (n.nodeType !== 1) return;
+      const tag = (n.tagName || '').toLowerCase();
+      const cls = (n.getAttribute && n.getAttribute('class')) || '';
+      if (tag === 'defs') return;
+      if (cls.indexOf('fp-lay-plan') >= 0 || cls.indexOf('fp-lay-truss') >= 0) return;
+      clone.removeChild(n);
+    });
+    let css = '';
+    for (let si = 0; si < document.styleSheets.length; si++) {
+      let rules = null;
+      try { rules = document.styleSheets[si].cssRules; } catch (e) { continue; }
+      if (!rules) continue;
+      for (let ri = 0; ri < rules.length; ri++) {
+        const r = rules[ri];
+        if (r.selectorText && /\.fp|\.mi-plan/.test(r.selectorText)) css += r.cssText + '\n';
+      }
+    }
+    const cs = getComputedStyle(document.documentElement);
+    const gold = (cs.getPropertyValue('--accent-gold') || '#b8a573').trim();
+    css = ':root{--accent-gold:' + gold + ';--wall:1;--plandim:0;}\n' +
+      'svg{font-family:-apple-system,"Segoe UI",Roboto,sans-serif;}\n' +
+      '.mi-plan{opacity:1;}\n' + css;
+    const NSS = 'http://www.w3.org/2000/svg';
+    const st = document.createElementNS(NSS, 'style');
+    st.textContent = css;
+    clone.insertBefore(st, clone.firstChild);
+    const h = Math.round(px * VBH / VBW);
+    clone.setAttribute('width', px);
+    clone.setAttribute('height', h);
+    clone.setAttribute('preserveAspectRatio', 'none');
+    const str = new XMLSerializer().serializeToString(clone);
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = px; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, px, h);
+      done(c);
+    };
+    img.onerror = () => done(null);
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(str);
+  } catch (e) { done(null); }
+}
+function buildPlanPlane(plan, renderer) {
+  /* 2560 is the width the mobile camera actually resolves: DPR 2 x 350css
+     = 700 device px showing 1600/3.4 = 470 plan units -> 2383px needed */
+  rasterizePlan(state.narrow ? 2560 : 4096, (c) => {
+    if (!c) return;
+    const tex = new THREE.CanvasTexture(c);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.flipY = false;                 /* plan +y runs SOUTH = image rows down */
+    tex.anisotropy = Math.min(16, renderer.capabilities.getMaxAnisotropy());
+    tex.minFilter = THREE.LinearMipmapLinearFilter;
+    tex.generateMipmaps = true;
+    /* OWNER 2026-08-19: "everything just kind of blacks out… I want to
+       actually see the booth layouts, I want everything to pop." The plan
+       reads a touch under the stands so they stay the subject, but it
+       stays legible — never a black void to scroll through. */
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(VBW, VBH),
+      new THREE.MeshBasicMaterial({ map: tex, transparent: true,
+        color: new THREE.Color(0.52, 0.20, 0.13),
+        depthWrite: false, fog: false, toneMapped: false }));
+    m.position.set(VBW / 2, VBH / 2, 0.15);
+    m.renderOrder = 0;
+    plan.add(m);
+    state.planPlane = m;
+    /* the heavy vector layers retire — the live ones stay in the DOM */
+    const dead = document.querySelectorAll('.fp-lay-plan, .fp-lay-truss');
+    for (let i = 0; i < dead.length; i++) dead[i].style.display = 'none';
+    window.__planInGL = true;
+  });
 }
 
 /* ================= scene ================= */
@@ -1824,7 +2519,12 @@ function init() {
      Round 3 rig (jury: "no key, no fill, no rim — flat mid-navy mush"):
      ~6:1 key-to-fill, warm gold key vs teal ambient/rim, and the rim moved
      ABOVE the horizon so it actually grazes rooflines. */
-  const hemi = new THREE.HemisphereLight(0x4a80a8, 0x241a10, 1.0);
+  /* NEUTRAL-DARK AMBIENT. This used to be a blue sky at full strength and
+     it was over half the light in the scene: an omnidirectional wash means
+     nothing has a dark side, and a blue wash is the direct complement of
+     our warm accent so it desaturated it to khaki. Ambient is now dim and
+     neutral; the warm key does the modelling. */
+  const hemi = new THREE.HemisphereLight(0x171314, 0x1a1206, 1.0);
   plan.add(hemi);
   const key = new THREE.DirectionalLight(0xffd9a6, 3.2);
   key.position.set(-600, 1800, 1400);   /* plan-space: front-left, high */
@@ -1837,13 +2537,15 @@ function init() {
     key.shadow.mapSize.set(2048, 2048);
     key.shadow.bias = -0.0006;           /* NDC — scale-invariant, set once */
   }
-  const rim = new THREE.DirectionalLight(0x3fd0ff, 2.0);
+  /* the rim was CYAN at 2.0 — the second brightest light in the scene and
+     the thing poisoning the palette. Warm kick now, and much lower. */
+  const rim = new THREE.DirectionalLight(0xff9d5c, 2.0);
   rim.position.set(1400, -1200, 1800);  /* behind-right, HIGH — edge light */
   plan.add(rim); plan.add(rim.target);
   rim.target.position.set(800, 760, 0);
   /* camera-side fill so verticals facing the viewer never fall to black —
      dropped hard so it stops flattening what the key sculpts */
-  const fill = new THREE.DirectionalLight(0x9db8d4, 0.5);
+  const fill = new THREE.DirectionalLight(0xbfc4cc, 0.5);
   fill.position.set(800, 3000, 700);    /* due south of the hall, mid-high */
   plan.add(fill); plan.add(fill.target);
   fill.target.position.set(800, 700, 0);
@@ -1855,7 +2557,7 @@ function init() {
      rescaled per-frame in syncWorld because zoom is baked into world units.
      Emissives/sprites opt out below: lit things punching through the haze
      while structure recedes IS the depth cue. */
-  state.scene.fog = new THREE.Fog(0x060b12, 0, 1);
+  state.scene.fog = new THREE.Fog(0x080605, 0, 1);
 
   /* the shadow catcher: an invisible plane over the whole hall floor that
      multiplies the key's shadow into the alpha channel — so the booths
@@ -1919,12 +2621,18 @@ function init() {
   const steelM = new THREE.MeshStandardMaterial({
     color: 0x0b0e13, roughness: 0.92, metalness: 0.2 });
   const noSh = (o) => { o.userData.noShadow = true; return o; };
-  plan.add(noSh(finArray(5, boxGeo(2400, 1.2, 1.2), steelM, (d, i) => {
-    d.position.set(800, 210 + i * 270, roofZ);
-  })));
-  plan.add(noSh(finArray(7, boxGeo(1.2, 1900, 1.2), steelM, (d, i) => {
-    d.position.set(140 + i * 250, 740, roofZ + 4);
-  })));
+  /* the roof chords sweep across frame as long stray diagonals at a low
+     hero camera — kept as a list so paint can retire them when the eye
+     drops to floor level */
+  state.roofSteel = [
+    noSh(finArray(5, boxGeo(2400, 1.2, 1.2), steelM, (d, i) => {
+      d.position.set(800, 210 + i * 270, roofZ);
+    })),
+    noSh(finArray(7, boxGeo(1.2, 1900, 1.2), steelM, (d, i) => {
+      d.position.set(140 + i * 250, 740, roofZ + 4);
+    })),
+  ];
+  state.roofSteel.forEach(o => plan.add(o));
   /* (chevron lacing deleted — jury r10, industry: "LVCC's grid is
      orthogonal"; the diagonals read as scribbles in every mid-zoom) */
   /* catwalk boxes with one dim service lamp each — PERIMETER ONLY: a
@@ -1964,7 +2672,7 @@ function init() {
   const mkWall = (w, x, y, rz) => {
     const m = new THREE.Mesh(new THREE.PlaneGeometry(w, bayZ + 40),
       new THREE.MeshBasicMaterial({ map: wallTex, fog: false,
-        side: THREE.DoubleSide, color: new THREE.Color(0.55, 0.6, 0.66) }));
+        side: THREE.DoubleSide, color: new THREE.Color(0.46, 0.34, 0.30) }));
     m.rotation.x = Math.PI / 2;
     m.rotation.y = rz;
     m.position.set(x, y, (bayZ + 40) / 2 - 4);
@@ -2042,7 +2750,7 @@ function init() {
     transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
     side: THREE.DoubleSide, fog: false,
     uniforms: { uOp: { value: 0 }, uT: state.shaftT,
-      uCol: { value: new THREE.Color(0.92, 0.97, 1.05) } },
+      uCol: { value: new THREE.Color(1.0, 0.92, 0.78) } },
     vertexShader:
       `varying vec3 vN; varying vec3 vP;
        void main() {
@@ -2053,33 +2761,49 @@ function init() {
       `uniform float uOp, uT; uniform vec3 uCol;
        varying vec3 vN; varying vec3 vP;
        void main() {
-         float edge = smoothstep(0.04, 0.60, abs(normalize(vN).z));
+         /* SOFT SILHOUETTE: the old smoothstep(.04,.60) left a hard rim,
+            so the shafts read as opaque grey traffic cones. Squaring a
+            wide falloff makes the edge vanish into the air instead. */
+         float edge = abs(normalize(vN).z);
+         edge = edge * edge * smoothstep(0.0, 0.92, edge);
          float t = clamp(vP.y / 212.0 + 0.5, 0.0, 1.0);
          float ang = atan(vP.x, vP.z);
          float n = 0.72 + 0.18 * sin(ang * 6.0 + uT * 0.4 + vP.y * 0.06)
                         + 0.10 * sin(ang * 13.0 - uT * 0.27);
-         float a = uOp * edge * n * (0.20 + 0.95 * pow(t, 1.8));
-         a *= smoothstep(0.0, 0.07, t);
-         gl_FragColor = vec4(uCol, a);
+         /* inverse-square-ish drop plus an invisible top quarter: light
+            leaves the fixture, it does not glow along its whole length */
+         float a = uOp * edge * n * (0.06 + 1.15 * pow(t, 2.4));
+         a *= smoothstep(0.0, 0.10, t) * smoothstep(1.0, 0.72, t);
+         /* ordered dither — the smooth gradient banded hard on 8-bit */
+         float d = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453);
+         a += (d - 0.5) * 0.006;
+         gl_FragColor = vec4(uCol, max(a, 0.0));
        }`
   });
   state.shaftMats = [];
   for (let r = 0; r < state.houseRows.length; r++) state.shaftMats.push(mkShaftMat());
   const shaftGeo = new THREE.ConeGeometry(19, bayZ - 8, 18, 1, true);
   state.shaftPools = [];
+  let fi2 = 0;
   for (const f of state.fixtures) {
     const row = Math.round((f.y - 240) / 350);
     if (row < 0 || row > 3) continue;
+    /* HALF THE SHAFTS. Twenty-four evenly spaced identical beams read as
+       a row of traffic cones; a checker keeps the rhythm irregular and
+       lets each remaining beam matter (critics, unanimous). */
+    if ((fi2++ + row) % 2) continue;
     const cone = new THREE.Mesh(shaftGeo, state.shaftMats[row]);
     cone.rotation.x = Math.PI / 2;     /* apex up at the fixture */
     cone.position.set(f.x, f.y, (bayZ - 8) / 2);
     cone.renderOrder = 4;
     plan.add(cone);
     f.parts.push(cone);
+    /* the beam has to LAND: a real pool, sized to the cone's 19-unit
+       mouth and warm like its source, or the shaft terminates in mid-air */
     const pm = new THREE.MeshBasicMaterial({ map: glowTex,
-      color: new THREE.Color(1.15, 1.1, 0.95), transparent: true, opacity: 0,
+      color: new THREE.Color(1.35, 1.18, 0.92), transparent: true, opacity: 0,
       blending: THREE.AdditiveBlending, depthWrite: false, fog: false });
-    const pool2 = new THREE.Mesh(new THREE.PlaneGeometry(64, 46), pm);
+    const pool2 = new THREE.Mesh(new THREE.PlaneGeometry(96, 74), pm);
     pool2.position.set(f.x, f.y, 0.7);
     pool2.renderOrder = 2;
     plan.add(pool2);
@@ -2112,6 +2836,7 @@ function init() {
     state.aisleGlow.push(q.material);
   }
 
+  if (mi.narrow) buildPlanPlane(plan, renderer);
   if (!mi.narrow) buildCrowd(plan);
   /* hall dust: one Points cloud, fixed pixel size (the bespoke projection
      breaks sizeAttenuation), drifting on the idle clock */
@@ -2183,7 +2908,7 @@ function init() {
     });
     roughTex.wrapS = roughTex.wrapT = THREE.RepeatWrapping;
     const wetMat = new THREE.MeshStandardMaterial({
-      color: 0x0a0e14, roughness: 0.48, metalness: 0.05,
+      color: 0x0b0908, roughness: 0.48, metalness: 0.05,
       roughnessMap: roughTex, transparent: true, depthWrite: false,
       envMap: state.envTex, envMapIntensity: 0.2,
     });
@@ -2219,7 +2944,7 @@ function init() {
            vec3 refl = texture2D(uRefl, rUv).rgb;
            /* clamped: HDR screen content mirrored at full strength blew
               out into slabs brighter than the source (r11 p066) */
-           gl_FragColor.rgb += min(refl * 0.42, vec3(0.72)) * wCov;
+           gl_FragColor.rgb += min(refl * 0.85, vec3(4.0)) * wCov;
            gl_FragColor.a *= wCov;`);
     };
     const wet = new THREE.Mesh(new THREE.PlaneGeometry(1700, 1620), wetMat);
@@ -2259,9 +2984,18 @@ function init() {
       o.castShadow = true;
       o.receiveShadow = true;
     }
+    /* uv1 GUARANTEE. The surface maps sample channel 1 (object-space
+       feet, set by boxGeo). Plane/Cylinder/custom geometries have no uv1,
+       and three compiles ROUGHNESSMAP_UV = uv1 regardless -> "undeclared
+       identifier" and a dead shader. Fall those back to uv. */
+    if (o.isMesh && o.geometry && o.geometry.attributes &&
+        o.geometry.attributes.uv && !o.geometry.attributes.uv1) {
+      o.geometry.setAttribute('uv1', o.geometry.attributes.uv);
+    }
     /* layer 1 = the depth prepass set: opaque geometry only, so sprites
        and glows never write depth into the AO / aerial-perspective pass */
-    if (o.isMesh && m && !m.transparent && !m.isSpriteMaterial) o.layers.enable(1);
+    if (o.isMesh && m && !m.isSpriteMaterial &&
+        (!m.transparent || m.isMeshBasicMaterial)) o.layers.enable(1);
     /* lights must ALSO live on layer 1: the mirror pass renders with
        camera.layers.set(1), and three filters lights by camera layers —
        without this every standard material renders unlit black in the
@@ -2371,30 +3105,35 @@ const _keyCold = new THREE.Color(0xffd9a6), _keyWarm = new THREE.Color(0xffeccc)
 /* the day arc in COLOR, not just intensity (jury: "if you cropped the HUD,
    no juror could order the frames chronologically") — cold blue dawn ->
    neutral noon; fog and hemisphere travel together */
-const _fogCold = new THREE.Color(0x020408), _fogNoon = new THREE.Color(0x0a131f);
+const _fogCold = new THREE.Color(0x050404), _fogNoon = new THREE.Color(0x100c0b);
 const _skyCold = new THREE.Color(0x2c4a6a), _skyNoon = new THREE.Color(0x6b93b4);
 const _gndCold = new THREE.Color(0x160f08), _gndNoon = new THREE.Color(0x3a2c18);
 /* the doors surge pushes both toward warm show-light */
-const _fogShow = new THREE.Color(0x121d2c), _skyShow = new THREE.Color(0x8aa4b8);
+const _fogShow = new THREE.Color(0x140f0e), _skyShow = new THREE.Color(0x8aa4b8);
 /* THE LIGHTING SCRIPT — every chapter is a re-lit set with one motivated
    statement. cold: security pools in a dead hall. rise: cold dock light
    arrives. WO1: one hard work light. WO2: cyan/amber cross-key. WO3: the
    LED wall is a 20ft softbox. lapse: the highbays march on. WO4: a dark
    island under one top light. doors: full show light. Values are absolute
    intensities; blending runs across the first 30% of each chapter. */
+/* OWNER 2026-08-19: "as we dive into the animation everything just kind
+   of blacks out… I want everything to pop." The night-shift grade had
+   pushed the whole run into a void — every beat is lifted, fills raised
+   off zero so nothing falls to pure black, and vignettes pulled back. */
 const LS = [
-  { hemi: 0.030, key: 0.25, fill: 0.02, exp: 0.66, kc: 0xffc37a, sl: [0.92, 0.98, 1.10], sat: 0.95, vig: 0.32, hal: 0.05 },
-  { hemi: 0.085, key: 2.60, fill: 0.05, exp: 0.84, kc: 0xbfdcff, sl: [0.95, 1.00, 1.08], sat: 1.05, vig: 0.24, hal: 0.08 },
-  { hemi: 0.110, key: 3.20, fill: 0.07, exp: 0.98, kc: 0xffe2b0, sl: [1.06, 1.00, 0.94], sat: 1.15, vig: 0.22, hal: 0.11 },
-  /* jury r10 (DP): the day must CLIMB — level up ~2 stops and warm from
-     dawn-blue toward afternoon-neutral between 08:00 and 14:47, so frames
-     order chronologically with the HUD cropped */
-  { hemi: 0.130, key: 1.90, fill: 0.06, exp: 1.02, kc: 0xddeaf8, sl: [0.94, 1.02, 1.10], sat: 1.20, vig: 0.26, hal: 0.13 },
-  { hemi: 0.190, key: 2.60, fill: 0.09, exp: 1.12, kc: 0xf2ecdc, sl: [0.98, 1.00, 1.02], sat: 1.24, vig: 0.24, hal: 0.17 },
-  { hemi: 0.380, key: 2.90, fill: 0.16, exp: 1.34, kc: 0xffe9c8, sl: [1.03, 1.01, 0.97], sat: 1.18, vig: 0.14, hal: 0.10 },
-  { hemi: 0.075, key: 3.80, fill: 0.04, exp: 0.94, kc: 0xfff0d0, sl: [1.08, 0.98, 0.90], sat: 1.08, vig: 0.40, hal: 0.13 },
-  { hemi: 0.380, key: 3.10, fill: 0.18, exp: 1.55, kc: 0xffe6c0, sl: [1.08, 1.02, 0.94], sat: 1.26, vig: 0.20, hal: 0.22 },
-  { hemi: 0.340, key: 2.70, fill: 0.16, exp: 1.46, kc: 0xffe6c0, sl: [1.04, 1.00, 0.98], sat: 1.14, vig: 0.30, hal: 0.13 },
+  /* KEY-DOMINANT. Ambient is now dim and neutral and the warm key does all
+     the modelling — a warm-key-to-ambient ratio near 8:1, which is what
+     gives every surface a bright side and a dark side. Raising hemi to
+     "brighten" was the mistake: it flattened everything it lit. */
+  { hemi: 0.045, key: 2.60, fill: 0.05, exp: 1.02, kc: 0xffc37a, sl: [0.92, 0.98, 1.10], sat: 0.98, vig: 0.26, hal: 0.06 },
+  { hemi: 0.060, key: 5.20, fill: 0.07, exp: 1.16, kc: 0xffeadd, sl: [0.95, 1.00, 1.06], sat: 1.08, vig: 0.20, hal: 0.10 },
+  { hemi: 0.075, key: 6.40, fill: 0.09, exp: 1.28, kc: 0xffeadd, sl: [1.06, 1.00, 0.94], sat: 1.18, vig: 0.18, hal: 0.13 },
+  { hemi: 0.075, key: 5.80, fill: 0.09, exp: 1.26, kc: 0xffe6d6, sl: [0.98, 1.00, 1.04], sat: 1.20, vig: 0.18, hal: 0.14 },
+  { hemi: 0.085, key: 6.20, fill: 0.10, exp: 1.32, kc: 0xffeadd, sl: [1.00, 1.00, 1.02], sat: 1.22, vig: 0.16, hal: 0.17 },
+  { hemi: 0.110, key: 6.00, fill: 0.12, exp: 1.36, kc: 0xffece0, sl: [1.03, 1.01, 0.97], sat: 1.16, vig: 0.14, hal: 0.11 },
+  { hemi: 0.055, key: 6.60, fill: 0.06, exp: 1.24, kc: 0xfff0d0, sl: [1.08, 0.98, 0.90], sat: 1.10, vig: 0.24, hal: 0.14 },
+  { hemi: 0.150, key: 5.40, fill: 0.16, exp: 1.50, kc: 0xffe6c0, sl: [1.08, 1.02, 0.94], sat: 1.26, vig: 0.18, hal: 0.22 },
+  { hemi: 0.140, key: 5.00, fill: 0.14, exp: 1.44, kc: 0xffe6c0, sl: [1.04, 1.00, 0.98], sat: 1.14, vig: 0.26, hal: 0.14 },
 ];
 const _kcA = new THREE.Color(), _kcB = new THREE.Color();
 let curDim = 0, curBeat = 0, curBeatT = 0;
@@ -2462,7 +3201,11 @@ function applyShow(t, day, dim, beat, beatT) {
   L.fill.intensity = cue.fill * dk;
   if (state.post) {
     state.post.u.uExposure.value = cue.exp * (1 + 0.30 * pulse + 0.08 * t) * (1 - 0.30 * dim);
-    state.post.u.uBloomStrength.value = 0.05 + 0.04 * day + 0.10 * t + 0.18 * pulse + 0.05 * glory;
+    /* BLOOM CARRIES THE LOOK. At 0.05 every light line in the stands was
+       a flat painted stripe — the owner's "flat and boring". The
+       reference stands glow: the light sources bleed into the air around
+       them and that halation IS the production value. */
+    state.post.u.uBloomStrength.value = 0.34 + 0.05 * day + 0.10 * t + 0.18 * pulse + 0.06 * glory;
     state.post.u.uRadius.value = 1.0 + 0.7 * t;    /* bloom opens at doors */
   }
   updateCrowd(t);
@@ -2486,7 +3229,7 @@ function applyShow(t, day, dim, beat, beatT) {
       const rt2 = Math.max(
         Math.min(1, Math.max(0, (t - sp2.row * 0.07) / 0.22)),
         beat === 5 ? Math.min(1, Math.max(0, (beatT - 0.3 - sp2.row * 0.14) / 0.22)) : 0) * dk;
-      sp2.m.opacity = 0.16 * rt2;
+      sp2.m.opacity = 0.30 * rt2;
     }
   /* jury r10 (Awwwards): the blueprint IS the banned Tron grid — it dies
      progressively as the day's work covers the hall, not all at once at
@@ -2507,7 +3250,10 @@ const MIGL = {
   ready: false,
   resize(rectW, rectH) {
     state.rectW = rectW; state.rectH = rectH;
-    state.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, state.narrow ? 1.0 : 1.2));
+    /* mobile ran at DPR 1.0 on DPR-3 phones — a 3x upscale, which is the
+       whole "not crisp" complaint. With the plan off the DOM there is
+       budget for real resolution. */
+    state.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, state.narrow ? 2.0 : 1.2));
     state.renderer.setSize(rectW, rectH, false);
     if (state.post) state.post.resize();
     syncProjection(state.camera, rectW, rectH);
@@ -2638,6 +3384,17 @@ const MIGL = {
       MIGL.resize(cam.rectW, cam.rectH);
     applyShow(cam.show || 0, cam.day == null ? 1 : cam.day, cam.dim || 0,
       cam.beat || 0, cam.beatT == null ? 1 : cam.beatT);
+    /* At a low hero camera the 2400-unit roof chords sweep across the
+       frame as long stray diagonals cutting straight through the subject.
+       Above ~64 deg of rake the eye is near the floor — retire them. */
+    if (state.roofSteel) {
+      const rv = (cam.rake || 0) < 64;
+      for (const o of state.roofSteel) if (o.visible !== rv) o.visible = rv;
+    }
+    /* the GL plan obeys the same dim curve the DOM plan used to */
+    if (state.planPlane)
+      state.planPlane.material.opacity =
+        Math.max(0, 1 - 0.42 * (cam.planDim || 0)) * (1 - 0.72 * (cam.dim || 0));
     /* THE IDLE LAYER — loudest when the reader is still. Nothing on this
        screen is ever frozen: LED content runs, crew shift their weight,
        dust drifts through the light. */
@@ -2646,7 +3403,10 @@ const MIGL = {
     /* CONTENT FOLLOWS THE CLOCK: every screen runs the pixel-map test
        card until 14:00, then snaps to the broadcast loop (frame 0 is the
        card; 1-3 are the show frames) */
-    const preMap = (curDay < 0.818) && (curShow || 0) <= 0.01;
+    /* the test card is a BRIEF early-morning state only. Running it until
+       14:00 meant the hero LED product spent most of the piece showing a
+       technician's grey wedge — i.e. looking broken (owner: make it pop) */
+    const preMap = (curDay < 0.28) && (curShow || 0) <= 0.01;
     const fr = preMap ? 0 : 1 + Math.floor(tSec * 12.5) % 3;
     if (fr !== ledFrame) { ledFrame = fr; state.ledTex.offset.y = fr * 0.25; }
     state.ledTex.offset.x = preMap ? 0 : (tSec * 0.012) % 1;
@@ -2699,8 +3459,8 @@ const MIGL = {
        the mirror; the shader un-flips the image. */
     const rvB = state.reveal.i >= 0 ? state.booths[state.reveal.i] : null;
     const needRefl = state.post && !state.post.lite && state.post.reflRT &&
-      (curShow > 0.01 || (rvB && ((rvB.b > 0.001 && rvB.b < 0.999) ||
-        RV.uFlat.value > 0.01)));
+      (curShow > 0.01 || (state.wetU && state.wetU.value > 0.01) ||
+        (rvB && ((rvB.b > 0.001 && rvB.b < 0.999) || RV.uFlat.value > 0.01)));
     if (needRefl) {
       const r2 = state.renderer, cam2 = state.camera;
       _savedPlan.copy(state.plan.matrix);

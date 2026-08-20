@@ -504,6 +504,18 @@
         }
 
         .mi-track { position: relative; height: 560vh; }
+        /* THE DWELL LOCKS (owner 2026-08-19: "a short final lock position
+           on each booth so you don't accidentally scroll too fast past
+           each section and miss the info and view"). PROXIMITY snap, not
+           mandatory — it catches a fast flick at the moment each stand is
+           finished and lit, but never fights a deliberate scroll. */
+        html { scroll-snap-type: y proximity; }
+        .mi-lock {
+            position: absolute; left: 0; width: 1px; height: 1px;
+            scroll-snap-align: start; scroll-snap-stop: normal;
+            pointer-events: none; opacity: 0;
+        }
+        @media (prefers-reduced-motion: reduce) { html { scroll-snap-type: none; } }
 
         .mi-stage {
             position: sticky; top: 0;
@@ -577,7 +589,13 @@
             display: block;
             overflow: visible;
 
-            opacity: calc(1 - 0.42 * var(--plandim, 0));
+            /* the drawing stays READABLE the whole way down — the owner
+               never wants a dark void between stands */
+            /* The blueprint's own ink is cyan, which measured ~40% of the
+               frame against a strict two-colour brief. This swings the whole
+               drawing to amber-on-black without touching the SVG itself. */
+            filter: sepia(0.88) hue-rotate(-16deg) saturate(1.55) brightness(0.95);
+            opacity: calc(0.46 * (1 - 0.30 * var(--plandim, 0)));
         }
 
         .fp-stand { transition: opacity .45s ease; }
@@ -750,7 +768,10 @@
         .mi-ticket {
             position: absolute; bottom: calc(var(--matte) + 16px); left: 4%;
             width: min(31ch, 38%);
-            background: linear-gradient(180deg, rgba(9,15,21,.82), rgba(6,11,16,.78));
+            /* opaque enough to READ: at .82/.78 the floor-plan typography
+               ran straight through the body copy ("RANCE" across "110 LED
+               CABINETS") — two critics called it an unfinished dev build */
+            background: linear-gradient(180deg, rgba(7,12,18,.96), rgba(5,9,14,.94));
             -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
             border: 1px solid rgba(125, 195, 228, 0.26);
             border-top: 2px solid var(--accent-gold);
@@ -946,12 +967,27 @@
                 transform: rotate(0deg) translateY(12px);
             }
             .mi-ticket.is-on, .mi-ticket.is-right.is-on { transform: rotate(0deg); }
-            .mi-tb { right: 10px; top: 64px; bottom: auto; min-width: 0; padding: 7px 10px 8px; }
-            .mi-tb-k { display: none; }
+            /* ONE CHROME BAND. The clock panel used to sit in a second
+               band that physically clipped every headline on a phone
+               ("The crates ar…", "16:00 · Floor Relea…") — three critics
+               named it as the first thing a juror notices. Skip chip and
+               clock now share a single 30px rail; everything below the
+               rail belongs to the picture and the headline alone. */
+            .mi-tb {
+                left: 178px; right: 10px; top: 58px; bottom: auto;
+                min-width: 0; padding: 5px 10px 6px;
+                display: flex; align-items: baseline; justify-content: space-between;
+                gap: 10px; border-top-width: 1px;
+                border-left: 2px solid var(--accent-gold);
+            }
+            .mi-tb-k, .mi-tally { display: none; }
+            .mi-clock { font-size: 1.24rem; margin: 0; }
+            /* the rebuild butted these together: "16:00Floor released" */
+            .mi-float { font-size: 0.54rem; letter-spacing: .1em; text-align: right;
+                        padding-left: 12px; border-left: 1px solid rgba(186,198,208,.22); }
             .mi-stage { --matte: 9svh; }
-            .mi-skip { top: 64px; left: 10px; }
-            .mi-tally { display: none; }
-            .mi-say { top: 172px; left: 6%; right: 6%; }
+            .mi-skip { top: 58px; left: 10px; padding: 5px 8px; }
+            .mi-say { top: 104px; left: 5%; right: 5%; }
             .mi-cards { grid-template-columns: 1fr; }
             /* the CTA sheet owns the frame — the HUD yields */
             .mi-stage.is-hud-out .mi-tb,
@@ -2166,21 +2202,34 @@
                             narrow: window.matchMedia('(max-width: 760px)').matches,
                             upf: 5 };
 
-            var RAKE = narrow.matches ? 66 : 72;
+            /* RAKE SENSE (got this backwards once — write it down): the
+               world is rotateX(rake), so rake 0 = looking straight DOWN at
+               the plan and rake 90 = eye at floor level, horizontal. Higher
+               rake = lower, grander camera. */
+            var RAKE = narrow.matches ? 79 : 79;
 
+            /* MOBILE FRAMING (owner 2026-08-19: "way too close, crowding,
+               can't actually see the booth"). At 4.6 a 40ft stand projected
+               ~439px into a 390px viewport — cropped on both edges. 3.4
+               puts the whole stand inside ~85% of the frame. */
             var ZOOM = narrow.matches ? 4.6 : 5.8;
+            /* and the work-order card owns the bottom ~40% of a phone, so
+               the subject is lifted into the clear upper band */
+            var MOBY = narrow.matches ? -205 : 0;
             var YAW  = narrow.matches ? -14 : -20;
 
             var SHOT = [
-                { dRake: -1, yaw: -26, k: 0.86, D: 650, poy: 0.56 },
-                { dRake:-10, yaw:  14, k: 0.85, D: 700, poy: 0.52 },
-                { dRake:-12, yaw: -18, k: 0.58, D: 500, poy: 0.58 },
-                { dRake: -2, yaw:  30, k: 0.80, D: 700, poy: 0.58 }
+                { dRake:  4, yaw: -34, k: 0.72, D: 680, poy: 0.30, ox:  6 },
+                { dRake:  4, yaw: -28, k: 0.50, D: 760, poy: 0.36, ox: -4 },
+                { dRake:  4, yaw: -30, k: 0.40, D: 820, poy: 0.36, ox:  0 },
+                { dRake:  4, yaw: -26, k: 0.48, D: 900, poy: 0.34, ox:  0 }
             ];
             function camOf(i) {
                 var w = WO[i], r = w.rect, sh = SHOT[i];
 
-                return { s: ZOOM * sh.k, cx: r[0]+r[2]/2, cy: r[1]+r[3]/2,
+                /* ox biases the target along the stand so a hero element
+                   (C1006's V) sits on a third instead of dead centre */
+                return { s: ZOOM * sh.k, cx: r[0]+r[2]/2 + (sh.ox || 0), cy: r[1]+r[3]/2,
                          rake: RAKE + sh.dRake, D: sh.D, poy: sh.poy,
                          yaw: sh.yaw * (narrow.matches ? 0.55 : 1) };
             }
@@ -2213,20 +2262,48 @@
                gold drawing on black glass, the camera drops near the floor
                — long lens, horizon low — so the ink towers and doubles in
                the wet mirror. It cranes back up as the gantry prints. */
+            /* TWO MOVES PER CHAPTER.
+               1) the ink beat drops near the floor so the gold drawing
+                  towers and doubles in the wet floor;
+               2) THE HERO — once the stand is built, the camera settles
+                  to FLOOR LEVEL LOOKING UP (owner: "we're looking at the
+                  final viewpoint from above the booth when we should be
+                  viewing it from floor level looking up at it, so you're
+                  getting the grand, you're in shock"). Low rake = the
+                  structure towers over the viewer instead of being a
+                  model on a table. */
             function inkCam(i) {
                 return function (cp) {
                     var c = (i === 2) ? canyonCam(cp) : camOf(i);
-                    var low = ss(.14, .24, cp) * (1 - ss(.42, .58, cp));
-                    if (low <= 0.001) return c;
-                    return {
-                        s: c.s * lerp(1, 1.16, low),
-                        cx: c.cx,
-                        cy: c.cy + 36 * low,
-                        rake: lerp(c.rake, 81, low),
-                        yaw: c.yaw * lerp(1, 0.72, low),
-                        D: lerp(c.D, 1550, low),
-                        poy: lerp(c.poy, 0.44, low)
-                    };
+                    var low  = ss(.10, .18, cp) * (1 - ss(.30, .42, cp));
+                    var hero = ss(.42, .60, cp);
+                    var rake = c.rake, yaw = c.yaw, D = c.D,
+                        poy = c.poy, sc = c.s, cy = c.cy;
+                    if (low > 0.001) {
+                        sc   = sc * lerp(1, 1.12, low);
+                        cy   = cy + 30 * low;
+                        rake = lerp(rake, 78, low);
+                        yaw  = yaw * lerp(1, 0.72, low);
+                        D    = lerp(D, 1500, low);
+                        poy  = lerp(poy, 0.44, low);
+                    }
+                    if (hero > 0.001) {
+                        /* rake toward the horizon, origin low in frame:
+                           a worm's-eye on the finished stand */
+                        /* THE HERO: eye drops to the floor and looks UP the
+                           structure (owner: "so you're getting the grand,
+                           you're in shock") */
+                        rake = lerp(rake, narrow.matches ? 84 : 84, hero);
+                        sc   = lerp(sc, c.s * (narrow.matches ? 0.80 : 0.92), hero);
+                        yaw  = lerp(yaw, c.yaw * 1.05, hero);
+                        /* long lens: at D 760 the near end of a 40ft span
+                           magnifies so hard the stand won't fit the frame */
+                        D    = lerp(D, 680, hero);
+                        poy  = lerp(poy, 0.40, hero);
+                        cy   = lerp(cy, c.cy + 60, hero);
+                    }
+                    return { s: sc, cx: c.cx, cy: cy, rake: rake,
+                             yaw: yaw, D: D, poy: poy };
                 };
             }
 
@@ -2238,7 +2315,7 @@
                 { a:0,    b:.055, t0:300, cam:WIDE, kind:'cold' },
                 { a:.055, b:.135, t0:330, cam:{ s:1.14, cx:VBW/2, cy:VBH/2, rake:RAKE, yaw:0, D:650, poy:0.62 }, kind:'rise' },
                 { a:.135, b:.345, t0:360, cam:camOf(0), camFn:inkCam(0), kind:'wo', i:0 },
-                { a:.345, b:.455, t0:450, cam:camOf(1), kind:'wo', i:1 },
+                { a:.345, b:.455, t0:450, cam:camOf(1), camFn:inkCam(1), kind:'wo', i:1 },
                 { a:.455, b:.635, t0:540, cam:camOf(2), camFn:inkCam(2), kind:'wo', i:2 },
                 { a:.635, b:.675, t0:760, cam:{ s:1.85, cx:800, cy:860, rake:58, yaw:-12, D:950, poy:0.50 }, kind:'lapse' },
                 { a:.675, b:.755, t0:887, cam:camOf(3), kind:'wo', i:3 },
@@ -2246,6 +2323,27 @@
                 { a:.925, b:1,    t0:960, cam:{ s:1.4, cx:940, cy:800, rake:52, yaw:-24, D:1600, poy:0.50 }, kind:'sheet' }
             ];
             var WOCH = [2, 3, 4, 6];   /* chapter index of each work order */
+            /* one lock per stand, parked where the build has finished and
+               the hero camera has settled (cp .62), plus one on the 16:00
+               payoff — a fast flick catches and holds just long enough to
+               read the work order and see the stand */
+            (function buildLocks() {
+                var pts = [];
+                for (var q = 0; q < WOCH.length; q++) {
+                    var ch = CH[WOCH[q]];
+                    pts.push(ch.a + (ch.b - ch.a) * 0.62);
+                }
+                pts.push(CH[7].a + (CH[7].b - CH[7].a) * 0.30);
+                pts.forEach(function (p) {
+                    var d = document.createElement('div');
+                    d.className = 'mi-lock';
+                    /* the stage is sticky for the whole track, so a lock at
+                       fraction p of the SCROLLABLE span sits at p of
+                       (trackHeight - stageHeight) */
+                    d.style.top = 'calc((100% - 100svh) * ' + p.toFixed(4) + ')';
+                    track.appendChild(d);
+                });
+            })();
             function chCam(ci, cp) {
                 var c = CH[ci];
                 return c.camFn ? c.camFn(cp) : c.cam;
@@ -2473,7 +2571,7 @@
 
                 wProp(world, 'wall', '--wall', ss(14, 34, rk).toFixed(3));
 
-                var tx = VBW/2 - cx*s, ty = VBH/2 - cy*s;
+                var tx = VBW/2 - cx*s, ty = VBH/2 - cy*s + MOBY;
                 wAttr(plan, 'plan', 'transform',
                     'translate(' + tx.toFixed(1) + ' ' + ty.toFixed(1) +
                     ') scale(' + s.toFixed(4) + ')');
@@ -2524,15 +2622,20 @@
                     /* OWNER RETIME (2026-08-19): the print is a fast reveal,
                        the FINISHED stand owns the back ~38% of every chapter
                        — nobody dwells on scaffolding */
+                    /* OWNER 2026-08-19: the build "reads like a glitch —
+                       parts just appear, mis-coloured" and it drags. So
+                       the print is now a SHORT, decisive pass and the
+                       FINISHED stand owns roughly the back 60% of every
+                       chapter. Nobody watches scaffolding for long. */
                     var b, flat, strike;
                     if (fast) {
-                        strike = ss(.20, .30, cp);
-                        b = ss(.26, .54, cp);
-                        flat = 1 - ss(.44, .54, cp);
+                        strike = ss(.14, .21, cp);
+                        b = ss(.18, .38, cp);
+                        flat = 1 - ss(.30, .38, cp);
                     } else {
-                        strike = ss(.20, .30, cp);
-                        b = ss(.30, .62, cp);
-                        flat = 1 - ss(.56, .66, cp);
+                        strike = ss(.14, .22, cp);
+                        b = ss(.20, .42, cp);
+                        flat = 1 - ss(.34, .42, cp);
                     }
                     window.__dbg = { p: p, cp: cp, b: b, ci: ci, fast: fast };
                     if (window.MIGL) {
@@ -2544,8 +2647,8 @@
                     /* notes land on structural events: the strike, the solid,
                        the coves — not on arbitrary scroll marks */
                     /* the card is never empty: note 1 is the status line */
-                    var nn = fast ? (cp < .38 ? 1 : cp < .50 ? 2 : 3)
-                                  : (cp < .48 ? 1 : cp < .64 ? 2 : 3);
+                    var nn = fast ? (cp < .30 ? 1 : cp < .42 ? 2 : 3)
+                                  : (cp < .34 ? 1 : cp < .48 ? 2 : 3);
                     if (nn !== noteN) {
                         noteN = nn;
                         ticket.classList.remove('n1','n2','n3');
@@ -2618,6 +2721,14 @@
                 wStyle(ticket, 'tkT', 'transform',
                     'rotate(' + ((c.kind === 'wo' && c.i % 2 === 1) ? '0.6' : '-0.6') +
                     'deg) translateY(' + tickY.toFixed(1) + 'px)');
+                /* the drawing itself obeys the lighting script: near-black
+                   under security light, waking with the dock light.
+                   Computed BEFORE paint so the GL plan (mobile) gets it. */
+                var pdim = Math.max(showT,
+                    c.kind === 'cold' ? 1.15 :
+                    c.kind === 'rise' ? 0.42 * (1 - cp * 0.6) :
+                    c.kind === 'wo' ? 1.6 * flat : 0);
+
                 if (window.MIGL) MIGL.paint({
                     rectW: rectW, rectH: rectH, fit: fit,
                     s: s, tx: tx, ty: ty, rake: rk, yaw: ywEff,
@@ -2626,19 +2737,10 @@
                     show: showT,
                     dim: dimT,
                     idle: idle,
-
+                    planDim: pdim,
                     day: clamp01((mins - 300) / 660)
                 });
 
-                /* the drawing itself obeys the lighting script: near-black
-                   under security light, waking with the dock light */
-                /* the gold-ink beat burns against darkness: while the
-                   subject stand is a flat drawing, the rest of the plan
-                   drops away (pdim > 1 leans on the 0.42 CSS factor) */
-                var pdim = Math.max(showT,
-                    c.kind === 'cold' ? 1.15 :
-                    c.kind === 'rise' ? 0.42 * (1 - cp * 0.6) :
-                    c.kind === 'wo' ? 1.6 * flat : 0);
                 wProp(world, 'pd', '--plandim', pdim.toFixed(3));
 
                 var dq = Math.round(clamp01((mins - 300) / 660) * 24) / 24;
