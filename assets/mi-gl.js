@@ -1378,6 +1378,84 @@ function portalRing(w, h, thick, depth, outer, inner) {
   add2(thick, h - thick * 2, w / 2 - thick / 2, 0);
   return g;
 }
+/* ============ THE CREW ============
+   The product is LABOUR, and until now no worker appeared anywhere before
+   the 16:00 visitor crowd — a viewer came away thinking the company builds
+   booths rather than supplies the people who build them.
+   These are NOT the blocky capsules that were rejected: every figure has
+   two articulated arms in a working pose, a stance with the weight on one
+   leg, and a silhouette that reads at 40-80px because the limbs come AWAY
+   from the body. Unlit near-black (a lit figure takes the warm key and
+   turns terracotta) with one hi-vis band and a hard hat. */
+let _crewMats = null;
+function crewMats() {
+  if (_crewMats) return _crewMats;
+  _crewMats = {
+    body: new THREE.MeshBasicMaterial({ color: 0x0e1013, fog: true }),
+    vest: new THREE.MeshBasicMaterial({ color: 0x8e2118, fog: true }),
+    hat:  new THREE.MeshBasicMaterial({ color: 0x6b5622, fog: true }),
+  };
+  return _crewMats;
+}
+/* pose: 'lift' both arms up on a panel edge · 'drill' one arm at shoulder ·
+   'point' one arm out level · 'carry' both arms forward · 'stand' at rest */
+function crewPosed(pose) {
+  const M2 = crewMats(), g = new THREE.Group();
+  const limb = (w, l, mat) => new THREE.Mesh(boxGeo(w, l, w), mat);
+  /* stance — weight on one leg, the other trailing */
+  const legL = limb(0.42, 2.9, M2.body); legL.position.set(-0.34, 1.45, 0.10);
+  const legR = limb(0.42, 2.9, M2.body); legR.position.set(0.34, 1.45, -0.16);
+  legR.rotation.x = 0.16;
+  g.add(legL, legR);
+  g.add(limb(1.18, 2.25, M2.body)).position.set(0, 4.0, 0);      /* torso */
+  const band = new THREE.Mesh(boxGeo(1.24, 0.38, 0.76), M2.vest);
+  band.position.set(0, 4.35, 0); g.add(band);
+  const head = limb(0.66, 0.66, M2.body); head.position.set(0, 5.4, 0); g.add(head);
+  const hat = new THREE.Mesh(boxGeo(0.86, 0.16, 0.86), M2.hat);
+  hat.position.set(0, 5.78, 0); g.add(hat);
+  /* the arms carry the pose, and the pose carries the silhouette */
+  const arm = (side, upperRot, lowerRot) => {
+    const sh = new THREE.Group();
+    sh.position.set(side * 0.72, 4.85, 0);
+    const up = limb(0.32, 1.5, M2.body); up.position.set(0, -0.75, 0);
+    sh.add(up);
+    const el = new THREE.Group(); el.position.set(0, -1.5, 0);
+    const lo = limb(0.30, 1.45, M2.body); lo.position.set(0, -0.72, 0);
+    el.add(lo); sh.add(el);
+    sh.rotation.z = side * upperRot.z; sh.rotation.x = upperRot.x;
+    el.rotation.x = lowerRot;
+    g.add(sh);
+    return sh;
+  };
+  if (pose === 'lift') {
+    arm(-1, { z: 1.35, x: -0.25 }, -0.5); arm(1, { z: 1.35, x: -0.25 }, -0.5);
+  } else if (pose === 'drill') {
+    arm(-1, { z: 0.22, x: -1.25 }, -0.55); arm(1, { z: 0.16, x: 0.10 }, -0.20);
+  } else if (pose === 'point') {
+    arm(-1, { z: 1.55, x: -0.9 }, -0.10); arm(1, { z: 0.14, x: 0.05 }, -0.30);
+  } else if (pose === 'carry') {
+    arm(-1, { z: 0.30, x: -1.45 }, -0.30); arm(1, { z: 0.30, x: -1.45 }, -0.30);
+  } else {
+    arm(-1, { z: 0.18, x: 0.05 }, -0.22); arm(1, { z: 0.20, x: -0.08 }, -0.28);
+  }
+  return g;
+}
+/* place a crew on a stand. They arrive with the work (st) and leave with
+   the gear, so the build beats are populated and the finale is clean. */
+function addCrew(bo, spots) {
+  /* each figure is ~12 meshes and four stands can be live at once — phones
+     get the two most visible of each crew */
+  if (state.narrow) spots = spots.slice(0, 2);
+  spots.forEach((sp, i) => {
+    const f = crewPosed(sp[3] || 'stand');
+    f.rotation.y = sp[2] == null ? hash01(i + 91) * 6.28 : sp[2];
+    /* NOT gear: the gear exit keys off build completion, so marking crew
+       as gear walked them off the stand before the hero camera ever saw
+       them. They arrive with the work and simply stay. */
+    put(bo, f, sp[0], sp[4] || 0, sp[1], { st: 0.20 + i * 0.05, w: .10 });
+  });
+}
+
 /* THE ONE WARM MATERIAL THAT GLOWS. Every warm pixel in the piece was
    line-work — cove strips, arris lines, dot rows. The reference's warm
    surface is a BROAD emissive face, and that is what makes a stand read
@@ -1515,36 +1593,6 @@ function standShell(bo, o) {
 }
 function makeBooth(group) {
   return { group, parts: [], b: -1, show: -1, live: false };
-}
-/* THE CREW (critics, unanimous: "you are advertising a labor company and
-   there is not one person in fourteen frames"). Near-black 5'10" figures
-   in gold hi-vis, standing ON the finished side of the work. They are the
-   scale reference the stands never had — a 30ft mast only reads as 30ft
-   next to a person. Silhouettes only: no faces, no capsule limbs (the
-   owner killed those), just a vest that catches the light. */
-function crewFigure() {
-  const g = new THREE.Group();
-  const body = new THREE.MeshStandardMaterial({ color: 0x0d1014, roughness: .95 });
-  const vest = new THREE.MeshStandardMaterial({ color: 0x6d5824, roughness: .7,
-    emissive: 0xc9a54e, emissiveIntensity: .14 });
-  /* slim and DARK — the first pass read as gold pillars. A worker is a
-     near-black silhouette with one narrow retroreflective band. */
-  g.add(bx(1.05, 2.8, 0.62, body, 0, 1.4, 0));        /* legs        */
-  g.add(bx(1.32, 2.15, 0.78, body, 0, 3.85, 0));      /* torso       */
-  g.add(bx(1.38, 0.5, 0.84, vest, 0, 4.2, 0));        /* vest band   */
-  g.add(bx(0.72, 0.72, 0.66, body, 0, 5.3, 0));       /* head        */
-  g.add(bx(0.96, 0.13, 0.92, new THREE.MeshStandardMaterial({
-    color: 0xb89a4e, roughness: .55, emissive: 0xb89a4e, emissiveIntensity: .10 }),
-    0, 5.72, 0));                                      /* hard hat brim */
-  return g;
-}
-function addCrew(bo, spots) {
-  spots.forEach((s, i) => {
-    const f = crewFigure();
-    f.rotation.y = s[2] == null ? hash01(i + 91) * 6.28 : s[2];
-    /* they arrive with the work and leave with the gear */
-    put(bo, f, s[0], 0, s[1], { st: 0.55 + i * 0.04, w: .10 });
-  });
 }
 /* put(booth, object, x, y, z, staging) — three calling forms:
    numeric x/y/z sets the position; an OBJECT in the x slot means the
@@ -1946,6 +1994,12 @@ function booth1(bo) {           /* C1006 — THE MONOGRAM. 40x20 double-deck */
     put(bo, bx(2.6, 1.5, 2.6, M.navy7, c[0], CY + 0.75, c[1]), { st: 0.60, w: .07 });
   put(bo, roundedBox(5.4, 7.4, 4.2, 1.3, M.brandDark, 5.6, CY + 3.7, -4.4), { st: 0.59, w: .09 });
 
+  /* out on the open pad and up on the deck where the camera can see them,
+     not tucked behind the counter */
+  addCrew(bo, [[-13.0, hd - 4.0, 0.5, 'lift'], [-5.0, hd - 5.2, -0.8, 'drill'],
+               [2.0, hd - 3.6, 2.6, 'point'], [-6.0, 1.0, 0.2, 'carry', 13.2],
+               [-16.5, -2.0, 1.4, 'stand']]);
+
   /* ---------- STAIR — back-left, clear of the hero face ---------- */
   {
     const s1 = stairFlight(20, 0.66, 0.95, 3.6, M.alu);
@@ -2106,6 +2160,8 @@ function booth2(bo) {           /* C3042 — THE DRUM. 40x20 command hub */
     s1.rotation.y = -Math.PI / 2;
     put(bo, s1, S.RX0 + 6.0, 0, -hd + 3.4, { st: 0.48, w: .12 });
   }
+  addCrew(bo, [[-13.0, hd - 3.2, 0.6, 'drill'], [-3.0, hd - 2.4, -0.5, 'carry'],
+               [DX - 7.0, -hd + 4.0, 2.2, 'point']]);
   practical(bo, 0xff2a22, 8.0, 24, DX, 13.0, 6.0);      /* red bounce, drum */
   practical(bo, 0xffc46a, 4.0, 18, DX, 21.0, 0);        /* the halo         */
   /* gear */
@@ -2179,6 +2235,8 @@ function booth3(bo) {           /* C5020 — THE CANYON. 60x20 custom LED */
     s1.rotation.y = -Math.PI / 2;
     put(bo, s1, S.RX0 + 6.0, 0, -hd + 3.4, { st: 0.48, w: .12 });
   }
+  addCrew(bo, [[-20.0, hd - 3.2, 0.5, 'lift'], [-8.0, hd - 2.6, -0.4, 'drill'],
+               [6.0, hd - 3.0, 0.9, 'carry'], [18.0, -hd + 4.4, 2.6, 'point']]);
   practical(bo, 0xff2a22, 9.0, 30, 4.0, 12.0, 0);
   practical(bo, 0x86d4f2, 4.0, 26, 0.0, 8.0, 0);
   /* gear */
@@ -2241,6 +2299,7 @@ function booth4(bo) {           /* C7050 — THE OPENED CASE. 20x20 rapid deploy
       c[0], S.SOF + 3.6, c[1]), { st: 0.70, w: .07 });
     practical(bo, 0xffa030, 3.0, 14, c[0], S.SOF + 3.6, c[1]);
   }
+  addCrew(bo, [[-hw - 2.2, hd - 1.0, 0.7, 'carry'], [hw + 2.0, -hd + 2.0, 2.5, 'drill']]);
   practical(bo, 0xff2a22, 8.0, 20, 0, 7.0, 0);
   /* gear */
   put(bo, crateK7(5, 3.4, 4.4, 'RAPID KIT'), hw + 3.0, 0, hd + 2.2, { st: 0.05, w: .06, gear: true, ry: 0.3 });
