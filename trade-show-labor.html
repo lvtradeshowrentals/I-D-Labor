@@ -2945,19 +2945,22 @@
 
             /* THE HAND-OFF FADE. The intro block above dims as it leaves,
                so the eye lands on the animation's title and premise rather
-               than reading two things at once (owner 2026-08-20). It holds
-               full strength until 60% of it has cleared the top of the
-               screen, then fades over the last 40% of its travel. Tied to
+               than reading two things at once (owner 2026-08-20).
+               Measured on the owner's scale: 100% is the TOP of the
+               viewport, 0% the bottom. The block holds full strength until
+               its BOTTOM EDGE reaches 55%, then fades out across the next
+               third of the screen, clearing well before it leaves. Tied to
                scroll position, so it reverses on the way back up. */
             var apWrap = document.querySelector('.ap-wrap');
             if (apWrap) {
                 var apRaf = 0;
                 var apFade = function () {
                     apRaf = 0;
+                    var vh = window.innerHeight || document.documentElement.clientHeight;
+                    if (!vh) return;
                     var r = apWrap.getBoundingClientRect();
-                    if (!r.height) return;
-                    var out = -r.top / r.height;      /* 0 = top aligned, 1 = fully gone */
-                    var t = Math.min(1, Math.max(0, (out - 0.6) / 0.4));
+                    var edge = 1 - r.bottom / vh;     /* 0 = at viewport bottom, 1 = at top */
+                    var t = Math.min(1, Math.max(0, (edge - 0.55) / 0.33));
                     apWrap.style.opacity = (1 - t).toFixed(3);
                 };
                 window.addEventListener('scroll', function () {
