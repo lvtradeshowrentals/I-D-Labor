@@ -806,6 +806,39 @@ function rasterizePlan(px, done) {
       if (cls.indexOf('fp-lay-plan') >= 0 || cls.indexOf('fp-lay-truss') >= 0) return;
       clone.removeChild(n);
     });
+    /* STRIP THE LIVE CAMERA. paint() writes a scroll-driven `transform`
+       onto these groups every frame, and cloneNode copies it — so the
+       texture was baked WITH the camera of whatever frame happened to be
+       on screen at load, and the whole drawing then sat MOBY (205 plan
+       units) north of every GL element for the rest of the session.
+       Measured 2026-08-20 against the aisle lines: it is why the aisle
+       streaks looked like they ran through the booth rows. The texture
+       must hold the drawing in plain viewBox space. */
+    const lays = clone.querySelectorAll('.fp-lay-plan, .fp-lay-truss');
+    for (let i = 0; i < lays.length; i++) lays[i].removeAttribute('transform');
+    /* THE LIVE OVERLAYS MUST NOT BE BAKED. The survey burns and the
+       laser trails are built by the page INTO .fp-lay-plan, so cloning
+       that layer drags them along — and their selectors are .mi-*, which
+       this rasteriser's `.fp|.mi-plan` filter does not collect. With no
+       rule reaching them they fall back to SVG defaults: opacity 1 and
+       fill BLACK, one opaque rectangle per work-order footprint. That is
+       the blacked-out booth space (owner 2026-08-20); it sampled as pure
+       rgb(0,0,0) in the texture. They are animated DOM anyway. */
+    const liveBits = clone.querySelectorAll('.mi-laser, .mi-survey');
+    for (let i = 0; i < liveBits.length; i++)
+      liveBits[i].parentNode.removeChild(liveBits[i]);
+    /* THE APRON GOES. Below the hall sits desktop draughting furniture —
+       title block, scale bar, north compass, MAIN ENTRANCE. On a phone it
+       is an unreadable dark band under the plan (owner 2026-08-20), and
+       the stylesheet's own mobile rules never reach here: this rasteriser
+       only copies rules that have a selectorText, so @media blocks are
+       silently skipped. Drop the nodes instead. */
+    const drop = clone.querySelectorAll('.fp-tb, .fp-scale, .fp-north, .fp-dim, .fp-cols');
+    for (let i = 0; i < drop.length; i++) drop[i].parentNode.removeChild(drop[i]);
+    const dockT = clone.querySelectorAll('.fp-dock text');
+    for (let i = 0; i < dockT.length; i++)
+      if ((dockT[i].textContent || '').indexOf('MAIN ENTRANCE') >= 0)
+        dockT[i].parentNode.removeChild(dockT[i]);
     let css = '';
     for (let si = 0; si < document.styleSheets.length; si++) {
       let rules = null;
@@ -818,6 +851,24 @@ function rasterizePlan(px, done) {
     }
     const cs = getComputedStyle(document.documentElement);
     const gold = (cs.getPropertyValue('--accent-gold') || '#b8a573').trim();
+    /* THE FOUR STANDS, PAINTED BY HAND. Their stylesheet rules do not
+       survive into the raster document — measured 2026-08-20 by sampling
+       the texture: a stand interior comes back as pure rgb(0,0,0), the
+       SVG default fill, while every earlier .fp rule renders correctly.
+       So on mobile each LVTSR stand read as a black hole punched in the
+       floor plan (owner: "one of the booth spaces is completely blacked
+       out"). An inline style attribute outranks any rule, so the stand
+       is painted here instead: same glass as every other booth space,
+       with the gold border and number still marking it as ours. */
+    const paint = (sel, style) => {
+      const n = clone.querySelectorAll(sel);
+      for (let i = 0; i < n.length; i++) n[i].setAttribute('style', style);
+    };
+    paint('.fp-stand-bg', 'fill:none');
+    paint('.fp-stand-r', 'fill:rgba(45,156,202,0.17);stroke:' + gold + ';stroke-width:1.6');
+    paint('.fp-stand-g', 'fill:none;stroke:rgba(184,165,115,0.30);stroke-width:1;stroke-dasharray:4 4');
+    paint('.fp-stand-n', 'fill:#d4bc7d');
+    paint('.fp-stand-c', 'fill:rgba(212,188,125,0.7)');
     css = ':root{--accent-gold:' + gold + ';--wall:1;--plandim:0;}\n' +
       'svg{font-family:-apple-system,"Segoe UI",Roboto,sans-serif;}\n' +
       '.mi-plan{opacity:1;}\n' + css;
@@ -1631,15 +1682,16 @@ function init() {
      sparkles that are really doing nothing… zero value". The electricity
      lives in the aisle current below instead.) */
   /* ============ THE AISLE CURRENT ============
-     What the owner asked back: streaks of light running down the aisles
-     "in a really nice electronic kind of feel". One additive quad per
-     aisle line of the drawing; two comet pulses per lane (sharp head,
-     exponential tail), alternating direction lane to lane. Loudest at
-     the top-down map; the rake fades them out by the time the eye is on
-     the floor, so they never fight a hero stand. */
+     Streaks of light running down the aisles "in a really nice electronic
+     kind of feel". THREE lanes only, ONE slow comet each, and faint —
+     seven lanes of twin comets read as traffic rather than atmosphere
+     (owner 2026-08-20: "only a couple, faint and mystical"). Lanes are
+     the drawing's own aisle centrelines, alternating direction. Loudest
+     at the top-down map; the rake fades them out by the time the eye is
+     on the floor, so they never fight a hero stand. */
   {
     state.streakU = { value: 0 };
-    const AY = [127.1, 276.1, 476.1, 625.1, 775.1, 974.1, 1124.1];
+    const AY = [476.1, 775.1, 1124.1];
     const mkStreak = (i) => new THREE.ShaderMaterial({
       transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
       uniforms: { uOp: state.streakU, uT: state.holoT,
@@ -1651,17 +1703,18 @@ function init() {
         uniform float uOp, uT, uPh, uDir;
         varying vec2 vUv2;
         void main() {
-          float wy = smoothstep(0.5, 0.10, abs(vUv2.y - 0.5));
+          /* a narrow soft-edged ribbon: the light belongs to the aisle,
+             it does not wash the booth rows either side of it */
+          float wy = smoothstep(0.5, 0.16, abs(vUv2.y - 0.5));
           float u = uDir > 0.0 ? vUv2.x : 1.0 - vUv2.x;
-          vec3 acc = vec3(0.0);
-          for (int k = 0; k < 2; k++) {
-            float fk = float(k);
-            float head = fract(uT * (0.075 + 0.028 * fk) + uPh * (1.0 + fk * 0.7));
-            float d = fract(head - u);
-            /* ice-cyan tail, near-white hot head — only the head blooms */
-            acc += vec3(0.25, 0.83, 0.88) * 1.25 * exp(-d * 20.0)
-                 + vec3(0.85, 0.985, 1.0) * 2.8 * exp(-d * 260.0);
-          }
+          /* ONE slow comet: a long gentle tail with a soft head. The old
+             head was authored at 2.8 — well past the bloom knee — so it
+             flared into a hard white dash. Kept under it now: this reads
+             as a current moving through the drawing, not a light bar. */
+          float head = fract(uT * 0.042 + uPh);
+          float d = fract(head - u);
+          vec3 acc = vec3(0.30, 0.78, 0.92) * 0.42 * exp(-d * 9.0)
+                   + vec3(0.72, 0.93, 1.00) * 0.72 * exp(-d * 70.0);
           gl_FragColor = vec4(acc * wy, uOp * wy * min(1.0, acc.g));
         }`,
     });
@@ -2187,7 +2240,7 @@ const MIGL = {
     if (state.streakU) {
       const rk = cam.rake || 0;
       const rf = 1 - Math.min(1, Math.max(0, (rk - 24) / 26));
-      state.streakU.value = 0.85 * rf * (1 - 0.8 * (curShow || 0));
+      state.streakU.value = 0.40 * rf * (1 - 0.8 * (curShow || 0));
     }
     syncWorld(cam);
     /* proximity cull: a fixture whose clip-w collapses is about to project

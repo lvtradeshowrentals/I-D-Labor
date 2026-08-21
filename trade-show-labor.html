@@ -642,8 +642,12 @@
            floor. Nothing is allowed to occlude the plan, ever. */
         .fp-ext, .fp-ext-stands { display: none; }
 
-        .fp-stand-bg { fill: #0a1219; }
-        .fp-stand-r { fill: rgba(184, 165, 115, 0.07); stroke: var(--accent-gold);
+        /* the four LVTSR stands are BOOTH SPACES, not holes: an opaque
+           near-black fill read as a blacked-out square on the plan
+           (owner 2026-08-20). Same glass as every other booth, a touch
+           richer so the gold border still marks it as ours. */
+        .fp-stand-bg { fill: none; }
+        .fp-stand-r { fill: rgba(45, 156, 202, 0.17); stroke: var(--accent-gold);
                       stroke-width: 1.6; }
         .fp-stand-g { fill: none; stroke: rgba(184, 165, 115, 0.3); stroke-width: 1;
                       stroke-dasharray: 4 4; }
@@ -2220,7 +2224,16 @@
                          rake: RAKE + sh.dRake, D: sh.D, poy: sh.poy,
                          yaw: sh.yaw * (narrow.matches ? 0.55 : 1) };
             }
-            var WIDE = { s: 1, cx: VBW/2, cy: VBH/2, rake: 0, yaw: 0, D: 1400, poy: 0.50 };
+            /* MOBILE FRAMING OF THE MAP (owner 2026-08-20): the hall —
+               plan y 52..1348 — fills the letterboxed frame edge to edge.
+               The draughting apron below it (title block, scale, compass,
+               MAIN ENTRANCE) was dead dark space on a phone; it is now
+               off-frame here and stripped from the raster in mi-gl.js.
+               cy is pulled north to cancel MOBY so the hall centres in
+               the matte band; s 0.96 makes 1296 plan units span it. */
+            var WIDE = narrow.matches
+                ? { s: 0.96, cx: VBW/2, cy: 487, rake: 0, yaw: 0, D: 1400, poy: 0.50 }
+                : { s: 1, cx: VBW/2, cy: VBH/2, rake: 0, yaw: 0, D: 1400, poy: 0.50 };
             /* the payoff is a MOVE, not a frame: crane back off the last
                finished stand and look down the hall with all four stands
                stacked in depth */
