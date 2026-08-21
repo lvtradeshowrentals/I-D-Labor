@@ -489,6 +489,25 @@
 
         .ap-sheet-dim i { font-style: normal; }
 
+        /* THE ON-RAMP. Without this the reader fell out of a services
+           paragraph straight into a dark hall at 05:00 with a countdown
+           and no idea what they were watching (owner 2026-08-20). One
+           line states the premise, the clock and the payoff. */
+        .ap-lead {
+            margin: 16px 0 0;
+            max-width: 60ch;
+            font-size: clamp(0.92rem, 1.5vw, 1.04rem);
+            line-height: 1.62;
+            color: rgba(226, 236, 244, 0.72);
+        }
+        .ap-lead b {
+            display: block;
+            color: #fff; font-weight: 800;
+            font-size: clamp(1.15rem, 2.4vw, 1.6rem);
+            letter-spacing: -0.01em;
+            margin-bottom: 6px;
+        }
+
         @property --rake { syntax: "<angle>";  inherits: true; initial-value: 0deg; }
         @property --yaw  { syntax: "<angle>";  inherits: true; initial-value: 0deg; }
         @property --wall { syntax: "<number>"; inherits: true; initial-value: 0; }
@@ -1732,14 +1751,17 @@
             </div>
         </div>
 
-        <div class="ap-sheet" aria-hidden="true">
-            <span class="ap-sheet-dim"><i>300 FT</i></span>
+        <div class="ap-sheet">
+            <span class="ap-sheet-dim" aria-hidden="true"><i>300 FT</i></span>
+            <p class="ap-lead"><b>One move-in day. Four crews.</b>
+                Scroll to run a real Las Vegas install &mdash; empty hall at 05:00,
+                show open at 16:00 &mdash; and meet each crew you can book.</p>
         </div>
     </section>
 
     <!-- ===== MOVE-IN — the scroll bar is the show clock ===== -->
     <section class="mi" id="what-we-do-best" aria-labelledby="mi-h">
-        <h2 id="mi-h" class="sr-only">Four trades, out on the floor</h2>
+        <h2 id="mi-h" class="sr-only">One move-in day: the four crews we put on your floor</h2>
 
         <noscript>
             <style>
@@ -1864,7 +1886,7 @@
                     <div class="mi-tb">
                         <span class="mi-tb-k">MI-01 &middot; NAB &rsquo;26 &middot; LVCC CENTRAL</span>
                         <p class="mi-clock">05:00</p>
-                        <p class="mi-float">T&minus;11:00 to floor release</p>
+                        <p class="mi-float">T&minus;11:00 to show open</p>
                         <p class="mi-tally">
                             <span><b class="mi-t-st">0</b> Stands</span>
                             <span><b class="mi-t-cr">0</b> Crew</span>
@@ -1873,9 +1895,9 @@
                     </div>
 
                     <div class="mi-sheet">
-                        <h3 class="mi-sheet-h">Pick a call time.</h3>
+                        <h3 class="mi-sheet-h">Four crews. Pick your call time.</h3>
                         <div class="mi-cards"></div>
-                        <p class="mi-final">4 Stands &middot; 19 Crew &middot; 135 Person-Hours &middot; Floor Released 16:00</p>
+                        <p class="mi-final">4 Stands &middot; 19 Crew &middot; 135 Person-Hours &middot; Show Open 16:00</p>
                     </div>
                 </div>
             </div>
@@ -1898,9 +1920,9 @@
                     <a href="i-d-labor-request.html">Book this crew</a>
                 </li>
                 <li>
-                    <h3>Custom Display Setup</h3>
-                    <p>Expert installation of graphics, lighting, multimedia, and signage. From simple to complex, we execute your vision flawlessly.</p>
-                    <p><b>6 Technicians</b> &middot; Call 0900 &middot; Stand 5020</p>
+                    <h3>Custom LED Build</h3>
+                    <p>Large-format LED walls and custom displays, built and commissioned. From simple to complex, we execute your vision flawlessly.</p>
+                    <p><b>4 Techs + 2 I&amp;D</b> &middot; Call 0900 &middot; Stand 5020</p>
                     <img src="assets/service-custom.jpg" alt="Technicians installing graphics and lighting on a custom display" loading="lazy" decoding="async" width="784" height="1168">
                     <a href="i-d-labor-request.html">Book this crew</a>
                 </li>
@@ -2178,30 +2200,30 @@
                published Las Vegas I&D practice (Teamsters 631 / IATSE 720 /
                IBEW 357 jurisdiction, ST 0800-1630). Totals: 19 crew, 135 PH. */
             var WO = [
-                { n:'01', num:'C1006', name:'Installation &amp; Dismantle',
+                { n:'01', num:'1006', name:'Installation &amp; Dismantle',
                   rect:[202,152,199,99], call:'0600', crew:'8 &middot; Local 631', figs:8,
                   hours:64,
-                  notes:['Day 3 of 3 &mdash; deck rails and stair treads; empties tagged by 1400.',
-                         '1 foreman + 7 journeymen &middot; call 0600 &middot; stand C1006.',
-                         'Stamped engineering plans in booth per Clark Co. FPB.'] },
-                { n:'02', num:'C3042', name:'On-Site Coordination',
+                  notes:['Complete booth build and teardown &mdash; structure, deck, rails, graphics.',
+                         '8-person crew: 1 foreman, 7 journeymen. On the floor at 06:00.',
+                         'Stamped engineering plans on site. Empties tagged and cleared by 14:00.'] },
+                { n:'02', num:'3042', name:'On-Site Coordination',
                   rect:[1099,501,200,100], call:'0730', crew:'Lead + Floor Mgr', figs:2,
                   hours:17, kind:'coord',
-                  notes:['EAC credentials and COI on file with show management.',
-                         'Lead + floor manager &middot; call 0730 &middot; stand C3042.',
-                         'Coordinating Freeman freight, IBEW 357 power, IATSE 720 rigging.'] },
-                { n:'03', num:'C5020', name:'Custom LED Build',
+                  notes:['We run your floor &mdash; freight, power, rigging and show management.',
+                         'Lead plus floor manager, on site from 07:30 through doors.',
+                         'EAC credentials and insurance filed with show management in advance.'] },
+                { n:'03', num:'5020', name:'Custom LED Build',
                   rect:[551,800,299,100], call:'0900', crew:'4 Techs + 2 I&amp;D', figs:6,
                   hours:42, kind:'custom',
-                  notes:['110 LED cabinets, 2 processor racks &mdash; truss flown day 1.',
-                         '4 techs + 2 Local 631 &middot; call 0900 &middot; stand C5020.',
-                         'Pixel map and color balance by 1400; spares to the work box.'] },
-                { n:'04', num:'C7050', name:'Emergency Response',
+                  notes:['Large-format LED walls and custom displays, built and commissioned.',
+                         '4 LED techs plus 2 install crew. Truss flown ahead of build day.',
+                         '110 cabinets pixel-mapped and color-balanced before doors.'] },
+                { n:'04', num:'7050', name:'Emergency Response',
                   rect:[1299,1149,99,100], call:'On Call', crew:'Rapid Team', figs:3,
                   hours:12, kind:'rush',
-                  notes:['Forced freight &mdash; missed target, rerouted via marshalling yard.',
-                         'Rapid team &middot; 4-hour minimum call &middot; stand C7050.',
-                         'Scope on arrival: recrate damage, graphic swap, header re-hang.'] }
+                  notes:['Freight missed, crate damaged, graphic wrong &mdash; we fix it same day.',
+                         'Rapid team of 3, four-hour minimum call. On site within the hour.',
+                         'Recrate, graphic swap, header re-hang &mdash; finished before doors.'] }
             ];
 
             window.__MI = { stage: stage, WO: WO,
@@ -2334,9 +2356,9 @@
                 { a:.055, b:.135, t0:330, cam:{ s:1.14, cx:VBW/2, cy:VBH/2, rake:RAKE, yaw:0, D:650, poy:0.62 }, kind:'rise' },
                 { a:.135, b:.330, t0:360, cam:camOf(0), kind:'wo', i:0 },
                 { a:.330, b:.365, t0:440, cam:camOf(1), camFn:transitCam(0, 1), kind:'transit' },
-                { a:.365, b:.470, t0:455, cam:camOf(1), kind:'wo', i:1 },
+                { a:.365, b:.470, t0:450, cam:camOf(1), kind:'wo', i:1 },
                 { a:.470, b:.505, t0:530, cam:camOf(2), camFn:transitCam(1, 2), kind:'transit' },
-                { a:.505, b:.640, t0:545, cam:camOf(2), kind:'wo', i:2 },
+                { a:.505, b:.640, t0:540, cam:camOf(2), kind:'wo', i:2 },
                 { a:.640, b:.678, t0:760, cam:{ s:1.85, cx:800, cy:860, rake:58, yaw:-12, D:950, poy:0.50 }, kind:'lapse' },
                 { a:.678, b:.712, t0:860, cam:camOf(3), camFn:transitCam(2, 3), kind:'transit' },
                 { a:.712, b:.760, t0:887, cam:camOf(3), kind:'wo', i:3 },
@@ -2500,17 +2522,17 @@
                 ticket.classList.remove('is-on');
 
                 if (c.kind === 'cold') {
-                    say.innerHTML = '0500<small>Gang boxes staged. Nobody has shown up yet.</small>';
+                    say.innerHTML = '05:00<small>Empty hall. Eleven hours to show open.</small>';
                     say.classList.add('is-on');
                 } else if (c.kind === 'rise') {
                     say.innerHTML = 'The crates are on the dock.<br><em>We show up.</em>';
                     say.classList.add('is-on');
                 } else if (c.kind === 'lapse') {
-                    say.innerHTML = '12:40 &rarr; 14:47<small>Three stands up. The afternoon runs.</small>';
+                    say.innerHTML = '12:40 &rarr; 14:47<small>Three builds done. The afternoon runs.</small>';
                     say.classList.add('is-on');
                 } else if (c.kind === 'doors') {
                     /* is-on is granted by paint() at the surge frame */
-                    say.innerHTML = '16:00 &middot; Floor Release<small>Aisles clear. Empties pulled. Every screen live.</small>';
+                    say.innerHTML = '16:00 &middot; Show Open<small>Aisles clear. Empties pulled. Every screen live.</small>';
                 } else if (c.kind === 'sheet') {
                     sheet.classList.add('is-on');
                 }
@@ -2539,7 +2561,7 @@
 
                 if (c.kind === 'wo') {
                     var w = WO[c.i];
-                    tWo.innerHTML = 'Work Order ' + w.n + ' &mdash; Notes';
+                    tWo.innerHTML = 'Work Order ' + w.n + ' &middot; Stand ' + w.num;
                     tH.innerHTML = w.name;
                     for (var i = 0; i < tNotes.length; i++) tNotes[i].innerHTML = w.notes[i] || '';
                     ticket.classList.toggle('is-right', (c.i % 2) === 1);
@@ -2719,8 +2741,8 @@
                        and pushed the rail down over the headline */
                     floatEl.textContent = toDoors > 0
                         ? 'T−' + Math.floor(toDoors/60) + ':' + (toDoors%60<10?'0':'') + (toDoors%60) +
-                          (narrow.matches ? '' : ' to floor release')
-                        : 'Floor released';
+                          (narrow.matches ? '' : ' to show open')
+                        : 'Show open';
                     floatEl.classList.toggle('is-hot', toDoors > 0 && toDoors <= 75);
 
                     var done = 0, crew = 0, ph = 0;
