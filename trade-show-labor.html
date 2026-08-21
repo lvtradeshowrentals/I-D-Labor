@@ -981,9 +981,14 @@
             .mi-float { font-size: 0.54rem; letter-spacing: .1em; text-align: right;
                         white-space: nowrap;
                         padding-left: 12px; border-left: 1px solid rgba(186,198,208,.22); }
-            .mi-stage { --matte: 9svh; }
+            /* NO LETTERBOX ON A PHONE (owner 2026-08-20). The 9svh bars
+               plus the gap above the drawing left a dead black band
+               between the section above and the floor plan. The picture
+               now runs edge to edge and the hall is framed to fill it;
+               the caption keeps its own top since --matte is gone. */
+            .mi-stage { --matte: 0px; }
             .mi-skip { top: 58px; left: 10px; padding: 5px 8px; }
-            .mi-say { top: 104px; left: 5%; right: 5%; }
+            .mi-say { top: 104px !important; left: 5%; right: 5%; }
             .mi-cards { grid-template-columns: 1fr; }
             /* the CTA sheet owns the frame — the HUD yields */
             .mi-stage.is-hud-out .mi-tb,
@@ -2238,7 +2243,7 @@
                cy is pulled north to cancel MOBY so the hall centres in
                the matte band; s 0.96 makes 1296 plan units span it. */
             var WIDE = narrow.matches
-                ? { s: 0.96, cx: VBW/2, cy: 487, rake: 0, yaw: 0, D: 1400, poy: 0.50 }
+                ? { s: 1.17, cx: VBW/2, cy: 525, rake: 0, yaw: 0, D: 1400, poy: 0.50 }
                 : { s: 1, cx: VBW/2, cy: VBH/2, rake: 0, yaw: 0, D: 1400, poy: 0.50 };
             /* the payoff is a MOVE, not a frame: crane back off the last
                finished stand and look down the hall with all four stands
