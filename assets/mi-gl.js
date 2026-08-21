@@ -835,7 +835,7 @@ function rasterizePlan(px, done) {
        silently skipped. Drop the nodes instead. */
     const drop = clone.querySelectorAll('.fp-tb, .fp-scale, .fp-north, .fp-dim, .fp-cols');
     for (let i = 0; i < drop.length; i++) drop[i].parentNode.removeChild(drop[i]);
-    const dockT = clone.querySelectorAll('.fp-dock text');
+    const dockT = clone.querySelectorAll('.fp-dock text, .fp-door text');
     for (let i = 0; i < dockT.length; i++)
       if ((dockT[i].textContent || '').indexOf('MAIN ENTRANCE') >= 0)
         dockT[i].parentNode.removeChild(dockT[i]);
@@ -1483,68 +1483,15 @@ function init() {
      black — without the artifact. mkWall is kept for the graphic it
      carries in case a future camera wants a real back wall. */
   void mkWall;
-  /* THE VOID CAP. The four walls stop at roof height, so at the low rakes
-     the hero cameras use the frame runs off the top of them into pure
-     black along a dead-straight horizontal edge — which reads as a dark
-     rectangular slab lying over the stand, not as a room ending. One
-     open cylinder well outside the hall, graded from the hall's own dim
-     tone down to black, closes the horizon from every yaw. */
-  {
-    /* graded to deep NAVY, not black — the horizon must read as a big
-       room's air, never as a dark wall closing in (owner 2026-08-20) */
-    const capTex = canvasTex(8, 256, (g) => {
-      const gr = g.createLinearGradient(0, 0, 0, 256);
-      gr.addColorStop(0.00, '#02040a');
-      gr.addColorStop(0.50, '#050b16');
-      gr.addColorStop(0.84, '#0a1626');
-      gr.addColorStop(1.00, '#0e1e33');
-      g.fillStyle = gr; g.fillRect(0, 0, 8, 256);
-    });
-    const cap = new THREE.Mesh(
-      new THREE.CylinderGeometry(3400, 3400, 3000, 24, 1, true),
-      new THREE.MeshBasicMaterial({ map: capTex, side: THREE.BackSide,
-        fog: false, depthWrite: false, toneMapped: false }));
-    /* the plan is z-up, so the cylinder's own y axis has to lie down */
-    cap.geometry.rotateX(Math.PI / 2);
-    cap.position.set(800, 730, 900);
-    cap.renderOrder = -20;
-    plan.add(cap);
-  }
-  /* THE APRON (r2): a wide dark-navy ground beyond the drawing, so a
-     raked horizon reads floor -> air -> lid, never plan-edge -> void.
-     noPre keeps it out of the mirror pass — flipped, a ground plane
-     would sit just above the floor and blank every reflection. */
-  {
-    const apTex = canvasTex(512, 512, (g) => {
-      const gr = g.createRadialGradient(256, 256, 60, 256, 256, 256);
-      gr.addColorStop(0, '#0c1522');
-      gr.addColorStop(0.55, '#081020');
-      gr.addColorStop(1, '#030710');
-      g.fillStyle = gr; g.fillRect(0, 0, 512, 512);
-      /* WINDOW OVER THE HALL: the DOM drawing lives BEHIND this canvas,
-         so an opaque apron erased the whole floor plan (r2 regression).
-         The hall rect goes transparent with a feathered edge. */
-      const px = (v) => ((v + 2700) / 7000) * 512;      /* plan->tex, x */
-      const py = (v) => ((v + 2740) / 7000) * 512;
-      const x0 = px(-40), x1 = px(1640), y0 = py(-40), y1 = py(1560);
-      const img = g.getImageData(0, 0, 512, 512), d = img.data;
-      const F = 26;                                     /* feather, px */
-      for (let y = 0; y < 512; y++) for (let x = 0; x < 512; x++) {
-        const inX = Math.min(x - x0, x1 - x) / F;
-        const inY = Math.min(y - y0, y1 - y) / F;
-        const t = Math.min(1, Math.max(0, Math.min(inX, inY)));
-        if (t > 0) d[(y * 512 + x) * 4 + 3] = Math.round(255 * (1 - t));
-      }
-      g.putImageData(img, 0, 0);
-    });
-    const ap = new THREE.Mesh(new THREE.PlaneGeometry(7000, 7000),
-      new THREE.MeshBasicMaterial({ map: apTex, fog: false,
-        transparent: true, depthWrite: false }));
-    ap.position.set(800, 760, -0.6);
-    ap.renderOrder = -18;
-    ap.userData.noPre = true;
-    plan.add(ap);
-  }
+  /* NO SHELL AROUND THE HALL (owner 2026-08-20). What used to sit here
+     was a void-cap cylinder plus a wide radial-gradient ground apron,
+     both meant to stop a raked horizon running into pure black. On a
+     real desktop they read as exactly what the owner called them — "a
+     radius wall or skirt or blinder" curving up around the floor as the
+     camera tilts into the hall. The brief is an OPEN map: the drawing
+     floats on the page's own dark ground, nothing rings it, and nothing
+     may ever stand between the eye and the plan. The frame edges are
+     softened by the CSS vignette and fog overlays instead of geometry. */
   /* (NEIGHBOR MASSING DELETED — owner 2026-08-20: the ring of dark
      blocks read as "a complete wall around the whole hall" that the
      camera could end up behind. Nothing solid may ever stand between the
