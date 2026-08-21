@@ -451,43 +451,15 @@
             .ap-wrap { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: end; }
         }
 
+        /* (the "300 FT" dimension rule that used to sit here is gone —
+           owner 2026-08-20: out of place and earning nothing. The block
+           now carries the on-ramp copy alone.) */
         .ap-sheet {
             position: relative;
             z-index: 1;
             max-width: 1240px;
             margin: clamp(46px, 6vw, 82px) auto calc(clamp(52px, 7vh, 88px) * -1);
-            padding-top: 26px;
-            border-top: 2px solid rgba(155, 205, 230, 0.5);
         }
-
-        .ap-sheet::before,
-        .ap-sheet::after {
-            content: '';
-            position: absolute;
-            top: -2px;
-            width: 1px;
-            height: 13px;
-            background: rgba(155, 205, 230, 0.5);
-        }
-
-        .ap-sheet::before { left: 0; }
-        .ap-sheet::after { right: 0; }
-
-        .ap-sheet-dim {
-            position: absolute;
-            top: -13px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 0 12px;
-            background: #080d12;
-            font-size: 0.62rem;
-            font-weight: 700;
-            letter-spacing: 0.26em;
-            color: rgba(186, 198, 208, 0.7);
-            font-variant-numeric: tabular-nums;
-        }
-
-        .ap-sheet-dim i { font-style: normal; }
 
         /* THE ON-RAMP. Without this the reader fell out of a services
            paragraph straight into a dark hall at 05:00 with a countdown
@@ -503,7 +475,7 @@
         .ap-lead b {
             display: block;
             color: #fff; font-weight: 800;
-            font-size: clamp(1.15rem, 2.4vw, 1.6rem);
+            font-size: clamp(1.45rem, 3.2vw, 2.15rem);
             letter-spacing: -0.01em;
             margin-bottom: 6px;
         }
@@ -695,6 +667,12 @@
         .mi-burn  { stroke: var(--gold-l); stroke-width: 10; opacity: 0.30; filter: blur(6px); }
         .mi-survey { stroke: var(--accent-gold); stroke-width: 1.6; opacity: 0; }
         .mi-survey.is-on { opacity: 0.85; }
+
+        .mi-reveal { opacity: 0; transition: opacity .75s ease; }
+        .mi-reveal.is-revealed { opacity: 1; }
+        @media (prefers-reduced-motion: reduce) {
+            .mi-reveal { opacity: 1; transition: none; }
+        }
 
         .mi-gl { position: absolute; inset: 0; z-index: 0;
                  pointer-events: none; display: block;
@@ -1752,7 +1730,6 @@
         </div>
 
         <div class="ap-sheet">
-            <span class="ap-sheet-dim" aria-hidden="true"><i>300 FT</i></span>
             <p class="ap-lead"><b>One move-in day. Four crews.</b>
                 Scroll to run a real Las Vegas install &mdash; empty hall at 05:00,
                 show open at 16:00 &mdash; and meet each crew you can book.</p>
@@ -2945,6 +2922,50 @@
             measure();
             snap();
             sec.classList.add('mi-js');
+
+            /* THE ENTRANCE FADE. Root shrunk from the bottom by 40% means
+               the callback fires the moment the target crosses 60% of the
+               viewport height — i.e. once it occupies the bottom 40% of
+               the screen (owner 2026-08-20). One-shot: unobserve on hit. */
+            var revealEls = [document.querySelector('.ap-lead'), stage]
+                .filter(function (el) { return !!el; });
+            revealEls.forEach(function (el) { el.classList.add('mi-reveal'); });
+            if ('IntersectionObserver' in window) {
+                var revealObs = new IntersectionObserver(function (ens) {
+                    ens.forEach(function (en) {
+                        if (!en.isIntersecting) return;
+                        en.target.classList.add('is-revealed');
+                        revealObs.unobserve(en.target);
+                    });
+                }, { rootMargin: '0px 0px -40% 0px', threshold: 0 });
+                revealEls.forEach(function (el) { revealObs.observe(el); });
+            } else {
+                revealEls.forEach(function (el) { el.classList.add('is-revealed'); });
+            }
+
+            /* THE HAND-OFF FADE. The intro block above dims as it leaves,
+               so the eye lands on the animation's title and premise rather
+               than reading two things at once (owner 2026-08-20). It holds
+               full strength until 60% of it has cleared the top of the
+               screen, then fades over the last 40% of its travel. Tied to
+               scroll position, so it reverses on the way back up. */
+            var apWrap = document.querySelector('.ap-wrap');
+            if (apWrap) {
+                var apRaf = 0;
+                var apFade = function () {
+                    apRaf = 0;
+                    var r = apWrap.getBoundingClientRect();
+                    if (!r.height) return;
+                    var out = -r.top / r.height;      /* 0 = top aligned, 1 = fully gone */
+                    var t = Math.min(1, Math.max(0, (out - 0.6) / 0.4));
+                    apWrap.style.opacity = (1 - t).toFixed(3);
+                };
+                window.addEventListener('scroll', function () {
+                    if (!apRaf) apRaf = requestAnimationFrame(apFade);
+                }, { passive: true });
+                window.addEventListener('resize', apFade, { passive: true });
+                apFade();
+            }
 
             var isNear = true;
             if ('IntersectionObserver' in window) {
