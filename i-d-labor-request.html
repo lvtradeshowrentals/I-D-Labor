@@ -11,7 +11,6 @@
     <meta property="og:image" content="assets/world2-logo.png">
     <link rel="icon" type="image/png" href="assets/world2-logo.png">
     <link rel="stylesheet" href="assets/site.css">
-    <link rel="stylesheet" href="assets/build-stage.css">
     <style>
         /* ============================================================
            I&D LABOR REQUEST
@@ -78,10 +77,13 @@
                 radial-gradient(90% 70% at 20% 0%, rgba(45, 156, 202, 0.14), transparent 68%),
                 linear-gradient(180deg, rgba(15, 20, 25, 0.90) 0%, rgba(15, 20, 25, 0.80) 40%, rgba(15, 20, 25, 0.95) 100%);
         }
+        /* Single centred column. This row used to pair the form with a CSS-3D
+           "live build" stage; it was removed because on a phone the stage pinned
+           under the navbar and ate the top third of the screen before the visitor
+           could reach a field. assets/build-stage.{js,css} are still in the repo. */
         .lab-request-grid {
             position: relative; z-index: 2;
-            display: grid; grid-template-columns: 1fr 1fr; gap: 48px;
-            align-items: start; max-width: var(--maxw); margin: 0 auto;
+            max-width: 840px; margin: 0 auto;
         }
         /* Intro band now sits above the build row, so it no longer sticks. */
         .lab-intro { position: relative; z-index: 2; max-width: var(--maxw); margin: 0 auto 46px; }
@@ -89,11 +91,6 @@
         .lab-intro .lab-assure li { border-bottom: none; border-top: 1px solid rgba(255, 255, 255, 0.09); }
         .lab-aside { position: static; }
 
-        .lab-stagecol { position: sticky; top: 96px; }
-        .lab-stagenote {
-            margin-top: 14px; font-size: 0.84rem; line-height: 1.6; color: var(--text-secondary);
-        }
-        .lab-stagenote b { color: var(--accent-teal-bright); font-weight: 600; }
         .lab-aside h2 { font-size: clamp(1.7rem, 3.4vw, 2.4rem); line-height: 1.12; letter-spacing: -0.8px; margin-bottom: 16px; }
         .lab-aside h2 em { font-style: normal; color: var(--accent-gold); }
         .lab-aside > p { color: rgba(255, 255, 255, 0.78); max-width: 38ch; }
@@ -294,18 +291,6 @@
            beats stop swapping in place and become a scrolling column — the
            controller switches to "flow" to match. */
         @media (max-width: 1000px) {
-            /* See the note in contact-us.html: block, not a one-column grid,
-               so the sticky stage can travel the height of the form. */
-            .lab-request-grid { display: block; }
-            .lab-stagecol {
-                position: sticky;
-                top: 70px;
-                z-index: 20;
-                padding-bottom: 14px;
-                background: linear-gradient(180deg,
-                    var(--primary-bg) 0%, var(--primary-bg) 86%, transparent 100%);
-            }
-            .lab-request-grid > div[data-reveal="right"] { margin-top: 4px; }
             .lab-intro .lab-assure { grid-template-columns: 1fr; }
             .seq-track { height: auto; }
             .seq-stick { position: static; height: auto; display: block; padding: 96px 20px 40px; }
@@ -409,26 +394,8 @@
 
         <div class="lab-request-grid">
 
-            <!-- LEFT: THE LIVE BUILD ------------------------------------
-                 A CSS-3D exhibit that assembles itself from the form on the
-                 right. Decorative and aria-hidden — every field still works
-                 with build-stage.js absent.
-                 Engine: assets/build-stage.js  Styles: build-stage.css -->
-            <div class="lab-stagecol" data-reveal="left" data-bs-dock>
-                <div class="bs" data-build-stage="labor" data-form="#lab-form"></div>
-                <!-- As on contact-us: an illustration of the REQUEST, not a design
-                     proposal. We are being hired to install someone else's exhibit
-                     here, so implying we designed it would be doubly wrong. -->
-                <p class="lab-stagenote">
-                    <b>Your job, taking shape.</b> The details you type drive this live
-                    illustration &mdash; your company on the header, your show and venue
-                    on the spec. It&rsquo;s a stand-in for your request, not your actual
-                    exhibit. Drag it to orbit.
-                </p>
-            </div>
-
             <!-- Form -->
-            <div data-reveal="right">
+            <div data-reveal>
               <div class="lab-form-card">
                 <h3 class="lab-form-title">Labor request</h3>
                 <p class="lab-form-sub">Takes about two minutes</p>
@@ -638,7 +605,6 @@
     </footer>
 
     <script src="assets/site.js" defer></script>
-    <script src="assets/build-stage.js" defer></script>
     <!-- Binds the closer clip's playhead to scroll. Same engine as index /
          about-us / what-we-do; this page has its own clip.
          assets/labor-request-scroll.mp4 is re-encoded ALL-INTRA (-g 1): the

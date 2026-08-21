@@ -495,6 +495,13 @@
 
         .mi {
             position: relative;
+            /* FULL BLEED, ALWAYS. The global mobile `section` rule
+               (padding: 50px 20px) boxed the sticky stage inside a 20px
+               frame and dropped a 50px black band between the hero and
+               the map — the "dead space" and the unclean transition the
+               owner flagged 2026-08-20. The picture must touch all four
+               edges; the copy inside it carries its own insets. */
+            padding: 0;
             background: #05090d;
             color: var(--text-primary);
             scroll-margin-top: 88px;
