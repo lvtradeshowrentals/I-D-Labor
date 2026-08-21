@@ -560,26 +560,8 @@
         .mi-stage.is-hud-out .mi-matte-b { transform: translateY(101%); }
         .navbar.mi-dim { opacity: 0.28; transition: opacity .4s ease; }
         .navbar.mi-dim:hover, .navbar.mi-dim:focus-within { opacity: 1; }
-        /* near-lens air: two turbulence sheets drifting at different rates —
-           the camera stops feeling like it floats in vacuum */
-        .mi-air {
-            position: absolute; inset: -20%; z-index: 3; pointer-events: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012' numOctaves='3' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0.6  0 0 0 0 0.7  0 0 0 0 0.8  0 0 0 0.5 0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)'/%3E%3C/svg%3E");
-            background-size: 900px 900px;
-            mix-blend-mode: screen; opacity: 0.05;
-            animation: miAir 44s linear infinite alternate;
-        }
-        .mi-air2 {
-            background-size: 1500px 1500px;
-            opacity: 0.035;
-            animation-duration: 67s; animation-direction: alternate-reverse;
-        }
-        @keyframes miAir {
-            from { transform: translate3d(-3%, -2%, 0) scale(1.04); }
-            to   { transform: translate3d(3%, 2%, 0) scale(1.1); }
-        }
-        @media (prefers-reduced-motion: reduce) { .mi-air { animation: none; } }
-        .mi-lite .mi-air { display: none; }
+        /* (the near-lens turbulence sheets are gone — with the dust cloud
+           they were the "sparkles doing nothing" the owner cut 2026-08-20) */
         .mi-lite .mi-ticket, .mi-lite .mi-tb, .mi-lite .mi-skip {
             -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
 
@@ -596,36 +578,37 @@
             display: block;
             overflow: visible;
 
-            /* the drawing stays READABLE the whole way down — the owner
-               never wants a dark void between stands */
-            /* The blueprint's own ink is cyan, which measured ~40% of the
-               frame against a strict two-colour brief. This swings the whole
-               drawing to amber-on-black without touching the SVG itself. */
-            filter: sepia(0.88) hue-rotate(-16deg) saturate(1.55) brightness(0.95);
-            opacity: calc(0.66 * (1 - 0.80 * var(--plandim, 0)));
+            /* THE MAP IS THE PRODUCT SHOT (owner 2026-08-20): native cyan
+               ink, near full strength at every beat — the amber sepia
+               swing and the 0.66 ceiling were the "morphed" look. The dim
+               term is now a whisper, never a blackout. */
+            filter: saturate(1.22) brightness(1.10);
+            opacity: calc(0.94 * (1 - 0.42 * var(--plandim, 0)));
         }
 
         .fp-stand { transition: opacity .45s ease; }
         .fp-stand.is-dim { opacity: 0.22; }
 
         .fp-floor { fill: #0a1219; }
-        .fp-shell { fill: none; stroke: rgba(155, 205, 230, 0.5); stroke-width: 2.5; }
-        .fp-shell-in { fill: none; stroke: rgba(155, 205, 230, 0.14); stroke-width: 1; }
+        .fp-shell { fill: none; stroke: rgba(165, 215, 240, 0.72); stroke-width: 2.5; }
+        .fp-shell-in { fill: none; stroke: rgba(155, 205, 230, 0.22); stroke-width: 1; }
         .fp-shell, .fp-shell-in, .fp-b rect, .fp-aisle line, .fp-stand-r, .fp-stand-g,
         .fp-zone rect, .fp-dim line, .fp-scale line, .fp-north-r,
 
+        /* every booth space carries a slight perimeter glow: a brighter
+           stroke plus a soft inner fill — the "substance" pass */
         .fp-b rect {
-            fill: rgba(45, 156, 202, 0.10);
-            stroke: rgba(125, 195, 228, 0.30);
-            stroke-width: 1;
+            fill: rgba(45, 156, 202, 0.14);
+            stroke: rgba(115, 210, 242, 0.52);
+            stroke-width: 1.2;
         }
         .fp-col { fill: rgba(155, 205, 230, 0.30); }
         .fp-col-in { fill: rgba(184, 165, 115, 0.7); }
 
-        .fp-aisle line { stroke: rgba(125, 195, 228, 0.16); stroke-width: 1; stroke-dasharray: 7 11; }
+        .fp-aisle line { stroke: rgba(125, 195, 228, 0.30); stroke-width: 1; stroke-dasharray: 7 11; }
         .fp-aisle text, .fp-lbl, .fp-zone-t {
 
-            fill: rgba(160, 200, 225, 0.28);
+            fill: rgba(170, 215, 240, 0.55);
             font-size: 13px; font-weight: 700; letter-spacing: 2.4px;
         }
         .fp-mid { text-anchor: middle; }
@@ -653,14 +636,11 @@
 
         .fp-lay-truss { opacity: calc(var(--wall) * 0.30); }
 
-        .fpx-wall {
-            fill: rgba(10, 21, 30, 0.95);
-            stroke: rgba(125, 195, 228, 0.26);
-            stroke-width: 0.7;
-        }
-        .fp-ext { opacity: var(--wall); }
-        .fp-ext-stands .fpx-wall { fill: rgba(74, 60, 28, 0.95); stroke: rgba(184, 165, 115, 0.5); }
-        .fp-ext-stands .fpx-wall.is-on { fill: rgba(102, 82, 36, 0.96); stroke: var(--accent-gold); }
+        /* THE FAKE WALL EXTRUSIONS ARE RETIRED (owner 2026-08-20): the
+           dark slabs that rose with the rake read as "a complete wall
+           around the whole hall" and could sit between the camera and the
+           floor. Nothing is allowed to occlude the plan, ever. */
+        .fp-ext, .fp-ext-stands { display: none; }
 
         .fp-stand-bg { fill: #0a1219; }
         .fp-stand-r { fill: rgba(184, 165, 115, 0.07); stroke: var(--accent-gold);
@@ -670,8 +650,10 @@
         .fp-stand-n { fill: var(--gold-l); font-size: 26px; font-weight: 800; letter-spacing: 1px; }
         .fp-stand-c { fill: rgba(212, 188, 125, 0.7); font-size: 15px; font-weight: 700; letter-spacing: 2px; }
 
-        .fp-bn { fill: rgba(150, 200, 228, 0.5); font-size: 15px; font-weight: 700;
-                 text-anchor: middle; opacity: 0; }
+        /* booth numbers read at rest now — a floor plan with no numbers
+           is a wireframe, not a document; hover still lifts them to full */
+        .fp-bn { fill: rgba(165, 215, 242, 0.78); font-size: 15px; font-weight: 700;
+                 text-anchor: middle; opacity: 0.55; }
 
         .mi-field { opacity: var(--field, 1); }
 
@@ -688,26 +670,28 @@
                  pointer-events: none; display: block;
                  width: 100%; height: 100%; }
 
+        /* overlay shades HALVED across the board (owner 2026-08-20):
+           depth cueing may tint, it may never bury the frame */
         .mi-fog {
             position: absolute; inset: 0; pointer-events: none; z-index: 2;
 
             background: linear-gradient(to top,
-                transparent 34%,
-                rgba(5, 9, 13, 0.42) 76%,
-                rgba(5, 9, 13, 0.88) 98%);
+                transparent 40%,
+                rgba(5, 10, 17, 0.26) 78%,
+                rgba(5, 10, 17, 0.58) 98%);
         }
 
         .mi-stage::after {
             content: ''; position: absolute; left: 0; right: 0; top: 0;
-            height: 122px; pointer-events: none; z-index: 3;
-            background: linear-gradient(to bottom, rgba(4, 8, 14, 0.94),
-                rgba(4, 8, 14, 0.4) 60%, transparent);
+            height: 100px; pointer-events: none; z-index: 3;
+            background: linear-gradient(to bottom, rgba(4, 9, 16, 0.82),
+                rgba(4, 9, 16, 0.32) 60%, transparent);
         }
 
         .mi-vig {
             position: absolute; inset: 0; pointer-events: none; z-index: 1;
             background: radial-gradient(120% 90% at 50% 46%,
-                transparent 38%, rgba(5, 9, 13, 0.72) 100%);
+                transparent 44%, rgba(5, 10, 17, 0.46) 100%);
         }
 
         .mi-haze {
@@ -738,8 +722,8 @@
             position: absolute; left: 50%; bottom: 12%;
             transform: translate(-50%, 8px);
             background: rgba(6, 11, 16, 0.94);
-            border: 1px solid rgba(212, 188, 125, 0.55);
-            border-top: 2px solid var(--accent-gold);
+            border: 1px solid rgba(90, 200, 240, 0.42);
+            border-top: 2px solid rgba(110, 210, 245, 0.9);
             padding: 11px 16px 12px; min-width: 268px;
             opacity: 0; pointer-events: none;
             box-shadow: 0 18px 44px rgba(0,0,0,.6);
@@ -778,51 +762,47 @@
             /* opaque enough to READ: at .82/.78 the floor-plan typography
                ran straight through the body copy ("RANCE" across "110 LED
                CABINETS") — two critics called it an unfinished dev build */
-            background: linear-gradient(180deg, rgba(7,12,18,.96), rgba(5,9,14,.94));
+            /* HOLO PANEL, not paper (owner 2026-08-20: modern, slick,
+               futuristic): squared glass, hairline cyan chrome, no tape,
+               no rotation. Gold survives ONLY on the booking stamp —
+               one gold element per view is the hierarchy rule. */
+            background: linear-gradient(165deg, rgba(8,15,23,.95), rgba(5,10,16,.93));
             -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
-            border: 1px solid rgba(125, 195, 228, 0.26);
-            border-top: 2px solid var(--accent-gold);
+            border: 1px solid rgba(90, 200, 240, 0.26);
+            border-top: 2px solid rgba(110, 210, 245, 0.85);
             padding: 13px 16px 15px;
-            opacity: 0; transform: rotate(-0.6deg) translateY(12px);
-            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+            opacity: 0; transform: translateY(12px);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7),
+                        0 0 44px rgba(70, 194, 255, 0.07);
 
             visibility: hidden;
         }
-        .mi-ticket.is-on { opacity: 1; transform: rotate(-0.6deg);
+        .mi-ticket.is-on { opacity: 1; transform: none;
                            visibility: visible; }
 
         .mi-ticket.is-right {
             left: auto; right: 3%; bottom: auto; top: 88px;
             max-height: calc(100svh - 88px - 27svh);
             overflow: hidden;
-            transform: rotate(0.6deg) translateY(12px);
+            transform: translateY(12px);
         }
-        .mi-ticket.is-right.is-on { transform: rotate(0.6deg); }
+        .mi-ticket.is-right.is-on { transform: none; }
 
         .mi-ticket.is-right::after {
             bottom: auto; top: 100%;
-            background: linear-gradient(to bottom, rgba(212,188,125,.8), transparent);
+            background: linear-gradient(to bottom, rgba(120,210,245,.75), transparent);
         }
 
         .mi-ticket::after {
             content: ''; position: absolute; bottom: 100%; left: 28px;
             width: 1px; height: 0;
-            background: linear-gradient(to top, rgba(212,188,125,.8), transparent);
+            background: linear-gradient(to top, rgba(120,210,245,.75), transparent);
             transition: height .6s cubic-bezier(.22,1,.36,1);
         }
         .mi-ticket.is-on::after { height: 13vh; }
         .mi-ticket.is-right::after { left: auto; right: 28px; }
-
-        .mi-ticket::before {
-            content: ''; position: absolute; top: -8px; left: -10px;
-            width: 48px; height: 16px;
-            background: rgba(212, 188, 125, 0.14);
-            border: 1px solid rgba(212, 188, 125, 0.28);
-            transform: rotate(-8deg);
-        }
-        .mi-ticket.is-right::before { left: auto; right: -10px; transform: rotate(8deg); }
         .mi-wo { display: block; font-size: 0.6rem; font-weight: 800; letter-spacing: .22em;
-                 color: rgba(160, 200, 225, 0.6); margin-bottom: 8px; }
+                 color: rgba(130, 205, 240, 0.75); margin-bottom: 8px; }
         .mi-ticket h3 { font-size: clamp(1.05rem, 2.3vw, 1.5rem); font-weight: 800;
                         letter-spacing: -0.01em; margin: 0 0 10px; text-align: left; }
         .mi-notes { list-style: none; margin: 0 0 14px; padding: 0;
@@ -836,13 +816,13 @@
         }
         .mi-notes li::before {
             content: counter(n) "."; position: absolute; left: 0;
-            color: var(--accent-gold); font-weight: 800;
+            color: #6fd2f5; font-weight: 800;
         }
         .mi-ticket.n1 li:nth-child(1), .mi-ticket.n2 li:nth-child(-n+2),
         .mi-ticket.n3 li { opacity: 1; }
 
         .mi-stamp {
-            display: inline-block; transform: rotate(-6deg) scale(var(--st, 0.9));
+            display: inline-block; transform: scale(var(--st, 0.9));
             border: 2px double var(--accent-gold); padding: 6px 12px 5px;
             color: var(--gold-l); text-decoration: none;
             font-size: 0.72rem; font-weight: 800; letter-spacing: .16em;
@@ -855,8 +835,8 @@
 
         .mi-tb {
             position: absolute; right: 3%; bottom: 7%;
-            border: 1px solid rgba(186, 198, 208, 0.28);
-            border-top: 2px solid var(--accent-gold);
+            border: 1px solid rgba(90, 200, 240, 0.24);
+            border-top: 2px solid rgba(110, 210, 245, 0.85);
 
             background: rgba(6, 11, 16, 0.80);
             -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
@@ -932,26 +912,25 @@
                     perspective: 900px; }
         .mi-card {
             display: block; text-decoration: none; position: relative;
-            background: linear-gradient(172deg, rgba(52,42,20,.94), rgba(12,18,26,.96) 55%);
-            border: 1px solid rgba(184,165,115,.55);
-            border-top: 3px solid var(--accent-gold);
-            padding: 13px 15px 14px; transform: rotateX(4deg) rotate(-0.5deg);
+            background: linear-gradient(172deg, rgba(10,19,29,.95), rgba(6,12,19,.96) 55%);
+            border: 1px solid rgba(90, 200, 240, 0.32);
+            border-top: 3px solid rgba(110, 210, 245, 0.9);
+            padding: 13px 15px 14px;
             box-shadow: 0 18px 40px rgba(0,0,0,.6),
-                        inset 0 14px 26px rgba(255, 216, 150, 0.07);
+                        0 0 34px rgba(70, 194, 255, 0.06);
         }
         .mi-card::before {
             content: ''; position: absolute; left: 8%; right: 8%; top: -3px;
             height: 10px; pointer-events: none;
-            background: radial-gradient(50% 100% at 50% 0, rgba(255,220,160,.35), transparent 75%);
+            background: radial-gradient(50% 100% at 50% 0, rgba(140,220,250,.30), transparent 75%);
         }
-        .mi-card:nth-child(even) { transform: rotateX(4deg) rotate(0.7deg); }
-        .mi-card b { display: block; color: var(--gold-l); font-size: 0.58rem;
+        .mi-card b { display: block; color: #6fd2f5; font-size: 0.58rem;
                      font-weight: 800; letter-spacing: .2em; margin-bottom: 5px; }
         .mi-card strong { display: block; color: #fff; font-size: 0.94rem;
                           font-weight: 800; margin-bottom: 6px; }
         .mi-card span { display: block; font-size: 0.6rem; font-weight: 700;
-                        letter-spacing: .14em; color: rgba(160, 200, 225, 0.65); }
-        .mi-card:hover { border-color: var(--gold-l); }
+                        letter-spacing: .14em; color: rgba(170, 210, 232, 0.7); }
+        .mi-card:hover { border-color: var(--gold-l); border-top-color: var(--gold-l); }
         .mi-card:focus-visible { outline: 2px solid var(--accent-teal); outline-offset: 3px; }
         .mi-final { text-align: center; font-size: 0.6rem; font-weight: 800;
                     letter-spacing: .18em; color: rgba(190, 220, 240, 0.85);
@@ -1841,8 +1820,6 @@
                 <div class="mi-haze" aria-hidden="true"></div>
                 <div class="mi-fog" aria-hidden="true"></div>
 
-                <div class="mi-air" aria-hidden="true"></div>
-                <div class="mi-air mi-air2" aria-hidden="true"></div>
                 <div class="mi-matte mi-matte-t" aria-hidden="true"></div>
                 <div class="mi-matte mi-matte-b" aria-hidden="true"></div>
                 <div class="mi-flat">
@@ -2226,7 +2203,10 @@
             var YAW  = narrow.matches ? -14 : -20;
 
             var SHOT = [
-                { dRake:  0, yaw: -34, k: 0.72, D: 680, poy: 0.30, ox:  6 },
+                /* k 0.72 cropped the double-deck's canopy out of frame
+                   at every hero moment (r2) — pulled back to hold the
+                   whole stand plus air above it */
+                { dRake:  0, yaw: -34, k: 0.56, D: 680, poy: 0.30, ox:  2 },
                 { dRake:  0, yaw: -28, k: 0.50, D: 760, poy: 0.36, ox: -4 },
                 { dRake:  0, yaw: -30, k: 0.40, D: 820, poy: 0.36, ox:  0 },
                 { dRake:  0, yaw: -26, k: 0.48, D: 900, poy: 0.34, ox:  0 }
@@ -2257,14 +2237,6 @@
                          yaw: lerp(DOORS_A.yaw, DOORS_B.yaw, t),
                          D: lerp(DOORS_A.D, DOORS_B.D, t), poy: lerp(DOORS_A.poy, DOORS_B.poy, t) };
             }
-            /* WO3's 60ft canyon: the camera dollies along the slot while the
-               booth prints, so the reveal front stays put in screen space
-               and the WORLD moves past it */
-            function canyonCam(cp) {
-                var c = camOf(2);
-                c.cx += -70 + 150 * ss(.30, .85, cp);
-                return c;
-            }
             /* THE GOLD-INK SHOT: while the stand exists only as burning
                gold drawing on black glass, the camera drops near the floor
                — long lens, horizon low — so the ink towers and doubles in
@@ -2279,47 +2251,18 @@
                   getting the grand, you're in shock"). Low rake = the
                   structure towers over the viewer instead of being a
                   model on a table. */
-            function inkCam(i) {
-                return function (cp) {
-                    var c = (i === 2) ? canyonCam(cp) : camOf(i);
-                    var low  = ss(.10, .18, cp) * (1 - ss(.30, .42, cp));
-                    var hero = ss(.42, .60, cp);
-                    var rake = c.rake, yaw = c.yaw, D = c.D,
-                        poy = c.poy, sc = c.s, cy = c.cy;
-                    if (low > 0.001) {
-                        sc   = sc * lerp(1, 1.12, low);
-                        cy   = cy + 30 * low;
-                        rake = lerp(rake, 86, low);
-                        yaw  = yaw * lerp(1, 0.72, low);
-                        D    = lerp(D, 1500, low);
-                        poy  = lerp(poy, 0.44, low);
-                    }
-                    if (hero > 0.001) {
-                        /* rake toward the horizon, origin low in frame:
-                           a worm's-eye on the finished stand */
-                        /* THE HERO: eye drops to the floor and looks UP the
-                           structure (owner: "so you're getting the grand,
-                           you're in shock") */
-                        rake = lerp(rake, narrow.matches ? 88 : 88, hero);
-                        sc   = lerp(sc, c.s * (narrow.matches ? 0.80 : 0.92), hero);
-                        yaw  = lerp(yaw, c.yaw * 1.05, hero);
-                        /* long lens: at D 760 the near end of a 40ft span
-                           magnifies so hard the stand won't fit the frame */
-                        D    = lerp(D, 680, hero);
-                        poy  = lerp(poy, 0.40, hero);
-                        cy   = lerp(cy, c.cy + 60, hero);
-                    }
-                    /* the tail must keep moving: hero reaches 1 at cp .60
-                       and the last 40% of every chapter was a still image */
-                    var tail = ss(.60, 1.0, cp);
-                    sc  *= 1 + 0.10 * tail;
-                    yaw += 5.0 * tail;
-                    D   -= 60 * tail;
-                    return { s: sc, cx: c.cx, cy: cy, rake: rake,
-                             yaw: yaw, D: D, poy: poy };
-                };
-            }
-
+            /* C1006 IS A HOLOGRAM AND TURNS ON ITS OWN AXIS, so the camera
+               must not orbit as well — two rotations fighting each other
+               reads as drift, not as a move. It makes ONE slow steady push
+               from a low three-quarter while the model materialises out of
+               the pad, then keeps creeping so the frame is never still.
+               There is no ink beat here: nothing is being printed. */
+            /* PER-STAND CAMERAS REMOVED 2026-08-20 with the stand
+               designs. Each chapter now uses its plain camOf(i) framing.
+               A new design will want its own move here — note that RAKE is
+               the lever that matters: higher rake drops the eye toward the
+               floor, and a horizontally-massed stand collapses edge-on as
+               it approaches 90. */
             /* THE TRANSIT. Between-stand beats did not exist — chapters
                abutted and camAt only cross-faded cameras, so every frame
                between two stands was a hold on the outgoing one. The cold
@@ -2358,14 +2301,14 @@
             var CH = [
                 { a:0,    b:.055, t0:300, cam:WIDE, kind:'cold' },
                 { a:.055, b:.135, t0:330, cam:{ s:1.14, cx:VBW/2, cy:VBH/2, rake:RAKE, yaw:0, D:650, poy:0.62 }, kind:'rise' },
-                { a:.135, b:.330, t0:360, cam:camOf(0), camFn:inkCam(0), kind:'wo', i:0 },
+                { a:.135, b:.330, t0:360, cam:camOf(0), kind:'wo', i:0 },
                 { a:.330, b:.365, t0:440, cam:camOf(1), camFn:transitCam(0, 1), kind:'transit' },
-                { a:.365, b:.470, t0:455, cam:camOf(1), camFn:inkCam(1), kind:'wo', i:1 },
+                { a:.365, b:.470, t0:455, cam:camOf(1), kind:'wo', i:1 },
                 { a:.470, b:.505, t0:530, cam:camOf(2), camFn:transitCam(1, 2), kind:'transit' },
-                { a:.505, b:.640, t0:545, cam:camOf(2), camFn:inkCam(2), kind:'wo', i:2 },
+                { a:.505, b:.640, t0:545, cam:camOf(2), kind:'wo', i:2 },
                 { a:.640, b:.678, t0:760, cam:{ s:1.85, cx:800, cy:860, rake:58, yaw:-12, D:950, poy:0.50 }, kind:'lapse' },
                 { a:.678, b:.712, t0:860, cam:camOf(3), camFn:transitCam(2, 3), kind:'transit' },
-                { a:.712, b:.760, t0:887, cam:camOf(3), camFn:inkCam(3), kind:'wo', i:3 },
+                { a:.712, b:.760, t0:887, cam:camOf(3), kind:'wo', i:3 },
                 { a:.760, b:.925, t0:960, cam:DOORS_B, camFn:doorsCam, kind:'doors' },
                 { a:.925, b:1,    t0:960, cam:{ s:1.4, cx:940, cy:800, rake:52, yaw:-24, D:1600, poy:0.50 }, kind:'sheet' }
             ];
@@ -2575,12 +2518,16 @@
                         '. ' + w.crew + ', call ' + w.call + ', stand ' + w.num + '.';
                 }
 
+                /* transit keeps the OUTGOING stand live — setStands(-1)
+                   here made every finished hologram vanish mid-travel */
                 var upto = c.kind === 'wo' ? c.i
                     : c.kind === 'lapse' ? 2
-                    : (c.kind === 'doors' || c.kind === 'sheet') ? 3 : -1;
+                    : (c.kind === 'doors' || c.kind === 'sheet') ? 3
+                    : c.kind === 'transit'
+                        ? (CH[ci - 1] && CH[ci - 1].kind === 'wo' ? CH[ci - 1].i : 2)
+                    : -1;
                 if (window.MIGL) {
                     MIGL.setStands(upto, c.kind === 'wo' ? c.i : -1);
-                    if (c.kind !== 'wo') MIGL.setReveal(-1);
                 }
                 for (var l = 0; l < lasers.length; l++)
                     lasers[l].g.classList.toggle('is-live', c.kind === 'wo' && l === c.i);
@@ -2608,6 +2555,7 @@
                 while (ci < CH.length - 1 && p >= CH[ci+1].a) ci++;
                 var c = CH[ci], cp = clamp01((p - c.a) / (c.b - c.a));
                 if (ci !== curCh) { curCh = ci; setChapter(ci); }
+                var holoB = 0, holoLock = 0, holoFlash = 0;
 
                 var camNow = camAt(pCam);
                 var lensD = camNow.D || 650, lensPoy = camNow.poy || 0.56;
@@ -2659,7 +2607,7 @@
 
                     /* THE SHEET STANDS UP.
                        arrive -> a genuinely empty footprint -> the survey
-                       laser closes its lap (the strike) -> the plan stands
+                       laser closes its lap -> the plan stands
                        itself up as gold ink -> a light bar sweeps matter in
                        behind it -> dress, crew, coves. The rescue stand
                        skips the drawing: no time — it SNAPS in. */
@@ -2668,6 +2616,9 @@
                     wAttr(L.trail, 'ltr' + c.i, 'stroke-dashoffset', (100 - sb*100).toFixed(1));
                     wAttr(L.burn, 'lbu' + c.i, 'stroke-dashoffset', (100 - sb*100).toFixed(1));
                     wAttr(L.head, 'lhe' + c.i, 'stroke-dashoffset', (-sb*100).toFixed(1));
+                    /* the head retires when its lap is done — parked, it
+                       glowed on the aisle as a stray chevron (r2) */
+                    wStyle(L.head, 'lho' + c.i, 'opacity', sb >= 0.999 ? '0' : '1');
                 }
                 /* survey burns are a pure function of p — reverse scroll
                    un-burns them (jurors scrub backward first) */
@@ -2688,25 +2639,29 @@
                        the print is now a SHORT, decisive pass and the
                        FINISHED stand owns roughly the back 60% of every
                        chapter. Nobody watches scaffolding for long. */
-                    var b, flat, strike;
-                    if (fast) {
-                        strike = ss(.14, .21, cp);
-                        b = ss(.18, .38, cp);
-                        flat = 1 - ss(.30, .38, cp);
-                    } else {
-                        strike = ss(.14, .22, cp);
-                        b = ss(.20, .42, cp);
-                        flat = 1 - ss(.34, .42, cp);
-                    }
+                    /* BUILD PROGRESS, 0..1 across the chapter. Every stand
+                       design was removed on 2026-08-20 for a clean restart,
+                       so this no longer drives any geometry — it is kept
+                       because the work-order notes, the stamp and the tally
+                       all key off it, and because a new stand builder will
+                       want exactly this signal. Wire it back to the GL side
+                       when there is something on the floor to build. */
+                    /* HOLOGRAM SIGNALS — pure functions of scroll, so a
+                       backward scrub un-builds the stand cleanly.
+                       lock: the pad ring sweep, right after the laser lap;
+                       b: the ground-up materialisation;
+                       flash: the settle overshoot as the build completes.
+                       The rescue stand (rush) does everything earlier and
+                       harder — no time, it SNAPS in. */
+                    holoLock = fast ? ss(.16, .26, cp) : ss(.20, .30, cp);
+                    holoB = fast ? ss(.26, .44, cp) : ss(.30, .52, cp);
+                    holoFlash = fast
+                        ? ss(.44, .47, cp) * (1 - ss(.50, .62, cp))
+                        : ss(.52, .55, cp) * (1 - ss(.58, .70, cp));
+                    var b = holoB;
                     window.__dbg = { p: p, cp: cp, b: b, ci: ci, fast: fast };
-                    if (window.MIGL) {
-                        MIGL.setB(c.i, b);
-                        MIGL.setReveal(c.i, { flat: flat, fill: b, strike: strike,
-                            ink: fast ? 1.2 : ss(.26, .36, cp) * 1.25 });
-                    }
 
-                    /* notes land on structural events: the strike, the solid,
-                       the coves — not on arbitrary scroll marks */
+                    /* notes step through the chapter on build progress */
                     /* the card is never empty: note 1 is the status line */
                     var nn = fast ? (cp < .30 ? 1 : cp < .42 ? 2 : 3)
                                   : (cp < .34 ? 1 : cp < .48 ? 2 : 3);
@@ -2784,8 +2739,7 @@
                 wStyle(ticket, 'tkO', 'opacity', tickO.toFixed(3));
                 wStyle(ticket, 'tkV', 'visibility', tickO > 0.01 ? 'visible' : 'hidden');
                 wStyle(ticket, 'tkT', 'transform',
-                    'rotate(' + ((c.kind === 'wo' && c.i % 2 === 1) ? '0.6' : '-0.6') +
-                    'deg) translateY(' + tickY.toFixed(1) + 'px)');
+                    'translateY(' + tickY.toFixed(1) + 'px)');
                 /* the drawing itself obeys the lighting script: near-black
                    under security light, waking with the dock light.
                    Computed BEFORE paint so the GL plan (mobile) gets it. */
@@ -2794,12 +2748,15 @@
                    thing that can make 05:00 and 15:00 distinguishable with
                    the clock cropped is the floor and air brightening. pdim
                    is a DIM amount, so it falls monotonically as day rises. */
-                var dayNow = clamp01((mins - 300) / 660);
-                var pdim = Math.max(showT,
-                    c.kind === 'cold' ? 1.15 :
-                    c.kind === 'rise' ? 0.42 * (1 - cp * 0.6) :
-                    c.kind === 'wo' ? Math.max(1.6 * flat, 0.62 * (1 - dayNow)) :
-                    0.62 * (1 - dayNow));
+                /* the plan dim is a WHISPER now (owner 2026-08-20): the
+                   map opens at FULL strength — it is the establishing
+                   product shot — steps back a touch while a stand owns
+                   the frame, and eases half a stop under show light.
+                   It never again approaches a blackout. */
+                var pdim = (c.kind === 'doors' || c.kind === 'sheet') ? 0.5 * showT
+                    : c.kind === 'wo' ? 0.30
+                    : c.kind === 'transit' ? 0.18
+                    : c.kind === 'lapse' ? 0.25 : 0;
 
                 if (window.MIGL) MIGL.paint({
                     rectW: rectW, rectH: rectH, fit: fit,
@@ -2810,6 +2767,8 @@
                     dim: dimT,
                     idle: idle,
                     planDim: pdim,
+                    subj: c.kind === 'wo' ? c.i : -1,
+                    build: holoB, lock: holoLock, flash: holoFlash,
                     day: clamp01((mins - 300) / 660)
                 });
 
@@ -2818,9 +2777,9 @@
                 var dq = Math.round(clamp01((mins - 300) / 660) * 24) / 24;
                 var dsh = Math.round(showT * 12) / 12;
                 wProp(stage, 'dbg', '--daybg', 'rgb(' +
-                    Math.round(3 + 11 * dq + 14 * dsh) + ',' +
-                    Math.round(6 + 16 * dq + 20 * dsh) + ',' +
-                    Math.round(10 + 22 * dq + 26 * dsh) + ')');
+                    Math.round(5 + 11 * dq + 14 * dsh) + ',' +
+                    Math.round(10 + 16 * dq + 20 * dsh) + ',' +
+                    Math.round(17 + 24 * dq + 27 * dsh) + ')');
             }
 
             var SNAP = location.search.indexOf('q_snap') >= 0;
