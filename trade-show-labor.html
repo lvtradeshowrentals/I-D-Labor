@@ -741,12 +741,12 @@
         .mi-quote {
             position: absolute; left: 50%; bottom: 12%;
             transform: translate(-50%, 8px);
-            background: rgba(6, 11, 16, 0.94);
-            border: 1px solid rgba(90, 200, 240, 0.42);
-            border-top: 2px solid rgba(110, 210, 245, 0.9);
-            padding: 11px 16px 12px; min-width: 268px;
+            background: linear-gradient(168deg, #070d14 0%, #03070b 100%);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-top: 3px solid var(--teal-h);
+            padding: 12px 17px 13px; min-width: 268px;
             opacity: 0; pointer-events: none;
-            box-shadow: 0 18px 44px rgba(0,0,0,.6);
+            box-shadow: 0 26px 60px rgba(0,0,0,.85), 0 6px 16px rgba(0,0,0,.6);
             transition: opacity .2s ease, transform .28s cubic-bezier(.22,1,.36,1);
             font-variant-numeric: tabular-nums;
         }
@@ -768,7 +768,8 @@
             position: absolute; left: 50%; transform: translateX(-50%);
             bottom: 5%; font-size: 0.54rem; font-weight: 800;
             letter-spacing: .22em; text-transform: uppercase;
-            color: rgba(160, 200, 225, 0.45);
+            color: rgba(196, 224, 242, 0.78);
+            text-shadow: 0 1px 8px rgba(2,7,12,.95), 0 1px 2px rgba(2,7,12,.9);
             opacity: 0; transition: opacity .4s ease;
         }
         .mi-probe.is-on { opacity: 1; }
@@ -787,15 +788,28 @@
             /* HOLO PANEL, not paper (owner 2026-08-20: modern, slick,
                futuristic): squared glass, hairline cyan chrome, no tape,
                no rotation. Gold survives ONLY on the booking stamp —
-               one gold element per view is the hierarchy rule. */
-            background: linear-gradient(165deg, rgba(8,15,23,.95), rgba(5,10,16,.93));
-            -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
-            border: 1px solid rgba(90, 200, 240, 0.26);
-            border-top: 2px solid rgba(110, 210, 245, 0.85);
-            padding: 15px 18px 17px;
+               one gold element per view is the hierarchy rule.
+
+               SEPARATION PASS (owner 2026-08-21: "not the easiest read...
+               should be dramatically different so your eyes actually want
+               to go to it"). The old panel was translucent dark NAVY with
+               cyan hairlines floating over a scene that is also dark navy
+               with cyan hairlines — same hue, same value, so it sat IN the
+               picture instead of on top of it. Now it is effectively opaque
+               near-black: the scene's own blue no longer bleeds through, so
+               the card is the darkest thing on screen and the type is the
+               brightest. The white hairline ring is what actually cuts it
+               out of the blue — a cyan border shares the scene's hue and
+               disappears against it. Dropping backdrop-filter is free
+               performance too: there is nothing left to blur through. */
+            background: linear-gradient(168deg, #070d14 0%, #03070b 100%);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-top: 3px solid var(--teal-h);
+            padding: 16px 19px 18px;
             opacity: 0; transform: translateY(12px);
-            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7),
-                        0 0 44px rgba(70, 194, 255, 0.07);
+            box-shadow: 0 30px 74px rgba(0, 0, 0, 0.88),
+                        0 6px 18px rgba(0, 0, 0, 0.7),
+                        0 0 40px rgba(70, 194, 255, 0.10);
 
             visibility: hidden;
         }
@@ -823,8 +837,8 @@
         }
         .mi-ticket.is-on::after { height: 13vh; }
         .mi-ticket.is-right::after { left: auto; right: 28px; }
-        .mi-wo { display: block; font-size: 0.6rem; font-weight: 800; letter-spacing: .22em;
-                 color: rgba(130, 205, 240, 0.75); margin-bottom: 8px; }
+        .mi-wo { display: block; font-size: 0.62rem; font-weight: 800; letter-spacing: .22em;
+                 color: #7fd8f8; margin-bottom: 9px; }
         .mi-ticket h3 { font-size: clamp(1.05rem, 2.3vw, 1.5rem); font-weight: 800;
                         letter-spacing: -0.01em; margin: 0 0 13px; text-align: left; }
         /* READABILITY (owner 2026-08-21: "densely packed... makes you want
@@ -835,8 +849,8 @@
         .mi-notes { list-style: none; margin: 0 0 16px; padding: 0; }
         .mi-notes li {
             position: relative; padding-left: 18px; margin-bottom: 9px;
-            font-size: 0.86rem; line-height: 1.5; letter-spacing: 0;
-            color: rgba(233, 242, 249, 0.92);
+            font-size: 0.88rem; line-height: 1.52; letter-spacing: 0;
+            color: rgba(244, 250, 254, 0.97);
             opacity: 0;
         }
         .mi-notes li::before {
@@ -899,8 +913,13 @@
             position: absolute; left: 5%; top: 16%; right: 5%;
             font-size: clamp(1.5rem, 5.2vw, 3.4rem); font-weight: 800;
             letter-spacing: -0.02em; line-height: 1.02;
-            color: rgba(240, 239, 244, 0.94);
+            color: #ffffff;
             text-wrap: balance; opacity: 0;
+            /* the caption lands on whatever the camera happens to be over —
+               often a bright cyan booth field. A shadow is the only scrim
+               that costs nothing and never boxes the type. */
+            text-shadow: 0 2px 14px rgba(2, 7, 12, 0.75),
+                         0 1px 3px rgba(2, 7, 12, 0.85);
         }
         .mi-say.is-on { opacity: 1; }
         .mi-say em { display: inline-block; }
@@ -916,9 +935,21 @@
             white-space: nowrap; border: 0;
         }
         .mi-say em { font-style: normal; color: var(--gold-l); }
-        .mi-say small { display: block; margin-top: 10px;
-                        font-size: 0.28em; font-weight: 800; letter-spacing: .22em;
-                        color: rgba(160, 200, 225, 0.6); }
+        /* THE SUBLINE WAS DROWNING (owner 2026-08-21). Thin, wide-tracked,
+           60%-alpha type sitting straight on a lit floor plan is unreadable
+           no matter how the scene is graded. It gets its own ground now: an
+           inline-block chip that hugs the text, dark enough to guarantee
+           contrast, with a teal edge tying it to the caption above. Tracking
+           comes in — .22em on a full sentence was reading as a dotted rule. */
+        .mi-say small { display: inline-block; margin-top: 14px;
+                        font-size: 0.3em; font-weight: 700; letter-spacing: .07em;
+                        line-height: 1.45;
+                        color: rgba(240, 248, 253, 0.96);
+                        background: rgba(4, 9, 15, 0.76);
+                        -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+                        border-left: 2px solid var(--teal-h);
+                        padding: 7px 13px 8px;
+                        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7); }
 
         .mi-sheet { position: absolute; inset: 0; display: grid; place-content: center;
                     gap: 12px; padding: 6vh 5vw; opacity: 0;
@@ -932,8 +963,11 @@
         }
         .mi-sheet.is-on { opacity: 1; visibility: visible;
                           transition: opacity .5s ease, visibility 0s; }
+        /* everything that floats loose on the scene carries a scrim shadow —
+           the hall behind it ranges from near-black to lit cyan floor */
         .mi-sheet-h { font-size: clamp(1.4rem, 4.4vw, 2.6rem); font-weight: 800;
-                      text-align: center; margin-bottom: 4px; }
+                      text-align: center; margin-bottom: 4px; color: #fff;
+                      text-shadow: 0 2px 14px rgba(2,7,12,.8), 0 1px 3px rgba(2,7,12,.85); }
         /* THE MARSHALLING BOARD — the CTA lives inside the hall: a tilted
            work-order board catching practical light, not a web modal */
         .mi-cards { display: grid; gap: 12px;
@@ -942,12 +976,12 @@
                     perspective: 900px; }
         .mi-card {
             display: block; text-decoration: none; position: relative;
-            background: linear-gradient(172deg, rgba(10,19,29,.95), rgba(6,12,19,.96) 55%);
-            border: 1px solid rgba(90, 200, 240, 0.32);
-            border-top: 3px solid rgba(110, 210, 245, 0.9);
-            padding: 13px 15px 14px;
-            box-shadow: 0 18px 40px rgba(0,0,0,.6),
-                        0 0 34px rgba(70, 194, 255, 0.06);
+            background: linear-gradient(172deg, #080e16 0%, #03070b 100%);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-top: 3px solid var(--teal-h);
+            padding: 14px 16px 15px;
+            box-shadow: 0 26px 58px rgba(0,0,0,.85),
+                        0 0 34px rgba(70, 194, 255, 0.08);
         }
         .mi-card::before {
             content: ''; position: absolute; left: 8%; right: 8%; top: -3px;
@@ -964,9 +998,10 @@
         .mi-card:focus-visible { outline: 2px solid var(--accent-teal); outline-offset: 3px; }
         /* now a sentence, not a stat strip — .18em tracking made it a
            decorative band nobody read */
-        .mi-final { text-align: center; font-size: 0.78rem; font-weight: 600;
-                    letter-spacing: .01em; color: rgba(190, 220, 240, 0.78);
-                    margin-top: 8px; }
+        .mi-final { text-align: center; font-size: 0.8rem; font-weight: 600;
+                    letter-spacing: .01em; color: rgba(226, 240, 250, 0.95);
+                    margin-top: 10px;
+                    text-shadow: 0 1px 10px rgba(2,7,12,.95), 0 1px 3px rgba(2,7,12,.9); }
 
         .mi-base { max-width: 1100px; margin: 0 auto; padding: 0 20px 80px; }
         .mi-base img { max-width: 100%; height: auto; }
@@ -1777,8 +1812,9 @@
         <div class="ap-sheet">
             <span class="fl-eyebrow">Our Services</span>
             <p class="ap-lead"><b>Four Services. Scroll The Floor.</b>
-                Each stop on the hall below is one service we provide &mdash; what the
-                crew does, how many people show up, and how to book it.</p>
+                Each stop on the hall below is one service we provide &mdash; what it
+                covers, what you get, and how to book it. Crew and hours are
+                quoted to your job.</p>
         </div>
     </section>
 
@@ -2623,7 +2659,7 @@
                as smooth typing instead of a stutter of hard pops. Opacity
                is quantised to 2dp so a held scroll position stops writing
                styles entirely. */
-            var sayWords = [];
+            var sayWords = [], sayChip = null, sayChipFrom = 0;
             var LEAD = 1.7;
             function setSay(html) {
                 say.innerHTML = html;
@@ -2651,18 +2687,35 @@
                         node.replaceChild(frag, k);
                     }
                 })(say);
+                /* the subline's chip is painted on the <small> itself, so it
+                   would sit there as an empty black bar for the whole time
+                   its words are still un-typed. It fades with its OWN first
+                   word instead of with the caption. */
+                sayChip = say.querySelector('small');
+                sayChipFrom = 0;
+                if (sayChip) {
+                    var f = sayChip.querySelector('.mi-w');
+                    sayChipFrom = f ? sayWords.indexOf(f) : 0;
+                    sayChip.__a = -1;
+                }
+            }
+            function wordAlpha(t, n, i) {
+                return Math.round(clamp01((t * (n + LEAD) - i) / LEAD) * 100) / 100;
             }
             function typeWords(t) {
                 var n = sayWords.length;
                 for (var i = 0; i < n; i++) {
-                    var a = clamp01((t * (n + LEAD) - i) / LEAD);
-                    a = Math.round(a * 100) / 100;
+                    var a = wordAlpha(t, n, i);
                     var el = sayWords[i];
                     if (el.__a === a) continue;
                     el.__a = a;
                     el.style.opacity = a;
                     el.style.transform = a >= 1 ? 'none'
                         : 'translateY(' + ((1 - a) * 0.22).toFixed(3) + 'em)';
+                }
+                if (sayChip) {
+                    var ca = wordAlpha(t, n, sayChipFrom);
+                    if (sayChip.__a !== ca) { sayChip.__a = ca; sayChip.style.opacity = ca; }
                 }
             }
             var navEl = document.querySelector('.navbar');
