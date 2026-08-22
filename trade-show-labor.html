@@ -583,6 +583,9 @@
             box-shadow: 0 0 26px rgba(20, 112, 143, 0.55);
         }
         .ap-sheet-in {
+            /* one number drives both the corner mark and the closed box:
+               at 2x--cw the four L-marks tile a complete square */
+            --cw: clamp(20px, 3vw, 34px);
             position: relative; z-index: 1;
             max-width: 940px; margin: 0 auto;
             text-align: center;
@@ -594,9 +597,74 @@
         .ap-corner { position: absolute; inset: 0; pointer-events: none; }
         .ap-corner::before, .ap-corner::after {
             content: ''; position: absolute;
-            width: clamp(20px, 3vw, 34px); height: clamp(20px, 3vw, 34px);
+            width: var(--cw); height: var(--cw);
             border: 2px solid #14708f; opacity: 0.75;
         }
+        /* ============ THE THRESHOLD OPENS (owner 2026-08-22) ============
+           A plain cross-fade wasted the one device this section owns. The
+           entrance is now four beats:
+
+             1. the light ground fades up on its own;
+             2. four corner marks fly out from dead centre to their real
+                positions;
+             3. once they have LANDED, the type materialises inside the
+                frame they just drew — eyebrow, title, body, cue.
+
+           TWO THINGS THE FIRST VERSION GOT WRONG (owner 2026-08-22):
+
+           a) it held the marks stationary at the centre as a visible
+              closed square before releasing them. The square is not part
+              of the idea — you should only ever see four things travelling
+              outward. So the closed state is now `inset: 50%`, a ZERO-size
+              box where all four marks sit on the same point, and their
+              opacity is delayed 120ms BEHIND the travel. By the time they
+              are visible at all they are already ~45% of the way out (the
+              easing is front-loaded), so there is no static frame to catch.
+           b) the type started while the marks were still moving, so it
+              read as everything happening at once. It now waits for them
+              to land.
+
+           The travel animates the .ap-corner box's own insets rather than
+           moving each mark: that keeps them a fixed size the whole way
+           (scaling a wrapper would stretch them) and needs no JS
+           measurement, because 50% already means "half this container".
+
+           `is-armed` is added by script, so the no-JS and reduced-motion
+           states are simply the finished layout with nothing hidden. */
+        .ap-sheet.is-armed { opacity: 0; }
+        .ap-sheet.is-armed.is-open { opacity: 1; transition: opacity .48s ease; }
+
+        /* inset:50% collapses the box to a POINT — no square, ever */
+        .ap-sheet.is-armed .ap-corner {
+            opacity: 0;
+            top: 50%; right: 50%; bottom: 50%; left: 50%;
+        }
+        .ap-sheet.is-armed.is-open .ap-corner {
+            opacity: 1; top: 0; right: 0; bottom: 0; left: 0;
+            transition: opacity .26s ease .54s,
+                        top    .78s cubic-bezier(.16, 1, .3, 1) .42s,
+                        right  .78s cubic-bezier(.16, 1, .3, 1) .42s,
+                        bottom .78s cubic-bezier(.16, 1, .3, 1) .42s,
+                        left   .78s cubic-bezier(.16, 1, .3, 1) .42s;
+        }
+
+        .ap-sheet.is-armed .ap-eyebrow,
+        .ap-sheet.is-armed .ap-lead b,
+        .ap-sheet.is-armed .ap-lead span,
+        .ap-sheet.is-armed .ap-cue { opacity: 0; transform: translateY(14px); }
+        .ap-sheet.is-armed.is-open .ap-eyebrow,
+        .ap-sheet.is-armed.is-open .ap-lead b,
+        .ap-sheet.is-armed.is-open .ap-lead span,
+        .ap-sheet.is-armed.is-open .ap-cue {
+            opacity: 1; transform: none;
+            transition: opacity .5s ease, transform .7s cubic-bezier(.16, 1, .3, 1);
+        }
+        /* the marks land at .42 + .78 = 1.20s — nothing types before that */
+        .ap-sheet.is-armed.is-open .ap-eyebrow   { transition-delay: 1.22s; }
+        .ap-sheet.is-armed.is-open .ap-lead b    { transition-delay: 1.34s; }
+        .ap-sheet.is-armed.is-open .ap-lead span { transition-delay: 1.46s; }
+        .ap-sheet.is-armed.is-open .ap-cue       { transition-delay: 1.62s; }
+
         .ap-corner-t::before { top: 0; left: 0;  border-right: 0; border-bottom: 0; }
         .ap-corner-t::after  { top: 0; right: 0; border-left: 0;  border-bottom: 0; }
         .ap-corner-b::before { bottom: 0; left: 0;  border-right: 0; border-top: 0; }
@@ -652,6 +720,7 @@
         /* sized as a SECTION TITLE now, near the intro headline's scale —
            at 2.15rem it read as a bolded first sentence, which is exactly
            why the two blocks felt like one */
+        .ap-lead span { display: block; }
         .ap-lead b {
             display: block;
             color: #0a1015; font-weight: 800;
@@ -972,18 +1041,45 @@
                brightest. The white hairline ring is what actually cuts it
                out of the blue — a cyan border shares the scene's hue and
                disappears against it. Dropping backdrop-filter is free
-               performance too: there is nothing left to blur through. */
-            background: linear-gradient(168deg, #070d14 0%, #03070b 100%);
-            border: 1px solid rgba(255, 255, 255, 0.16);
-            border-top: 3px solid var(--teal-h);
-            padding: 16px 19px 18px;
+               performance too: there is nothing left to blur through.
+
+               THE PANEL GOES LIGHT (owner 2026-08-22). The threshold band
+               above the animation inverted to a light drafting card and the
+               owner wants that language carried through every service card.
+               It also happens to be the strongest version of the separation
+               above: the hall is a mid-blue lit floor, so a near-white card
+               is further from it in value than a near-black one ever was.
+               Timing and motion are untouched — this is a re-skin only. */
+            background: linear-gradient(168deg, #f7f8f9 0%, #e6eaed 100%);
+            border: 1px solid rgba(20, 112, 143, 0.22);
+            border-top: 3px solid #14708f;
+            padding: 18px 20px 20px;
             opacity: 0; transform: translateY(12px);
-            box-shadow: 0 30px 74px rgba(0, 0, 0, 0.88),
-                        0 6px 18px rgba(0, 0, 0, 0.7),
-                        0 0 40px rgba(70, 194, 255, 0.10);
+            box-shadow: 0 30px 74px rgba(0, 0, 0, 0.55),
+                        0 6px 18px rgba(0, 0, 0, 0.4);
 
             visibility: hidden;
         }
+        /* the same drafting grid the threshold band carries */
+        .mi-ticket::before {
+            content: ''; position: absolute; inset: 0; pointer-events: none;
+            background-image:
+                linear-gradient(rgba(20, 112, 143, 0.085) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(20, 112, 143, 0.085) 1px, transparent 1px);
+            background-size: 38px 38px;
+            -webkit-mask-image: radial-gradient(120% 90% at 50% 40%, #000 8%, transparent 78%);
+                    mask-image: radial-gradient(120% 90% at 50% 40%, #000 8%, transparent 78%);
+        }
+        /* and the corner marks, at card scale */
+        .mi-corner { position: absolute; inset: 7px; pointer-events: none; }
+        .mi-corner::before, .mi-corner::after {
+            content: ''; position: absolute; width: 13px; height: 13px;
+            border: 2px solid #14708f; opacity: 0.6;
+        }
+        .mi-corner-t::before { top: 0; left: 0;  border-right: 0; border-bottom: 0; }
+        .mi-corner-t::after  { top: 0; right: 0; border-left: 0;  border-bottom: 0; }
+        .mi-corner-b::before { bottom: 0; left: 0;  border-right: 0; border-top: 0; }
+        .mi-corner-b::after  { bottom: 0; right: 0; border-left: 0;  border-top: 0; }
         .mi-ticket.is-on { opacity: 1; transform: none;
                            visibility: visible; }
 
@@ -997,50 +1093,53 @@
 
         .mi-ticket.is-right::after {
             bottom: auto; top: 100%;
-            background: linear-gradient(to bottom, rgba(120,210,245,.75), transparent);
+            background: linear-gradient(to bottom, rgba(20,112,143,.85), transparent);
         }
 
         .mi-ticket::after {
             content: ''; position: absolute; bottom: 100%; left: 28px;
             width: 1px; height: 0;
-            background: linear-gradient(to top, rgba(120,210,245,.75), transparent);
+            background: linear-gradient(to top, rgba(20,112,143,.85), transparent);
             transition: height .6s cubic-bezier(.22,1,.36,1);
         }
         .mi-ticket.is-on::after { height: 13vh; }
         .mi-ticket.is-right::after { left: auto; right: 28px; }
-        .mi-wo { display: block; font-size: 0.62rem; font-weight: 800; letter-spacing: .22em;
-                 color: #7fd8f8; margin-bottom: 9px; }
-        .mi-ticket h3 { font-size: clamp(1.05rem, 2.3vw, 1.5rem); font-weight: 800;
-                        letter-spacing: -0.01em; margin: 0 0 13px; text-align: left; }
+        .mi-wo { position: relative; display: block; font-size: 0.62rem; font-weight: 800;
+                 letter-spacing: .22em; color: #14708f; margin-bottom: 9px; }
+        .mi-ticket h3 { position: relative; font-size: clamp(1.05rem, 2.3vw, 1.5rem);
+                        font-weight: 800; color: #0a1015;
+                        letter-spacing: -0.014em; margin: 0 0 13px; text-align: left; }
         /* READABILITY (owner 2026-08-21: "densely packed... makes you want
            to overlook it"). These were uppercase 0.74rem at 82% white with
            .03em tracking — three lines of that is a texture, not a
            sentence. Sentence case, larger, brighter, and a hairline rule
            instead of a numbered "1." that read as a form field. */
-        .mi-notes { list-style: none; margin: 0 0 16px; padding: 0; }
+        .mi-notes { position: relative; list-style: none; margin: 0 0 16px; padding: 0; }
         .mi-notes li {
             position: relative; padding-left: 18px; margin-bottom: 9px;
             font-size: 0.88rem; line-height: 1.52; letter-spacing: 0;
-            color: rgba(244, 250, 254, 0.97);
+            color: #3f4a54;
             opacity: 0;
         }
         .mi-notes li::before {
             content: ''; position: absolute; left: 0; top: 0.66em;
-            width: 9px; height: 1px; background: #6fd2f5;
+            width: 9px; height: 1px; background: #14708f;
         }
         .mi-ticket.n1 li:nth-child(1), .mi-ticket.n2 li:nth-child(-n+2),
         .mi-ticket.n3 li { opacity: 1; }
 
+        /* gold is still the one accent the booking stamp owns — but the
+           light-ground value of it, the same shift the navbar makes */
         .mi-stamp {
-            display: inline-block; transform: scale(var(--st, 0.9));
-            border: 2px double var(--accent-gold); padding: 6px 12px 5px;
-            color: var(--gold-l); text-decoration: none;
+            position: relative; display: inline-block; transform: scale(var(--st, 0.9));
+            border: 2px double #9b7f37; padding: 6px 12px 5px;
+            color: #7d6423; text-decoration: none;
             font-size: 0.72rem; font-weight: 800; letter-spacing: .16em;
             text-transform: uppercase; line-height: 1.25;
         }
         .mi-stamp small { display: block; font-size: 0.52rem; letter-spacing: .2em;
-                          color: rgba(212,188,125,.6); font-weight: 700; }
-        .mi-stamp:hover { background: rgba(184, 165, 115, 0.12); }
+                          color: rgba(125, 100, 35, .72); font-weight: 700; }
+        .mi-stamp:hover { background: rgba(155, 127, 55, 0.14); }
         .mi-stamp:focus-visible { outline: 2px solid var(--accent-teal); outline-offset: 3px; }
 
         .mi-tb {
@@ -1179,25 +1278,37 @@
                     perspective: 900px; }
         .mi-card {
             display: block; text-decoration: none; position: relative;
-            background: linear-gradient(172deg, #080e16 0%, #03070b 100%);
-            border: 1px solid rgba(255, 255, 255, 0.16);
-            border-top: 3px solid var(--teal-h);
-            padding: 14px 16px 15px;
-            box-shadow: 0 26px 58px rgba(0,0,0,.85),
-                        0 0 34px rgba(70, 194, 255, 0.08);
+            background: linear-gradient(172deg, #f7f8f9 0%, #e6eaed 100%);
+            border: 1px solid rgba(20, 112, 143, 0.22);
+            border-top: 3px solid #14708f;
+            padding: 15px 17px 16px;
+            box-shadow: 0 26px 58px rgba(0,0,0,.6), 0 4px 14px rgba(0,0,0,.4);
         }
         .mi-card::before {
             content: ''; position: absolute; left: 8%; right: 8%; top: -3px;
             height: 10px; pointer-events: none;
-            background: radial-gradient(50% 100% at 50% 0, rgba(140,220,250,.30), transparent 75%);
+            background: radial-gradient(50% 100% at 50% 0, rgba(20,112,143,.30), transparent 75%);
         }
-        .mi-card b { display: block; color: #6fd2f5; font-size: 0.58rem;
+        /* THE FOURTH CARD IS NOT LIKE THE OTHERS (owner 2026-08-22 floated
+           "maybe the last card could be something else"). Three of these are
+           services you plan; Emergency Response is the one you call when a
+           job has gone wrong. Same light ground so the set still reads as
+           one system, but the accent swaps teal -> amber, which carries
+           urgency without inventing a second design language. Revert by
+           deleting this block if a uniform set reads better. */
+        .mi-card:last-child { border-top-color: #b0762a; }
+        .mi-card:last-child::before {
+            background: radial-gradient(50% 100% at 50% 0, rgba(176,118,42,.34), transparent 75%);
+        }
+        .mi-card:last-child b { color: #96631f; }
+        .mi-card:last-child:hover { border-color: #b0762a; border-top-color: #b0762a; }
+        .mi-card b { display: block; color: #14708f; font-size: 0.58rem;
                      font-weight: 800; letter-spacing: .2em; margin-bottom: 5px; }
-        .mi-card strong { display: block; color: #fff; font-size: 0.94rem;
-                          font-weight: 800; margin-bottom: 6px; }
+        .mi-card strong { display: block; color: #0a1015; font-size: 0.96rem;
+                          font-weight: 800; margin-bottom: 6px; letter-spacing: -.01em; }
         .mi-card span { display: block; font-size: 0.72rem; font-weight: 600;
-                        letter-spacing: .02em; color: rgba(190, 222, 240, 0.86); }
-        .mi-card:hover { border-color: var(--gold-l); border-top-color: var(--gold-l); }
+                        letter-spacing: .02em; color: #4c5862; }
+        .mi-card:hover { border-color: #9b7f37; border-top-color: #9b7f37; }
         .mi-card:focus-visible { outline: 2px solid var(--accent-teal); outline-offset: 3px; }
         /* now a sentence, not a stat strip — .18em tracking made it a
            decorative band nobody read */
@@ -2024,10 +2135,10 @@
                 <span class="ap-corner ap-corner-t" aria-hidden="true"></span>
                 <span class="ap-corner ap-corner-b" aria-hidden="true"></span>
                 <span class="ap-eyebrow">Our Services</span>
-                <p class="ap-lead"><b>Four Services. Scroll The Floor.</b>
-                    Each stop on the hall below is one service we provide &mdash; what it
+                <p class="ap-lead"><b>Four Services. Scroll The Floor.</b><span>Each
+                    stop on the hall below is one service we provide &mdash; what it
                     covers, what you get, and how to book it. Crew and hours are
-                    quoted to your job.</p>
+                    quoted to your job.</span></p>
                 <span class="ap-cue" aria-hidden="true">Scroll<i></i></span>
             </div>
         </div>
@@ -2146,6 +2257,8 @@
                     <p class="mi-say"></p>
 
                     <article class="mi-ticket">
+                        <span class="mi-corner mi-corner-t" aria-hidden="true"></span>
+                        <span class="mi-corner mi-corner-b" aria-hidden="true"></span>
                         <span class="mi-wo"></span>
                         <h3></h3>
                         <ol class="mi-notes"><li></li><li></li><li></li></ol>
@@ -2190,8 +2303,8 @@
                     <a href="i-d-labor-request.html">Book this crew</a>
                 </li>
                 <li>
-                    <h3>Custom LED Build</h3>
-                    <p>LED walls, custom displays and hanging signs, built and commissioned. Every cabinet pixel-mapped and colour-balanced before doors.</p>
+                    <h3>AV &amp; LED Installation</h3>
+                    <p>LED walls, monitors, hanging signs and custom displays, built and commissioned. Every cabinet pixel-mapped and colour-balanced before doors.</p>
                     <p><b>Screens &amp; signage</b> &middot; Truss flown ahead of build day</p>
                     <img src="assets/service-custom.jpg" alt="Technicians installing graphics and lighting on a custom display" loading="lazy" decoding="async" width="784" height="1168">
                     <a href="i-d-labor-request.html">Book this crew</a>
@@ -2487,10 +2600,15 @@
                   notes:['We run your floor &mdash; freight, power, rigging and show management.',
                          'One point of contact on site from move-in through doors.',
                          'EAC credentials and insurance filed for you in advance.'] },
-                { n:'03', name:'Custom LED Build', scope:'Screens &amp; signage',
+                /* "Custom LED Build" was story-era wording, not a service name
+                   (owner 2026-08-22) — it named a deliverable rather than the
+                   thing you hire. AV is the trade's own shorthand and it sits
+                   in line with its three siblings, which are all plain-English
+                   services. */
+                { n:'03', name:'AV &amp; LED Installation', scope:'Screens &amp; signage',
                   rect:[551,800,299,100], kind:'custom',
-                  notes:['LED walls, custom displays and hanging signs, built and commissioned.',
-                         'Technicians who set, cable and align large-format screens.',
+                  notes:['LED walls, monitors, hanging signs and custom displays, built and commissioned.',
+                         'Technicians who set, cable and align large-format screens and AV gear.',
                          'Every cabinet pixel-mapped and colour-balanced before doors.'] },
                 { n:'04', name:'Emergency Response', scope:'Same-day rescue',
                   rect:[1299,1149,99,100], kind:'rush',
@@ -3356,7 +3474,10 @@
                the screen (owner 2026-08-20). One-shot: unobserve on hit. */
             /* the whole on-ramp block fades in, not just the paragraph —
                the eyebrow is a sibling of .ap-lead and was popping in hard */
-            var revealEls = [document.querySelector('.ap-sheet'), stage]
+            /* .ap-sheet is NOT in this list any more — it runs its own
+               four-beat entrance (see THE THRESHOLD OPENS in the CSS), and
+               a second opacity fade on the same element fought it. */
+            var revealEls = [stage]
                 .filter(function (el) { return !!el; });
             revealEls.forEach(function (el) { el.classList.add('mi-reveal'); });
             if ('IntersectionObserver' in window) {
@@ -3398,6 +3519,24 @@
                 window.addEventListener('resize', apFade, { passive: true });
                 apFade();
             }
+
+            /* arms the threshold's four-beat entrance and fires it once.
+               No-JS and reduced-motion never get armed, so they see the
+               finished layout. */
+            (function initThreshold() {
+                var band = document.querySelector('.ap-sheet');
+                if (!band || !('IntersectionObserver' in window)) return;
+                if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+                band.classList.add('is-armed');
+                var obs = new IntersectionObserver(function (ens) {
+                    ens.forEach(function (en) {
+                        if (!en.isIntersecting) return;
+                        band.classList.add('is-open');
+                        obs.unobserve(en.target);
+                    });
+                }, { rootMargin: '0px 0px -20% 0px', threshold: 0 });
+                obs.observe(band);
+            })();
 
             /* THE NAV OVER THE LIGHT BAND. Pure geometry: is the threshold
                currently behind the fixed bar? Cheap enough to run on every
