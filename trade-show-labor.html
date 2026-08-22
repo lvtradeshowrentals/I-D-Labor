@@ -931,39 +931,36 @@
            60%-alpha type sitting straight on a lit floor plan is unreadable
            no matter how the scene is graded, so it needs its own ground.
 
-           SOFT SCRIM, NOT A CHIP (owner 2026-08-21, second pass): the first
-           version was a hard-edged rectangle with a teal rule down one side
-           — it made the type readable but announced itself as a UI box on
-           top of the picture. The ground is now a pseudo-element that fades
-           to nothing on all four edges, so it does the contrast job without
-           ever drawing a perimeter. Horizontal falloff comes from the
-           gradient itself, vertical from a mask on the same pseudo; the
-           mask cannot touch the text because the text is not inside it.
-           Type goes pure white — the scrim is carrying it now, so there is
-           no reason to hold it back at 96%. */
+           THE GROUND IS PER-WORD (owner 2026-08-21, third pass). Two earlier
+           versions put it on the <small>: first a hard chip, then a
+           soft-edged scrim. Both failed the same way — one shape sized to
+           the WHOLE sentence, and because it lived on the parent it had to
+           fade on some single cue, so you watched a dark bar arrive and
+           then words type onto it. Messy, and far heavier than the job
+           needs.
+
+           Each word now carries its own soft halo instead. Two things fall
+           out of that for free: the halo is only ever as big as the word,
+           and it rides that word's own opacity, so ground and letterform
+           arrive on exactly the same frame. Adjacent halos overlap into a
+           continuous wash as the line fills, so it never reads as beads.
+           Keep the alpha LOW — overlaps compound, and the text-shadow is
+           doing half the work already. */
         /* block-level so it always starts its own line (inline-block let it
            sit BESIDE the headline wherever the headline fit on one line —
-           i.e. every desktop caption), fit-content so the scrim still
-           shrink-wraps the sentence instead of spanning the column */
-        .mi-say small { position: relative; display: block; width: fit-content;
-                        margin-top: 15px;
+           i.e. every desktop caption) */
+        .mi-say small { display: block; margin-top: 15px;
                         font-size: 0.3em; font-weight: 700; letter-spacing: .07em;
-                        line-height: 1.45;
+                        line-height: 1.7;
                         color: #ffffff;
-                        padding: 9px 18px 10px;
-                        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }
-        .mi-say small::before {
-            content: ''; position: absolute; inset: -9px -34px; z-index: -1;
-            /* the plateau has to reach past the first and last WORD, not
-               just past the padding — at 17% the fade was still eating the
-               opening word on a long line */
-            background: linear-gradient(90deg,
-                rgba(3, 8, 13, 0) 0%, rgba(3, 8, 13, 0.88) 9%,
-                rgba(3, 8, 13, 0.88) 91%, rgba(3, 8, 13, 0) 100%);
-            -webkit-mask-image: linear-gradient(180deg,
-                rgba(0,0,0,0) 0%, #000 32%, #000 68%, rgba(0,0,0,0) 100%);
-            mask-image: linear-gradient(180deg,
-                rgba(0,0,0,0) 0%, #000 32%, #000 68%, rgba(0,0,0,0) 100%);
+                        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9); }
+        .mi-say small .mi-w { position: relative; }
+        .mi-say small .mi-w::before {
+            content: ''; position: absolute; z-index: -1;
+            inset: -0.42em -0.46em;
+            background: radial-gradient(ellipse at center,
+                rgba(3, 8, 13, 0.62) 0%, rgba(3, 8, 13, 0.5) 42%,
+                rgba(3, 8, 13, 0) 100%);
         }
 
         .mi-sheet { position: absolute; inset: 0; display: grid; place-content: center;
@@ -1086,8 +1083,7 @@
                restated here: this rule used to re-dim it to 72% blue-grey
                and quietly undo the base rule's white. */
             .mi-say small { font-size: 0.32em; letter-spacing: .06em;
-                            margin-top: 13px; padding: 8px 15px 9px; }
-            .mi-say small::before { inset: -8px -26px; }
+                            margin-top: 13px; }
             /* THE SHEET OWNS THE FRAME (owner 2026-08-21). With the two
                caption lines under it removed, a compact stack left a dead
                band of bare scene below the last card. The group is spread
@@ -2691,7 +2687,7 @@
                as smooth typing instead of a stutter of hard pops. Opacity
                is quantised to 2dp so a held scroll position stops writing
                styles entirely. */
-            var sayWords = [], sayChip = null, sayChipFrom = 0;
+            var sayWords = [];
             var LEAD = 1.7;
             function setSay(html) {
                 say.innerHTML = html;
@@ -2719,17 +2715,6 @@
                         node.replaceChild(frag, k);
                     }
                 })(say);
-                /* the subline's chip is painted on the <small> itself, so it
-                   would sit there as an empty black bar for the whole time
-                   its words are still un-typed. It fades with its OWN first
-                   word instead of with the caption. */
-                sayChip = say.querySelector('small');
-                sayChipFrom = 0;
-                if (sayChip) {
-                    var f = sayChip.querySelector('.mi-w');
-                    sayChipFrom = f ? sayWords.indexOf(f) : 0;
-                    sayChip.__a = -1;
-                }
             }
             function wordAlpha(t, n, i) {
                 return Math.round(clamp01((t * (n + LEAD) - i) / LEAD) * 100) / 100;
@@ -2744,10 +2729,6 @@
                     el.style.opacity = a;
                     el.style.transform = a >= 1 ? 'none'
                         : 'translateY(' + ((1 - a) * 0.22).toFixed(3) + 'em)';
-                }
-                if (sayChip) {
-                    var ca = wordAlpha(t, n, sayChipFrom);
-                    if (sayChip.__a !== ca) { sayChip.__a = ca; sayChip.style.opacity = ca; }
                 }
             }
             var navEl = document.querySelector('.navbar');
