@@ -498,29 +498,17 @@
             scroll-margin-top: 88px;
             --gold-l: #d4bc7d;
             --teal-h: #96d6f5;
-            --upf: 5;
         }
 
-        .mi-track { position: relative; height: 560vh; }
-        /* THE DWELL LOCKS (owner 2026-08-19: "a short final lock position
-           on each booth so you don't accidentally scroll too fast past
-           each section and miss the info and view"). PROXIMITY snap, not
-           mandatory — it catches a fast flick at the moment each stand is
-           finished and lit, but never fights a deliberate scroll. */
-        /* DISABLED. 1px proximity snap targets on a 560vh track have a
-           catchment of roughly half a viewport each, so EVERY scroll
-           position within a chapter was being pulled onto the same lock —
-           the clock froze, the camera pinned, and three consecutive
-           "frames" in a review sweep were literally the same render. That
-           is what a whole-set critic read as dead pacing. The dwell needs
-           re-implementing as a velocity damper, not a snap. */
-        html { scroll-snap-type: none; }
-        .mi-lock {
-            position: absolute; left: 0; width: 1px; height: 1px;
-            scroll-snap-align: start; scroll-snap-stop: normal;
-            pointer-events: none; opacity: 0;
-        }
-        @media (prefers-reduced-motion: reduce) { html { scroll-snap-type: none; } }
+        /* 560vh + the 19% the five dwell locks cost (see WARP in the JS) —
+           the holds are paid for with new scroll, so every other beat keeps
+           the pace it was tuned at */
+        .mi-track { position: relative; height: 665vh; }
+        /* (the CSS scroll-snap dwell that used to live here is gone with
+           its .mi-lock targets — 1px proximity snaps on a track this tall
+           have a catchment of half a viewport each, so every position in a
+           chapter got pulled onto the same lock and the clock froze. The
+           dwell is a scroll re-parameterisation now; see WARP in the JS.) */
 
         .mi-stage {
             position: sticky; top: 0;
@@ -600,6 +588,32 @@
             stroke: rgba(115, 210, 242, 0.52);
             stroke-width: 1.2;
         }
+        /* THE FIELD READS AS A SHOW FLOOR, NOT GRAPH PAPER (owner
+           2026-08-21: the map is lackluster). A hundred and twenty
+           identical rectangles give the eye nothing to land on. Booth
+           weight now steps with booth SIZE — the data is already in the
+           markup — so the big island tenants anchor the plan and the
+           inlines recede into the field. Hierarchy out of information,
+           not decoration, and no new geometry to draw.
+
+           Selectors stay ASCII: data-size holds a literal U+00D7 and
+           these rules are re-serialised into an SVG data URI by the GL
+           rasteriser, so matching on the leading digits is the safe form. */
+        .fp-b[data-size^="30"] rect,
+        .fp-b[data-size^="40"] rect {
+            fill: rgba(45, 156, 202, 0.23);
+            stroke: rgba(138, 222, 250, 0.72);
+            stroke-width: 1.5;
+        }
+        .fp-b[data-size^="10"] rect {
+            fill: rgba(45, 156, 202, 0.075);
+            stroke: rgba(115, 210, 242, 0.34);
+            stroke-width: 1;
+        }
+        .fp-b[data-size^="30"] .fp-bn,
+        .fp-b[data-size^="40"] .fp-bn { opacity: 0.82; }
+        .fp-b[data-size^="10"] .fp-bn { opacity: 0.34; }
+
         .fp-col { fill: rgba(155, 205, 230, 0.30); }
         .fp-col-in { fill: rgba(184, 165, 115, 0.7); }
 
@@ -634,11 +648,10 @@
 
         .fp-lay-truss { opacity: calc(var(--wall) * 0.30); }
 
-        /* THE FAKE WALL EXTRUSIONS ARE RETIRED (owner 2026-08-20): the
-           dark slabs that rose with the rake read as "a complete wall
-           around the whole hall" and could sit between the camera and the
-           floor. Nothing is allowed to occlude the plan, ever. */
-        .fp-ext, .fp-ext-stands { display: none; }
+        /* (the fake wall extrusions are gone entirely — markup included.
+           They read as "a complete wall around the whole hall" and could
+           sit between the camera and the floor. Nothing may occlude the
+           plan, ever.) */
 
         /* the four LVTSR stands are BOOTH SPACES, not holes: an opaque
            near-black fill read as a blacked-out square on the plan
@@ -656,8 +669,6 @@
            is a wireframe, not a document; hover still lifts them to full */
         .fp-bn { fill: rgba(165, 215, 242, 0.78); font-size: 15px; font-weight: 700;
                  text-anchor: middle; opacity: 0.55; }
-
-        .mi-field { opacity: var(--field, 1); }
 
         .mi-laser g { opacity: 0; }
         .mi-laser g.is-live { opacity: 1; }
@@ -957,7 +968,7 @@
                           overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
         @media (max-width: 760px) {
-            .mi-track { height: 420vh; }
+            .mi-track { height: 500vh; }
             /* one column of chrome, never two: HUD top-right, skip chip
                top-left, captions BELOW both, tickets pinned to the bottom —
                on a phone nothing may ever share a band */
@@ -1008,7 +1019,6 @@
 
             .fp-tb, .fp-dim, .fp-scale, .fp-north, .fp-cols { display: none; }
             .fp-aisle text { display: none; }
-            .mi-tag { display: none; }
             .mi-burn { display: none; }
         }
 
@@ -1786,7 +1796,6 @@
                             <rect class="fp-shell" x="52" y="52" width="1496" height="1296.5" rx="2"/>
                             <rect class="fp-shell-in" x="66" y="66" width="1468" height="1268.5" rx="2"/>
                             <g class="fp-cols"><rect class="fp-col" x="146" y="96" width="12" height="12"/><rect class="fp-col fp-col-in" x="146" y="395" width="12" height="12"/><rect class="fp-col fp-col-in" x="146" y="694" width="12" height="12"/><rect class="fp-col fp-col-in" x="146" y="993" width="12" height="12"/><rect class="fp-col" x="146" y="1293" width="12" height="12"/><rect class="fp-col" x="445" y="96" width="12" height="12"/><rect class="fp-col fp-col-in" x="445" y="395" width="12" height="12"/><rect class="fp-col fp-col-in" x="445" y="694" width="12" height="12"/><rect class="fp-col fp-col-in" x="445" y="993" width="12" height="12"/><rect class="fp-col" x="445" y="1293" width="12" height="12"/><rect class="fp-col" x="744" y="96" width="12" height="12"/><rect class="fp-col fp-col-in" x="744" y="395" width="12" height="12"/><rect class="fp-col fp-col-in" x="744" y="694" width="12" height="12"/><rect class="fp-col fp-col-in" x="744" y="993" width="12" height="12"/><rect class="fp-col" x="744" y="1293" width="12" height="12"/><rect class="fp-col" x="1043" y="96" width="12" height="12"/><rect class="fp-col fp-col-in" x="1043" y="395" width="12" height="12"/><rect class="fp-col" x="1043" y="694" width="12" height="12"/><rect class="fp-col fp-col-in" x="1043" y="993" width="12" height="12"/><rect class="fp-col" x="1043" y="1293" width="12" height="12"/><rect class="fp-col" x="1343" y="96" width="12" height="12"/><rect class="fp-col fp-col-in" x="1343" y="395" width="12" height="12"/><rect class="fp-col fp-col-in" x="1343" y="694" width="12" height="12"/><rect class="fp-col fp-col-in" x="1343" y="993" width="12" height="12"/><rect class="fp-col" x="1343" y="1293" width="12" height="12"/></g>
-                            <g class="fp-ext" aria-hidden="true"><path class="fpx-wall" d="M102 202 H202 V187 H102 Z"/><path class="fpx-wall" d="M501 202 H601 V187 H501 Z"/><path class="fpx-wall" d="M601 202 H700 V187 H601 Z"/><path class="fpx-wall" d="M700 202 H800 V187 H700 Z"/><path class="fpx-wall" d="M800 202 H850 V187 H800 Z"/><path class="fpx-wall" d="M900 202 H999 V187 H900 Z"/><path class="fpx-wall" d="M999 202 H1099 V187 H999 Z"/><path class="fpx-wall" d="M1099 202 H1199 V187 H1099 Z"/><path class="fpx-wall" d="M1199 202 H1349 V187 H1199 Z"/><path class="fpx-wall" d="M1349 202 H1498 V187 H1349 Z"/><path class="fpx-wall" d="M102 251 H202 V236 H102 Z"/><path class="fpx-wall" d="M401 251 H501 V236 H401 Z"/><path class="fpx-wall" d="M501 251 H650 V236 H501 Z"/><path class="fpx-wall" d="M650 251 H850 V236 H650 Z"/><path class="fpx-wall" d="M900 251 H950 V236 H900 Z"/><path class="fpx-wall" d="M950 251 H1049 V236 H950 Z"/><path class="fpx-wall" d="M1049 251 H1099 V236 H1049 Z"/><path class="fpx-wall" d="M1099 251 H1149 V236 H1099 Z"/><path class="fpx-wall" d="M1149 251 H1199 V236 H1149 Z"/><path class="fpx-wall" d="M1199 251 H1249 V236 H1199 Z"/><path class="fpx-wall" d="M1299 251 H1349 V236 H1299 Z"/><path class="fpx-wall" d="M1349 251 H1398 V236 H1349 Z"/><path class="fpx-wall" d="M1398 251 H1448 V236 H1398 Z"/><path class="fpx-wall" d="M102 401 H202 V386 H102 Z"/><path class="fpx-wall" d="M202 401 H301 V386 H202 Z"/><path class="fpx-wall" d="M301 401 H401 V386 H301 Z"/><path class="fpx-wall" d="M401 401 H601 V386 H401 Z"/><path class="fpx-wall" d="M601 401 H700 V386 H601 Z"/><path class="fpx-wall" d="M700 401 H750 V386 H700 Z"/><path class="fpx-wall" d="M750 401 H900 V386 H750 Z"/><path class="fpx-wall" d="M900 401 H950 V386 H900 Z"/><path class="fpx-wall" d="M950 401 H1049 V386 H950 Z"/><path class="fpx-wall" d="M1049 401 H1149 V386 H1049 Z"/><path class="fpx-wall" d="M1149 401 H1249 V386 H1149 Z"/><path class="fpx-wall" d="M1299 401 H1448 V386 H1299 Z"/><path class="fpx-wall" d="M1448 401 H1498 V386 H1448 Z"/><path class="fpx-wall" d="M102 551 H301 V536 H102 Z"/><path class="fpx-wall" d="M301 551 H351 V536 H301 Z"/><path class="fpx-wall" d="M351 551 H451 V536 H351 Z"/><path class="fpx-wall" d="M501 551 H601 V536 H501 Z"/><path class="fpx-wall" d="M601 551 H750 V536 H601 Z"/><path class="fpx-wall" d="M750 551 H850 V536 H750 Z"/><path class="fpx-wall" d="M900 551 H1049 V536 H900 Z"/><path class="fpx-wall" d="M1349 551 H1398 V536 H1349 Z"/><path class="fpx-wall" d="M102 601 H301 V586 H102 Z"/><path class="fpx-wall" d="M301 601 H351 V586 H301 Z"/><path class="fpx-wall" d="M351 601 H451 V586 H351 Z"/><path class="fpx-wall" d="M501 601 H650 V586 H501 Z"/><path class="fpx-wall" d="M650 601 H700 V586 H650 Z"/><path class="fpx-wall" d="M700 601 H900 V586 H700 Z"/><path class="fpx-wall" d="M900 601 H999 V586 H900 Z"/><path class="fpx-wall" d="M999 601 H1099 V586 H999 Z"/><path class="fpx-wall" d="M1299 601 H1498 V586 H1299 Z"/><path class="fpx-wall" d="M102 750 H251 V735 H102 Z"/><path class="fpx-wall" d="M251 750 H351 V735 H251 Z"/><path class="fpx-wall" d="M351 750 H401 V735 H351 Z"/><path class="fpx-wall" d="M401 750 H551 V735 H401 Z"/><path class="fpx-wall" d="M551 750 H700 V735 H551 Z"/><path class="fpx-wall" d="M700 750 H800 V735 H700 Z"/><path class="fpx-wall" d="M1199 750 H1249 V735 H1199 Z"/><path class="fpx-wall" d="M1299 750 H1448 V735 H1299 Z"/><path class="fpx-wall" d="M102 850 H202 V835 H102 Z"/><path class="fpx-wall" d="M202 850 H351 V835 H202 Z"/><path class="fpx-wall" d="M351 850 H451 V835 H351 Z"/><path class="fpx-wall" d="M900 850 H999 V835 H900 Z"/><path class="fpx-wall" d="M999 850 H1149 V835 H999 Z"/><path class="fpx-wall" d="M1149 850 H1199 V835 H1149 Z"/><path class="fpx-wall" d="M1199 850 H1299 V835 H1199 Z"/><path class="fpx-wall" d="M1299 850 H1398 V835 H1299 Z"/><path class="fpx-wall" d="M1398 850 H1498 V835 H1398 Z"/><path class="fpx-wall" d="M102 900 H152 V885 H102 Z"/><path class="fpx-wall" d="M152 900 H251 V885 H152 Z"/><path class="fpx-wall" d="M251 900 H351 V885 H251 Z"/><path class="fpx-wall" d="M351 900 H401 V885 H351 Z"/><path class="fpx-wall" d="M401 900 H501 V885 H401 Z"/><path class="fpx-wall" d="M900 900 H1099 V885 H900 Z"/><path class="fpx-wall" d="M1099 900 H1199 V885 H1099 Z"/><path class="fpx-wall" d="M1199 900 H1249 V885 H1199 Z"/><path class="fpx-wall" d="M1299 900 H1398 V885 H1299 Z"/><path class="fpx-wall" d="M1398 900 H1498 V885 H1398 Z"/><path class="fpx-wall" d="M102 1099 H251 V1084 H102 Z"/><path class="fpx-wall" d="M251 1099 H301 V1084 H251 Z"/><path class="fpx-wall" d="M301 1099 H401 V1084 H301 Z"/><path class="fpx-wall" d="M401 1099 H551 V1084 H401 Z"/><path class="fpx-wall" d="M551 1099 H750 V1084 H551 Z"/><path class="fpx-wall" d="M750 1099 H850 V1084 H750 Z"/><path class="fpx-wall" d="M900 1099 H999 V1084 H900 Z"/><path class="fpx-wall" d="M999 1099 H1049 V1084 H999 Z"/><path class="fpx-wall" d="M1049 1099 H1199 V1084 H1049 Z"/><path class="fpx-wall" d="M1199 1099 H1299 V1084 H1199 Z"/><path class="fpx-wall" d="M1299 1099 H1448 V1084 H1299 Z"/><path class="fpx-wall" d="M102 1199 H301 V1184 H102 Z"/><path class="fpx-wall" d="M301 1199 H501 V1184 H301 Z"/><path class="fpx-wall" d="M501 1199 H551 V1184 H501 Z"/><path class="fpx-wall" d="M551 1199 H601 V1184 H551 Z"/><path class="fpx-wall" d="M601 1199 H700 V1184 H601 Z"/><path class="fpx-wall" d="M700 1199 H800 V1184 H700 Z"/><path class="fpx-wall" d="M800 1199 H999 V1184 H800 Z"/><path class="fpx-wall" d="M999 1199 H1149 V1184 H999 Z"/><path class="fpx-wall" d="M1149 1199 H1249 V1184 H1149 Z"/><path class="fpx-wall" d="M102 1249 H301 V1234 H102 Z"/><path class="fpx-wall" d="M301 1249 H351 V1234 H301 Z"/><path class="fpx-wall" d="M351 1249 H451 V1234 H351 Z"/><path class="fpx-wall" d="M501 1249 H601 V1234 H501 Z"/><path class="fpx-wall" d="M601 1249 H700 V1234 H601 Z"/><path class="fpx-wall" d="M700 1249 H800 V1234 H700 Z"/><path class="fpx-wall" d="M800 1249 H850 V1234 H800 Z"/><path class="fpx-wall" d="M900 1249 H950 V1234 H900 Z"/><path class="fpx-wall" d="M950 1249 H999 V1234 H950 Z"/><path class="fpx-wall" d="M999 1249 H1199 V1234 H999 Z"/><path class="fpx-wall" d="M1199 1249 H1249 V1234 H1199 Z"/></g>
                             <g class="fp-booths"><g class="fp-b" data-n="1002" data-size="20×10"><rect x="102" y="152" width="100" height="50" rx="1"/><text class="fp-bn" x="152" y="183">1002</text></g><g class="fp-b" data-n="1018" data-size="20×10"><rect x="501" y="152" width="100" height="50" rx="1"/><text class="fp-bn" x="551" y="183">1018</text></g><g class="fp-b" data-n="1022" data-size="20×10"><rect x="601" y="152" width="99" height="50" rx="1"/><text class="fp-bn" x="650.5" y="183">1022</text></g><g class="fp-b" data-n="1026" data-size="20×10"><rect x="700" y="152" width="100" height="50" rx="1"/><text class="fp-bn" x="750" y="183">1026</text></g><g class="fp-b" data-n="1030" data-size="10×10"><rect x="800" y="152" width="50" height="50" rx="1"/><text class="fp-bn" x="825" y="183">1030</text></g><g class="fp-b" data-n="1034" data-size="20×10"><rect x="900" y="152" width="99" height="50" rx="1"/><text class="fp-bn" x="949.5" y="183">1034</text></g><g class="fp-b" data-n="1038" data-size="20×10"><rect x="999" y="152" width="100" height="50" rx="1"/><text class="fp-bn" x="1049" y="183">1038</text></g><g class="fp-b" data-n="1042" data-size="20×10"><rect x="1099" y="152" width="100" height="50" rx="1"/><text class="fp-bn" x="1149" y="183">1042</text></g><g class="fp-b" data-n="1046" data-size="30×10"><rect x="1199" y="152" width="150" height="50" rx="1"/><text class="fp-bn" x="1274" y="183">1046</text></g><g class="fp-b" data-n="1052" data-size="30×10"><rect x="1349" y="152" width="149" height="50" rx="1"/><text class="fp-bn" x="1423.5" y="183">1052</text></g><g class="fp-b" data-n="1001" data-size="20×10"><rect x="102" y="202" width="100" height="49" rx="1"/><text class="fp-bn" x="152" y="232.5">1001</text></g><g class="fp-b" data-n="1013" data-size="20×10"><rect x="401" y="202" width="100" height="49" rx="1"/><text class="fp-bn" x="451" y="232.5">1013</text></g><g class="fp-b" data-n="1017" data-size="30×10"><rect x="501" y="202" width="149" height="49" rx="1"/><text class="fp-bn" x="575.5" y="232.5">1017</text></g><g class="fp-b" data-n="1023" data-size="40×10"><rect x="650" y="202" width="200" height="49" rx="1"/><text class="fp-bn" x="750" y="232.5">1023</text></g><g class="fp-b" data-n="1033" data-size="10×10"><rect x="900" y="202" width="50" height="49" rx="1"/><text class="fp-bn" x="925" y="232.5">1033</text></g><g class="fp-b" data-n="1035" data-size="20×10"><rect x="950" y="202" width="99" height="49" rx="1"/><text class="fp-bn" x="999.5" y="232.5">1035</text></g><g class="fp-b" data-n="1039" data-size="10×10"><rect x="1049" y="202" width="50" height="49" rx="1"/><text class="fp-bn" x="1074" y="232.5">1039</text></g><g class="fp-b" data-n="1041" data-size="10×10"><rect x="1099" y="202" width="50" height="49" rx="1"/><text class="fp-bn" x="1124" y="232.5">1041</text></g><g class="fp-b" data-n="1043" data-size="10×10"><rect x="1149" y="202" width="50" height="49" rx="1"/><text class="fp-bn" x="1174" y="232.5">1043</text></g><g class="fp-b" data-n="1045" data-size="10×10"><rect x="1199" y="202" width="50" height="49" rx="1"/><text class="fp-bn" x="1224" y="232.5">1045</text></g><g class="fp-b" data-n="1049" data-size="10×10"><rect x="1299" y="202" width="50" height="49" rx="1"/><text class="fp-bn" x="1324" y="232.5">1049</text></g><g class="fp-b" data-n="1051" data-size="10×10"><rect x="1349" y="202" width="49" height="49" rx="1"/><text class="fp-bn" x="1373.5" y="232.5">1051</text></g><g class="fp-b" data-n="1053" data-size="10×10"><rect x="1398" y="202" width="50" height="49" rx="1"/><text class="fp-bn" x="1423" y="232.5">1053</text></g><g class="fp-b" data-n="2002" data-size="20×20"><rect x="102" y="301" width="100" height="100" rx="1"/><text class="fp-bn" x="152" y="357">2002</text></g><g class="fp-b" data-n="2006" data-size="20×20"><rect x="202" y="301" width="99" height="100" rx="1"/><text class="fp-bn" x="251.5" y="357">2006</text></g><g class="fp-b" data-n="2010" data-size="20×20"><rect x="301" y="301" width="100" height="100" rx="1"/><text class="fp-bn" x="351" y="357">2010</text></g><g class="fp-b" data-n="2014" data-size="40×20"><rect x="401" y="301" width="200" height="100" rx="1"/><text class="fp-bn" x="501" y="357">2014</text></g><g class="fp-b" data-n="2022" data-size="20×20"><rect x="601" y="301" width="99" height="100" rx="1"/><text class="fp-bn" x="650.5" y="357">2022</text></g><g class="fp-b" data-n="2026" data-size="10×20"><rect x="700" y="301" width="50" height="100" rx="1"/><text class="fp-bn" x="725" y="357">2026</text></g><g class="fp-b" data-n="2028" data-size="30×20"><rect x="750" y="301" width="150" height="100" rx="1"/><text class="fp-bn" x="825" y="357">2028</text></g><g class="fp-b" data-n="2034" data-size="10×20"><rect x="900" y="301" width="50" height="100" rx="1"/><text class="fp-bn" x="925" y="357">2034</text></g><g class="fp-b" data-n="2036" data-size="20×20"><rect x="950" y="301" width="99" height="100" rx="1"/><text class="fp-bn" x="999.5" y="357">2036</text></g><g class="fp-b" data-n="2040" data-size="20×20"><rect x="1049" y="301" width="100" height="100" rx="1"/><text class="fp-bn" x="1099" y="357">2040</text></g><g class="fp-b" data-n="2044" data-size="20×20"><rect x="1149" y="301" width="100" height="100" rx="1"/><text class="fp-bn" x="1199" y="357">2044</text></g><g class="fp-b" data-n="2050" data-size="30×20"><rect x="1299" y="301" width="149" height="100" rx="1"/><text class="fp-bn" x="1373.5" y="357">2050</text></g><g class="fp-b" data-n="2056" data-size="10×20"><rect x="1448" y="301" width="50" height="100" rx="1"/><text class="fp-bn" x="1473" y="357">2056</text></g><g class="fp-b" data-n="3002" data-size="40×10"><rect x="102" y="501" width="199" height="50" rx="1"/><text class="fp-bn" x="201.5" y="532">3002</text></g><g class="fp-b" data-n="3010" data-size="10×10"><rect x="301" y="501" width="50" height="50" rx="1"/><text class="fp-bn" x="326" y="532">3010</text></g><g class="fp-b" data-n="3012" data-size="20×10"><rect x="351" y="501" width="100" height="50" rx="1"/><text class="fp-bn" x="401" y="532">3012</text></g><g class="fp-b" data-n="3018" data-size="20×10"><rect x="501" y="501" width="100" height="50" rx="1"/><text class="fp-bn" x="551" y="532">3018</text></g><g class="fp-b" data-n="3022" data-size="30×10"><rect x="601" y="501" width="149" height="50" rx="1"/><text class="fp-bn" x="675.5" y="532">3022</text></g><g class="fp-b" data-n="3028" data-size="20×10"><rect x="750" y="501" width="100" height="50" rx="1"/><text class="fp-bn" x="800" y="532">3028</text></g><g class="fp-b" data-n="3034" data-size="30×10"><rect x="900" y="501" width="149" height="50" rx="1"/><text class="fp-bn" x="974.5" y="532">3034</text></g><g class="fp-b" data-n="3052" data-size="10×10"><rect x="1349" y="501" width="49" height="50" rx="1"/><text class="fp-bn" x="1373.5" y="532">3052</text></g><g class="fp-b" data-n="3001" data-size="40×10"><rect x="102" y="551" width="199" height="50" rx="1"/><text class="fp-bn" x="201.5" y="582">3001</text></g><g class="fp-b" data-n="3009" data-size="10×10"><rect x="301" y="551" width="50" height="50" rx="1"/><text class="fp-bn" x="326" y="582">3009</text></g><g class="fp-b" data-n="3011" data-size="20×10"><rect x="351" y="551" width="100" height="50" rx="1"/><text class="fp-bn" x="401" y="582">3011</text></g><g class="fp-b" data-n="3017" data-size="30×10"><rect x="501" y="551" width="149" height="50" rx="1"/><text class="fp-bn" x="575.5" y="582">3017</text></g><g class="fp-b" data-n="3023" data-size="10×10"><rect x="650" y="551" width="50" height="50" rx="1"/><text class="fp-bn" x="675" y="582">3023</text></g><g class="fp-b" data-n="3025" data-size="40×10"><rect x="700" y="551" width="200" height="50" rx="1"/><text class="fp-bn" x="800" y="582">3025</text></g><g class="fp-b" data-n="3033" data-size="20×10"><rect x="900" y="551" width="99" height="50" rx="1"/><text class="fp-bn" x="949.5" y="582">3033</text></g><g class="fp-b" data-n="3037" data-size="20×10"><rect x="999" y="551" width="100" height="50" rx="1"/><text class="fp-bn" x="1049" y="582">3037</text></g><g class="fp-b" data-n="3049" data-size="40×10"><rect x="1299" y="551" width="199" height="50" rx="1"/><text class="fp-bn" x="1398.5" y="582">3049</text></g><g class="fp-b" data-n="4002" data-size="30×20"><rect x="102" y="650" width="149" height="100" rx="1"/><text class="fp-bn" x="176.5" y="706">4002</text></g><g class="fp-b" data-n="4008" data-size="20×20"><rect x="251" y="650" width="100" height="100" rx="1"/><text class="fp-bn" x="301" y="706">4008</text></g><g class="fp-b" data-n="4012" data-size="10×20"><rect x="351" y="650" width="50" height="100" rx="1"/><text class="fp-bn" x="376" y="706">4012</text></g><g class="fp-b" data-n="4014" data-size="30×20"><rect x="401" y="650" width="150" height="100" rx="1"/><text class="fp-bn" x="476" y="706">4014</text></g><g class="fp-b" data-n="4020" data-size="30×20"><rect x="551" y="650" width="149" height="100" rx="1"/><text class="fp-bn" x="625.5" y="706">4020</text></g><g class="fp-b" data-n="4026" data-size="20×20"><rect x="700" y="650" width="100" height="100" rx="1"/><text class="fp-bn" x="750" y="706">4026</text></g><g class="fp-b" data-n="4046" data-size="10×20"><rect x="1199" y="650" width="50" height="100" rx="1"/><text class="fp-bn" x="1224" y="706">4046</text></g><g class="fp-b" data-n="4050" data-size="30×20"><rect x="1299" y="650" width="149" height="100" rx="1"/><text class="fp-bn" x="1373.5" y="706">4050</text></g><g class="fp-b" data-n="5002" data-size="20×10"><rect x="102" y="800" width="100" height="50" rx="1"/><text class="fp-bn" x="152" y="831">5002</text></g><g class="fp-b" data-n="5006" data-size="30×10"><rect x="202" y="800" width="149" height="50" rx="1"/><text class="fp-bn" x="276.5" y="831">5006</text></g><g class="fp-b" data-n="5012" data-size="20×10"><rect x="351" y="800" width="100" height="50" rx="1"/><text class="fp-bn" x="401" y="831">5012</text></g><g class="fp-b" data-n="5034" data-size="20×10"><rect x="900" y="800" width="99" height="50" rx="1"/><text class="fp-bn" x="949.5" y="831">5034</text></g><g class="fp-b" data-n="5038" data-size="30×10"><rect x="999" y="800" width="150" height="50" rx="1"/><text class="fp-bn" x="1074" y="831">5038</text></g><g class="fp-b" data-n="5044" data-size="10×10"><rect x="1149" y="800" width="50" height="50" rx="1"/><text class="fp-bn" x="1174" y="831">5044</text></g><g class="fp-b" data-n="5046" data-size="20×10"><rect x="1199" y="800" width="100" height="50" rx="1"/><text class="fp-bn" x="1249" y="831">5046</text></g><g class="fp-b" data-n="5050" data-size="20×10"><rect x="1299" y="800" width="99" height="50" rx="1"/><text class="fp-bn" x="1348.5" y="831">5050</text></g><g class="fp-b" data-n="5054" data-size="20×10"><rect x="1398" y="800" width="100" height="50" rx="1"/><text class="fp-bn" x="1448" y="831">5054</text></g><g class="fp-b" data-n="5001" data-size="10×10"><rect x="102" y="850" width="50" height="50" rx="1"/><text class="fp-bn" x="127" y="881">5001</text></g><g class="fp-b" data-n="5003" data-size="20×10"><rect x="152" y="850" width="99" height="50" rx="1"/><text class="fp-bn" x="201.5" y="881">5003</text></g><g class="fp-b" data-n="5007" data-size="20×10"><rect x="251" y="850" width="100" height="50" rx="1"/><text class="fp-bn" x="301" y="881">5007</text></g><g class="fp-b" data-n="5011" data-size="10×10"><rect x="351" y="850" width="50" height="50" rx="1"/><text class="fp-bn" x="376" y="881">5011</text></g><g class="fp-b" data-n="5013" data-size="20×10"><rect x="401" y="850" width="100" height="50" rx="1"/><text class="fp-bn" x="451" y="881">5013</text></g><g class="fp-b" data-n="5033" data-size="40×10"><rect x="900" y="850" width="199" height="50" rx="1"/><text class="fp-bn" x="999.5" y="881">5033</text></g><g class="fp-b" data-n="5041" data-size="20×10"><rect x="1099" y="850" width="100" height="50" rx="1"/><text class="fp-bn" x="1149" y="881">5041</text></g><g class="fp-b" data-n="5045" data-size="10×10"><rect x="1199" y="850" width="50" height="50" rx="1"/><text class="fp-bn" x="1224" y="881">5045</text></g><g class="fp-b" data-n="5049" data-size="20×10"><rect x="1299" y="850" width="99" height="50" rx="1"/><text class="fp-bn" x="1348.5" y="881">5049</text></g><g class="fp-b" data-n="5053" data-size="20×10"><rect x="1398" y="850" width="100" height="50" rx="1"/><text class="fp-bn" x="1448" y="881">5053</text></g><g class="fp-b" data-n="6002" data-size="30×20"><rect x="102" y="999" width="149" height="100" rx="1"/><text class="fp-bn" x="176.5" y="1055">6002</text></g><g class="fp-b" data-n="6008" data-size="10×20"><rect x="251" y="999" width="50" height="100" rx="1"/><text class="fp-bn" x="276" y="1055">6008</text></g><g class="fp-b" data-n="6010" data-size="20×20"><rect x="301" y="999" width="100" height="100" rx="1"/><text class="fp-bn" x="351" y="1055">6010</text></g><g class="fp-b" data-n="6014" data-size="30×20"><rect x="401" y="999" width="150" height="100" rx="1"/><text class="fp-bn" x="476" y="1055">6014</text></g><g class="fp-b" data-n="6020" data-size="40×20"><rect x="551" y="999" width="199" height="100" rx="1"/><text class="fp-bn" x="650.5" y="1055">6020</text></g><g class="fp-b" data-n="6028" data-size="20×20"><rect x="750" y="999" width="100" height="100" rx="1"/><text class="fp-bn" x="800" y="1055">6028</text></g><g class="fp-b" data-n="6034" data-size="20×20"><rect x="900" y="999" width="99" height="100" rx="1"/><text class="fp-bn" x="949.5" y="1055">6034</text></g><g class="fp-b" data-n="6038" data-size="10×20"><rect x="999" y="999" width="50" height="100" rx="1"/><text class="fp-bn" x="1024" y="1055">6038</text></g><g class="fp-b" data-n="6040" data-size="30×20"><rect x="1049" y="999" width="150" height="100" rx="1"/><text class="fp-bn" x="1124" y="1055">6040</text></g><g class="fp-b" data-n="6046" data-size="20×20"><rect x="1199" y="999" width="100" height="100" rx="1"/><text class="fp-bn" x="1249" y="1055">6046</text></g><g class="fp-b" data-n="6050" data-size="30×20"><rect x="1299" y="999" width="149" height="100" rx="1"/><text class="fp-bn" x="1373.5" y="1055">6050</text></g><g class="fp-b" data-n="7002" data-size="40×10"><rect x="102" y="1149" width="199" height="50" rx="1"/><text class="fp-bn" x="201.5" y="1180">7002</text></g><g class="fp-b" data-n="7010" data-size="40×10"><rect x="301" y="1149" width="200" height="50" rx="1"/><text class="fp-bn" x="401" y="1180">7010</text></g><g class="fp-b" data-n="7018" data-size="10×10"><rect x="501" y="1149" width="50" height="50" rx="1"/><text class="fp-bn" x="526" y="1180">7018</text></g><g class="fp-b" data-n="7020" data-size="10×10"><rect x="551" y="1149" width="50" height="50" rx="1"/><text class="fp-bn" x="576" y="1180">7020</text></g><g class="fp-b" data-n="7022" data-size="20×10"><rect x="601" y="1149" width="99" height="50" rx="1"/><text class="fp-bn" x="650.5" y="1180">7022</text></g><g class="fp-b" data-n="7026" data-size="20×10"><rect x="700" y="1149" width="100" height="50" rx="1"/><text class="fp-bn" x="750" y="1180">7026</text></g><g class="fp-b" data-n="7030" data-size="40×10"><rect x="800" y="1149" width="199" height="50" rx="1"/><text class="fp-bn" x="899.5" y="1180">7030</text></g><g class="fp-b" data-n="7038" data-size="30×10"><rect x="999" y="1149" width="150" height="50" rx="1"/><text class="fp-bn" x="1074" y="1180">7038</text></g><g class="fp-b" data-n="7044" data-size="20×10"><rect x="1149" y="1149" width="100" height="50" rx="1"/><text class="fp-bn" x="1199" y="1180">7044</text></g><g class="fp-b" data-n="7001" data-size="40×10"><rect x="102" y="1199" width="199" height="50" rx="1"/><text class="fp-bn" x="201.5" y="1230">7001</text></g><g class="fp-b" data-n="7009" data-size="10×10"><rect x="301" y="1199" width="50" height="50" rx="1"/><text class="fp-bn" x="326" y="1230">7009</text></g><g class="fp-b" data-n="7011" data-size="20×10"><rect x="351" y="1199" width="100" height="50" rx="1"/><text class="fp-bn" x="401" y="1230">7011</text></g><g class="fp-b" data-n="7017" data-size="20×10"><rect x="501" y="1199" width="100" height="50" rx="1"/><text class="fp-bn" x="551" y="1230">7017</text></g><g class="fp-b" data-n="7021" data-size="20×10"><rect x="601" y="1199" width="99" height="50" rx="1"/><text class="fp-bn" x="650.5" y="1230">7021</text></g><g class="fp-b" data-n="7025" data-size="20×10"><rect x="700" y="1199" width="100" height="50" rx="1"/><text class="fp-bn" x="750" y="1230">7025</text></g><g class="fp-b" data-n="7029" data-size="10×10"><rect x="800" y="1199" width="50" height="50" rx="1"/><text class="fp-bn" x="825" y="1230">7029</text></g><g class="fp-b" data-n="7033" data-size="10×10"><rect x="900" y="1199" width="50" height="50" rx="1"/><text class="fp-bn" x="925" y="1230">7033</text></g><g class="fp-b" data-n="7035" data-size="10×10"><rect x="950" y="1199" width="49" height="50" rx="1"/><text class="fp-bn" x="974.5" y="1230">7035</text></g><g class="fp-b" data-n="7037" data-size="40×10"><rect x="999" y="1199" width="200" height="50" rx="1"/><text class="fp-bn" x="1099" y="1230">7037</text></g><g class="fp-b" data-n="7045" data-size="10×10"><rect x="1199" y="1199" width="50" height="50" rx="1"/><text class="fp-bn" x="1224" y="1230">7045</text></g></g>
                             <g class="fp-aisles"><g class="fp-aisle"><line x1="102" y1="127.1" x2="1498" y2="127.1"/><text x="110" y="117.1">AISLE 1200</text><text x="800" y="117.1" text-anchor="middle">AISLE 1200</text><text x="1490" y="117.1" text-anchor="end">AISLE 1200</text></g><g class="fp-aisle"><line x1="102" y1="276.1" x2="1498" y2="276.1"/><text x="110" y="266.1">AISLE 2200</text><text x="800" y="266.1" text-anchor="middle">AISLE 2200</text><text x="1490" y="266.1" text-anchor="end">AISLE 2200</text></g><g class="fp-aisle"><line x1="102" y1="476.1" x2="1498" y2="476.1"/><text x="110" y="466.1">AISLE 3200</text><text x="800" y="466.1" text-anchor="middle">AISLE 3200</text><text x="1490" y="466.1" text-anchor="end">AISLE 3200</text></g><g class="fp-aisle"><line x1="102" y1="625.1" x2="1498" y2="625.1"/><text x="110" y="615.1">AISLE 4200</text><text x="800" y="615.1" text-anchor="middle">AISLE 4200</text><text x="1490" y="615.1" text-anchor="end">AISLE 4200</text></g><g class="fp-aisle"><line x1="102" y1="775.1" x2="1498" y2="775.1"/><text x="110" y="765.1">AISLE 5200</text><text x="800" y="765.1" text-anchor="middle">AISLE 5200</text><text x="1490" y="765.1" text-anchor="end">AISLE 5200</text></g><g class="fp-aisle"><line x1="102" y1="974.1" x2="1498" y2="974.1"/><text x="110" y="964.1">AISLE 6200</text><text x="800" y="964.1" text-anchor="middle">AISLE 6200</text><text x="1490" y="964.1" text-anchor="end">AISLE 6200</text></g><g class="fp-aisle"><line x1="102" y1="1124.1" x2="1498" y2="1124.1"/><text x="110" y="1114.1">AISLE 7200</text><text x="800" y="1114.1" text-anchor="middle">AISLE 7200</text><text x="1490" y="1114.1" text-anchor="end">AISLE 7200</text></g><g class="fp-aisle"><line x1="102" y1="450.9" x2="1498" y2="450.9"/><text x="110" y="440.9">SERVICE CORRIDOR</text><text x="800" y="440.9" text-anchor="middle">SERVICE CORRIDOR</text><text x="1490" y="440.9" text-anchor="end">SERVICE CORRIDOR</text></g><g class="fp-aisle"><line x1="102" y1="949.9" x2="1498" y2="949.9"/><text x="110" y="939.9">SERVICE CORRIDOR</text><text x="800" y="939.9" text-anchor="middle">SERVICE CORRIDOR</text><text x="1490" y="939.9" text-anchor="end">SERVICE CORRIDOR</text></g></g>
                             <g class="fp-furniture">
@@ -1835,7 +1844,6 @@
                 <text class="fp-lbl fp-mid" y="-38">N</text>
             </g>
                             </g>
-                            <g class="fp-ext fp-ext-stands" aria-hidden="true"><path class="fpx-wall fpx-s" data-ext="0" d="M202 251 H401 V217 H202 Z"/><path class="fpx-wall fpx-s" data-ext="1" d="M1099 601 H1299 V567 H1099 Z"/><path class="fpx-wall fpx-s" data-ext="2" d="M551 900 H850 V866 H551 Z"/><path class="fpx-wall fpx-s" data-ext="3" d="M1299 1249 H1398 V1215 H1299 Z"/></g>
                             <g class="fp-stands"><g class="fp-stand" data-stand="0"><rect class="fp-stand-bg" x="202" y="152" width="199" height="99" rx="1"/><rect class="fp-stand-r" x="202" y="152" width="199" height="99" rx="1"/><rect class="fp-stand-g" x="208" y="158" width="187" height="87" rx="1"/><text class="fp-stand-n" x="214" y="186">1006</text><text class="fp-stand-c" x="214" y="237">LVTSR &#183; 0600</text></g><g class="fp-stand" data-stand="1"><rect class="fp-stand-bg" x="1099" y="501" width="200" height="100" rx="1"/><rect class="fp-stand-r" x="1099" y="501" width="200" height="100" rx="1"/><rect class="fp-stand-g" x="1105" y="507" width="188" height="88" rx="1"/><text class="fp-stand-n" x="1111" y="535">3042</text><text class="fp-stand-c" x="1111" y="587">LVTSR &#183; 0730</text></g><g class="fp-stand" data-stand="2"><rect class="fp-stand-bg" x="551" y="800" width="299" height="100" rx="1"/><rect class="fp-stand-r" x="551" y="800" width="299" height="100" rx="1"/><rect class="fp-stand-g" x="557" y="806" width="287" height="88" rx="1"/><text class="fp-stand-n" x="563" y="834">5020</text><text class="fp-stand-c" x="563" y="886">LVTSR &#183; 0900</text></g><g class="fp-stand" data-stand="3"><rect class="fp-stand-bg" x="1299" y="1149" width="99" height="100" rx="1"/><rect class="fp-stand-r" x="1299" y="1149" width="99" height="100" rx="1"/><rect class="fp-stand-g" x="1305" y="1155" width="87" height="88" rx="1"/><text class="fp-stand-n" x="1311" y="1183">7050</text><text class="fp-stand-c" x="1311" y="1235">LVTSR &#183; On Call</text></g></g>
                             <g class="fp-crews" aria-hidden="true"></g>
                         </g>
@@ -1869,16 +1877,14 @@
                     </article>
 
                     <div class="mi-quote" role="status"></div>
-                    <p class="mi-probe">Tap any booth on the floor for a labor estimate</p>
+                    <p class="mi-probe">Tap any booth on the floor plan</p>
 
                     <div class="mi-tb">
                         <span class="mi-tb-k">MI-01 &middot; NAB &rsquo;26 &middot; LVCC CENTRAL</span>
                         <p class="mi-clock">05:00</p>
                         <p class="mi-float">T&minus;11:00 to show open</p>
                         <p class="mi-tally">
-                            <span><b class="mi-t-st">0</b> Stands</span>
-                            <span><b class="mi-t-cr">0</b> Crew</span>
-                            <span><b class="mi-t-ph">0</b> Person-Hours</span>
+                            <span><b class="mi-t-st">0</b> of 4 Services</span>
                         </p>
                     </div>
 
@@ -1896,28 +1902,28 @@
                 <li>
                     <h3>Installation &amp; Dismantle</h3>
                     <p>Full booth build and teardown &mdash; structure, flooring, rails and graphics. Empties tagged and cleared, dismantle booked on the same order.</p>
-                    <p><b>8-Person Crew</b> &middot; One foreman, seven installers</p>
+                    <p><b>Build &amp; teardown</b> &middot; Crew sized to your scope</p>
                     <img src="assets/service-install.jpg" alt="LVTSR crew installing booth structure on the show floor" loading="lazy" decoding="async" width="480" height="640">
                     <a href="i-d-labor-request.html">Book this crew</a>
                 </li>
                 <li>
                     <h3>On-Site Coordination</h3>
                     <p>We run your floor &mdash; freight, power, rigging and show management. EAC credentials and insurance filed for you in advance.</p>
-                    <p><b>Lead + Floor Manager</b> &middot; On site through doors</p>
+                    <p><b>Floor management</b> &middot; On site through doors</p>
                     <img src="assets/service-coordination.jpg" alt="LVTSR coordinator directing crews and vendors during move-in" loading="lazy" decoding="async" width="675" height="690">
                     <a href="i-d-labor-request.html">Book this crew</a>
                 </li>
                 <li>
                     <h3>Custom LED Build</h3>
                     <p>LED walls, custom displays and hanging signs, built and commissioned. Every cabinet pixel-mapped and colour-balanced before doors.</p>
-                    <p><b>4 Techs + 2 Installers</b> &middot; Truss flown ahead of build day</p>
+                    <p><b>Screens &amp; signage</b> &middot; Truss flown ahead of build day</p>
                     <img src="assets/service-custom.jpg" alt="Technicians installing graphics and lighting on a custom display" loading="lazy" decoding="async" width="784" height="1168">
                     <a href="i-d-labor-request.html">Book this crew</a>
                 </li>
                 <li>
                     <h3>Emergency Response</h3>
                     <p>Missed freight, damaged crate, wrong graphic &mdash; fixed the same day. On site within the hour, finished before doors.</p>
-                    <p><b>Rapid Team Of 3</b> &middot; Four-hour minimum call</p>
+                    <p><b>Same-day rescue</b> &middot; Call us and we scale to the problem</p>
                     <img src="assets/service-emergency.jpg" alt="LVTSR crew making a last-minute fix before show open" loading="lazy" decoding="async" width="784" height="1168">
                     <a href="i-d-labor-request.html">Book this crew</a>
                 </li>
@@ -2164,8 +2170,7 @@
             var stamp = sec.querySelector('.mi-stamp');
             var clockEl = sec.querySelector('.mi-clock');
             var floatEl = sec.querySelector('.mi-float');
-            var tSt = sec.querySelector('.mi-t-st'), tCr = sec.querySelector('.mi-t-cr'),
-                tPh = sec.querySelector('.mi-t-ph');
+            var tSt = sec.querySelector('.mi-t-st');
             var sheet = sec.querySelector('.mi-sheet');
             var cards = sec.querySelector('.mi-cards');
             var live  = sec.querySelector('.sr-live');
@@ -2183,44 +2188,45 @@
             var narrow = window.matchMedia('(max-width: 760px)');
 
             /* Real-world texture: NAB Show 2026, LVCC Central Hall, final
-               full build day. Booth numbers follow the Central Hall C-range;
-               crew sizes, call times and person-hours are calibrated to
-               published Las Vegas I&D practice (Teamsters 631 / IATSE 720 /
-               IBEW 357 jurisdiction, ST 0800-1630). Totals: 19 crew, 135 PH. */
-            /* SERVICE COPY, NOT STORY COPY (owner 2026-08-21): each note is
-               one plain fact in this order — what the service covers, who
-               shows up, what you get at the end. No narrative, sentence
-               case, short enough to read at a glance while scrolling. */
+               full build day. Booth numbers follow the Central Hall
+               C-range. Crew sizes, call times and person-hours used to be
+               carried here too; they are gone (see the WO note below). */
+            /* SERVICE COPY ONLY (owner 2026-08-21). Two rules here:
+               no story, and NO CREW SIZES. Fixed headcounts read as "this
+               is what comes in the package", and no two jobs call for the
+               same crew — scope is discussed and quoted every time. So a
+               note may say what the service covers and what you get at the
+               end of it; it may never say how many people show up.
+               `scope` is the card's one-line label, `kind` flags the rush
+               beat's faster build. Nothing else here is used by the GL
+               layer, which reads only `rect`. */
             var WO = [
-                { n:'01', num:'1006', name:'Installation &amp; Dismantle',
-                  rect:[202,152,199,99], call:'0600', crew:'8-Person Crew', figs:8,
-                  hours:64,
+                { n:'01', name:'Installation &amp; Dismantle', scope:'Build &amp; teardown',
+                  rect:[202,152,199,99],
                   notes:['Full booth build and teardown &mdash; structure, flooring, rails and graphics.',
-                         'Eight-person crew: one foreman, seven installers.',
+                         'Freight received, uncrated and staged to your floor plan.',
                          'Empties tagged and cleared. Dismantle booked on the same order.'] },
-                { n:'02', num:'3042', name:'On-Site Coordination',
-                  rect:[1099,501,200,100], call:'0730', crew:'Lead + Floor Manager', figs:2,
-                  hours:17, kind:'coord',
+                { n:'02', name:'On-Site Coordination', scope:'Floor management',
+                  rect:[1099,501,200,100], kind:'coord',
                   notes:['We run your floor &mdash; freight, power, rigging and show management.',
-                         'A lead plus a floor manager, on site through doors.',
+                         'One point of contact on site from move-in through doors.',
                          'EAC credentials and insurance filed for you in advance.'] },
-                { n:'03', num:'5020', name:'Custom LED Build',
-                  rect:[551,800,299,100], call:'0900', crew:'4 Techs + 2 Installers', figs:6,
-                  hours:42, kind:'custom',
+                { n:'03', name:'Custom LED Build', scope:'Screens &amp; signage',
+                  rect:[551,800,299,100], kind:'custom',
                   notes:['LED walls, custom displays and hanging signs, built and commissioned.',
-                         'Four LED technicians plus two installers.',
+                         'Technicians who set, cable and align large-format screens.',
                          'Every cabinet pixel-mapped and colour-balanced before doors.'] },
-                { n:'04', num:'7050', name:'Emergency Response',
-                  rect:[1299,1149,99,100], call:'On Call', crew:'Rapid Team Of 3', figs:3,
-                  hours:12, kind:'rush',
+                { n:'04', name:'Emergency Response', scope:'Same-day rescue',
+                  rect:[1299,1149,99,100], kind:'rush',
                   notes:['Missed freight, damaged crate, wrong graphic &mdash; fixed the same day.',
-                         'Rapid team of three, four-hour minimum call.',
-                         'On site within the hour, finished before doors.'] }
+                         'Call us and we scale a crew to whatever the problem needs.',
+                         'On site fast, and finished before doors.'] }
             ];
 
+            /* the GL layer's only hand-off: it reads stage, narrow, and
+               WO[].rect. Nothing else here is consumed. */
             window.__MI = { stage: stage, WO: WO,
-                            narrow: window.matchMedia('(max-width: 760px)').matches,
-                            upf: 5 };
+                            narrow: window.matchMedia('(max-width: 760px)').matches };
 
             /* RAKE SENSE (got this backwards once — write it down): the
                world is rotateX(rake), so rake 0 = looking straight DOWN at
@@ -2362,36 +2368,64 @@
                the hero camera has settled (cp .62), plus one on the 16:00
                payoff — a fast flick catches and holds just long enough to
                read the work order and see the stand */
-            /* THE DWELL — a scroll-VELOCITY DAMPER, not a snap.
-               The CSS-snap version hijacked the whole sequence: 1px
-               proximity targets on a 560vh track have a catchment of
-               roughly half a viewport each, so every position inside a
+            /* THE DWELL (owner 2026-08-21: hold longer on each service so a
+               fast scroll cannot skip the card).
+
+               Two dead ends preceded this. CSS scroll-snap hijacked the
+               whole sequence — 1px proximity targets on a 560vh track have
+               a catchment of half a viewport each, so every position in a
                chapter was pulled onto the same lock and the clock froze.
-               This instead adds gentle resistance as you approach each
-               stand's finished moment — a fast flick slows through the
-               payoff and keeps going, and a deliberate scroll is never
-               fought because the damper only ever REDUCES how far a frame
-               of momentum carries, and never moves the page itself. */
-            var DWELL = (function () {
-                var pts = [];
-                for (var q = 0; q < WOCH.length; q++) {
-                    var ch = CH[WOCH[q]];
-                    pts.push(ch.a + (ch.b - ch.a) * 0.66);
+               The replacement, dwellDamp(), was a scroll-VELOCITY damper
+               that never got called from frame() — so there has in fact
+               never been a lock on this page. It was the wrong shape
+               anyway: subtracting from each frame's motion drifts the
+               picture permanently out of sync with the page.
+
+               This is a monotonic RE-PARAMETERISATION of the track. Each
+               payoff costs extra scroll to cross, so the picture genuinely
+               parks there; because it is a pure function of scroll offset
+               it reverses exactly, never desyncs, and needs no state.
+               DW_K is how much extra scroll a lock costs (1.5 = 2.5x), and
+               the track height below is grown by the total added cost so
+               the locks are paid for with NEW scroll rather than stolen
+               from the transits. */
+            var DW_W = 0.026;                     /* half-width, track fractions */
+            var DWELL = [], DWELL_K = [];
+            for (var q = 0; q < WOCH.length; q++) {
+                var chq = CH[WOCH[q]];
+                /* .68 — build finished (holoB ends .52), ticket fully in
+                   (.54) and the booking stamp has landed (.70) */
+                DWELL.push(chq.a + (chq.b - chq.a) * 0.68);
+                DWELL_K.push(1.5);
+            }
+            DWELL.push(CH[10].a + (CH[10].b - CH[10].a) * 0.30);
+            DWELL_K.push(0.9);                    /* the 16:00 payoff, lighter */
+
+            /* cumulative scroll cost, normalised — WARP[i] is the scroll
+               fraction at which story progress i/N is reached */
+            var WARP = (function () {
+                var N = 1024, cum = new Float64Array(N + 1), acc = 0, i, j;
+                cum[0] = 0;
+                for (i = 1; i <= N; i++) {
+                    var qq = (i - 0.5) / N, cost = 1;
+                    for (j = 0; j < DWELL.length; j++) {
+                        var x = Math.abs(qq - DWELL[j]) / DW_W;
+                        if (x < 1) { var b = 1 - x * x; cost += DWELL_K[j] * b * b; }
+                    }
+                    acc += cost;
+                    cum[i] = acc;
                 }
-                pts.push(CH[10].a + (CH[10].b - CH[10].a) * 0.30);
-                return pts;
+                for (i = 1; i <= N; i++) cum[i] /= acc;
+                return cum;
             })();
-            function dwellDamp(pNow, pPrev) {
-                var step = pNow - pPrev;
-                if (!step) return pNow;
-                var near = 0;
-                for (var i = 0; i < DWELL.length; i++) {
-                    var d = Math.abs(pNow - DWELL[i]);
-                    if (d < 0.022) near = Math.max(near, 1 - d / 0.022);
-                }
-                if (near <= 0) return pNow;
-                /* at most a 45% slow-down, eased so entry and exit are smooth */
-                return pPrev + step * (1 - 0.45 * near * near);
+            /* scroll fraction -> story progress; the inverse of the above */
+            function warp(u) {
+                if (u <= 0) return 0;
+                if (u >= 1) return 1;
+                var N = WARP.length - 1, lo = 0, hi = N, mid;
+                while (hi - lo > 1) { mid = (lo + hi) >> 1; if (WARP[mid] <= u) lo = mid; else hi = mid; }
+                var d = WARP[hi] - WARP[lo];
+                return (lo + (d > 0 ? (u - WARP[lo]) / d : 0)) / N;
             }
             function chCam(ci, cp) {
                 var c = CH[ci];
@@ -2473,10 +2507,10 @@
                 return '<a class="mi-card" href="i-d-labor-request.html">' +
                        '<b>Service ' + w.n + '</b>' +
                        '<strong>' + w.name + '</strong>' +
-                       '<span>' + w.crew + ' &middot; Book &rarr;</span></a>';
+                       '<span>' + w.scope + ' &middot; Book &rarr;</span></a>';
             }).join('');
 
-            var rectW = 1, rectH = 1, fit = 1, trackTop = 0, span = 1;
+            var rectW = 1, rectH = 1, fit = 1, trackTop = 0, span = 1, vhCache = 1;
             function measure() {
                 var r = stage.getBoundingClientRect();
                 rectW = r.width || 1; rectH = r.height || 1;
@@ -2485,6 +2519,46 @@
                 var t = track.getBoundingClientRect();
                 trackTop = t.top + window.pageYOffset;
                 span = Math.max(1, track.offsetHeight - stage.offsetHeight);
+                vhCache = window.innerHeight || document.documentElement.clientHeight || 1;
+            }
+
+            /* THE EXIT (owner 2026-08-21). The stage kept rendering — and
+               MIGL kept painting with it — for most of a screen after the
+               picture had gone, so the stats and pricing sections scrolled
+               in against a live WebGL loop and stuttered. The picture now
+               dissolves once its BOTTOM EDGE passes 60% of the viewport
+               (EXIT_HI) and is gone by 28% (EXIT_LO), and the render loop
+               is cut on the same frame. Freezing is invisible because the
+               frozen frame is the one being faded out. Fully reversible:
+               scroll back up and the loop resumes where it left off.
+
+               edge is derived from scroll position and the cached track
+               geometry rather than a getBoundingClientRect — this runs on
+               every frame AND on every scroll event, and a layout read in
+               the scroll path is exactly the cost this block exists to
+               remove. The stage is sticky top:0 inside the track, so its
+               top in page space is scroll clamped to [trackTop, trackTop+span]. */
+            var EXIT_HI = 0.60, EXIT_LO = 0.28, exitT = -1;
+            function applyExit() {
+                var sy = window.pageYOffset;
+                var stTop = Math.min(Math.max(sy, trackTop), trackTop + span);
+                var edge = (stTop - sy + rectH) / vhCache;   /* 1 = pinned, 0 = gone */
+                var t = clamp01((EXIT_HI - edge) / (EXIT_HI - EXIT_LO));
+                t = Math.round(t * 200) / 200;
+                if (t === exitT) return t;
+                exitT = t;
+                if (t <= 0) {
+                    stage.style.opacity = '';
+                    stage.style.visibility = '';
+                    stage.style.pointerEvents = '';
+                } else {
+                    stage.style.opacity = (1 - t).toFixed(3);
+                    stage.style.pointerEvents = 'none';
+                    /* fully clear: drop the compositor layer as well, so the
+                       GL canvas stops being composited on every scroll frame */
+                    stage.style.visibility = t >= 1 ? 'hidden' : '';
+                }
+                return t;
             }
 
             function Spring(x, w) { this.x = x; this.v = 0; this.w = w; }
@@ -2501,7 +2575,7 @@
                slower settle kills the whip on chapter cuts */
             var spCam = new Spring(0, 7);
 
-            var liveOn = false, raf = 0, last = 0, pPrev = 0, pVel = 0;
+            var liveOn = false, raf = 0, last = 0, pPrev = 0, pVel = 0, isNear = true;
 
             var curCh = -1, shownMin = -1, noteN = -1;
             var navEl = document.querySelector('.navbar');
@@ -2560,7 +2634,7 @@
                     ticket.classList.add('is-on');
                     if (live) live.textContent =
                         'Service ' + w.n + ' of 4: ' + w.name.replace('&amp;','and') +
-                        '. ' + w.crew + '. ' + w.notes[0].replace(/&mdash;/g, '—') ;
+                        '. ' + w.notes[0].replace(/&mdash;/g, '—');
                 }
 
                 /* transit keeps the OUTGOING stand live — setStands(-1)
@@ -2580,7 +2654,7 @@
             }
 
             function progress() {
-                return clamp01((window.pageYOffset - trackTop) / span);
+                return warp(clamp01((window.pageYOffset - trackTop) / span));
             }
 
             var wcache = {};
@@ -2703,8 +2777,6 @@
                     holoFlash = fast
                         ? ss(.44, .47, cp) * (1 - ss(.50, .62, cp))
                         : ss(.52, .55, cp) * (1 - ss(.58, .70, cp));
-                    var b = holoB;
-                    window.__dbg = { p: p, cp: cp, b: b, ci: ci, fast: fast };
 
                     /* notes step through the chapter on build progress */
                     /* the card is never empty: note 1 is the status line */
@@ -2737,21 +2809,20 @@
                         : 'Show open';
                     floatEl.classList.toggle('is-hot', toDoors > 0 && toDoors <= 75);
 
-                    var done = 0, crew = 0, ph = 0;
+                    /* HEADCOUNT IS OUT (owner 2026-08-21). The tally used to
+                       run Crew and Person-Hours totals alongside this — a
+                       fixed number of people per service reads as "that is
+                       what the package includes", and no two jobs call for
+                       the same crew. The counter that is left says only how
+                       far through the four services you are. */
+                    var done = 0;
                     for (var q = 0; q < WO.length; q++) {
                         var ca = CH[WOCH[q]].a, cb = CH[WOCH[q]].b;
                         if (p < ca) continue;
-                        var t = clamp01((p - ca) / ((cb - ca) * .74));
-                        /* crew arrive with the work, not before it */
-                        crew += Math.round(WO[q].figs * clamp01(t * 2.5));
-                        ph += Math.round(WO[q].hours * t);
-                        /* the stand counts once its structure is printed —
-                           it used to read "0 Stands" over a finished booth,
-                           which broke the one instrument that carries the
-                           pitch's credibility */
-                        if (t >= 0.62) done++;
+                        /* a service counts once its build has landed */
+                        if (clamp01((p - ca) / ((cb - ca) * .74)) >= 0.62) done++;
                     }
-                    tSt.textContent = done; tCr.textContent = crew; tPh.textContent = ph;
+                    tSt.textContent = done;
                 }
 
                 /* DOORS: the house lights DROP first (a breath of black),
@@ -2834,6 +2905,9 @@
             var SNAP = location.search.indexOf('q_snap') >= 0;
             function frame(now) {
                 if (!liveOn) { raf = 0; return; }
+                /* the picture has left — stop before scheduling another
+                   frame, and stop before MIGL.paint() runs again */
+                if (applyExit() > 0) { liveOn = false; raf = 0; return; }
                 raf = requestAnimationFrame(frame);
                 if (SNAP) { var rp = progress(); sp.x = rp; spCam.x = rp; paint(rp, rp); last = now; return; }
                 var dt = last ? Math.min((now - last) / 1000, .064) : 1/60; last = now;
@@ -2861,15 +2935,21 @@
                 sp.x = p; sp.v = 0; spCam.x = p; spCam.v = 0; pPrev = p; pVel = 0;
                 paint(p, p);
             }
+            /* while the loop is running it owns the exit check; this only
+               has to drive the dissolve after the loop has been cut, and
+               hand control back when the reader scrolls up into it again */
             window.addEventListener('scroll', function () {
-                if (!raf && isNear) snap();
+                if (raf || !isNear) return;
+                if (applyExit() > 0) return;
+                snap();                 /* park the springs on the true position */
+                setLive(true);
             }, { passive: true });
 
             window.addEventListener('migl-ready', function () {
                 curCh = -1; measure(); snap();
             });
 
-            function onResize() { measure(); if (!raf) snap(); }
+            function onResize() { measure(); if (!raf && applyExit() <= 0) snap(); }
             var rt = 0;
             window.addEventListener('resize', function () {
                 clearTimeout(rt); rt = setTimeout(onResize, 140);
@@ -2882,17 +2962,19 @@
             var probe = sec.querySelector('.mi-probe');
             var picked = null;
 
+            /* NO FABRICATED CREW MATHS (owner 2026-08-21). This used to
+               derive person-hours, a crew size and a day count from the
+               booth's square footage and print them as an estimate. Those
+               numbers were invented by a formula, and quoting a headcount
+               off floor area alone is not how any of these jobs get
+               priced. The panel now reports only what the drawing actually
+               knows — the stand and its size — and asks for the scope. */
             function estimate(g) {
                 var size = g.getAttribute('data-size') || '';
                 var num  = g.getAttribute('data-n') || '';
                 var m = size.split(/[^0-9]+/).filter(Boolean);
                 if (m.length < 2) return null;
-                var ft = +m[0] * +m[1];
-
-                var hrs  = Math.max(6, Math.round(ft / 12));
-                var crew = ft >= 800 ? 8 : ft >= 400 ? 6 : ft >= 200 ? 4 : 2;
-                var days = Math.max(1, Math.ceil(hrs / (crew * 8)));
-                return { num: num, size: size, ft: ft, hrs: hrs, crew: crew, days: days };
+                return { num: num, size: size, ft: +m[0] * +m[1] };
             }
 
             function showQuote(g) {
@@ -2902,14 +2984,13 @@
                 picked = g; g.classList.add('is-picked');
                 quote.innerHTML =
                     '<b>Stand ' + q.num + ' &middot; ' + q.size + ' FT</b>' +
-                    '<strong>' + q.ft + ' sq ft &middot; <em>' + q.hrs + ' person-hours</em></strong>' +
-                    '<span>' + q.crew + '-person crew &middot; ' + q.days +
-                    (q.days > 1 ? ' days' : ' day') + ' on site</span>' +
-                    '<i>Estimate &middot; LVTSR quotes to your actual scope</i>';
+                    '<strong>' + q.ft + ' <em>sq ft</em></strong>' +
+                    '<span>Any of the four services</span>' +
+                    '<i>Crew and hours quoted to your actual scope</i>';
                 quote.classList.add('is-on');
                 if (live) live.textContent =
-                    'Stand ' + q.num + ', ' + q.size + ' feet. Estimated ' + q.hrs +
-                    ' person-hours, ' + q.crew + ' person crew, ' + q.days + ' day on site.';
+                    'Stand ' + q.num + ', ' + q.size + ' feet, ' + q.ft +
+                    ' square feet. Quoted to your scope.';
             }
 
             if (booths) {
@@ -2929,13 +3010,14 @@
                     g.setAttribute('tabindex', '-1');
                     g.setAttribute('role', 'button');
                     var n = g.getAttribute('data-n'), sz = g.getAttribute('data-size');
-                    g.setAttribute('aria-label', 'Stand ' + n + ', ' + sz + ' feet. Labor estimate.');
+                    g.setAttribute('aria-label', 'Stand ' + n + ', ' + sz + ' feet.');
                     g.addEventListener('focus', function () { showQuote(g); });
                 });
             }
 
             measure();
             snap();
+            applyExit();     /* the browser may have restored a scroll position past it */
             sec.classList.add('mi-js');
 
             /* THE ENTRANCE FADE. Root shrunk from the bottom by 40% means
@@ -2987,20 +3069,27 @@
                 apFade();
             }
 
-            var isNear = true;
+            /* one gate for the render loop: near the track, tab visible,
+               and the picture has not dissolved out yet */
+            function setLive(on) {
+                liveOn = on && !document.hidden && exitT <= 0;
+                if (liveOn && !raf) { last = 0; measure(); raf = requestAnimationFrame(frame); }
+            }
+
             if ('IntersectionObserver' in window) {
                 isNear = false;
                 new IntersectionObserver(function (en) {
                     isNear = en[en.length-1].isIntersecting;
-                    liveOn = isNear && !document.hidden;
-                    if (liveOn && !raf) { last = 0; measure(); raf = requestAnimationFrame(frame); }
+                    if (!isNear) { liveOn = false; return; }
+                    if (applyExit() > 0) return;
+                    setLive(true);
                 }, { rootMargin: '20% 0px' }).observe(track);
             } else {
-                liveOn = true; raf = requestAnimationFrame(frame);
+                setLive(true);
             }
             document.addEventListener('visibilitychange', function () {
                 if (document.hidden) { liveOn = false; }
-                else if (!raf && isNear) { last = 0; liveOn = true; raf = requestAnimationFrame(frame); }
+                else if (!raf && isNear && applyExit() <= 0) { snap(); setLive(true); }
             });
         })();
 

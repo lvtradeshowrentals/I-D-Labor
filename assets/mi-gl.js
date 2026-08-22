@@ -1501,32 +1501,86 @@ function init() {
   /* six rows: four over the hall, two beyond its north/south edges so the
      booth chapters (which look across the hall) get a lid in their upper
      third instead of void */
+  /* THE FIXTURE HAS A SHAPE (owner 2026-08-21: the hanging lights "read
+     as lackluster, underbuilt"). A flat-shaded box on a stick with a
+     sprite under it is three marks of the SAME value, so the eye reads a
+     stick with a dot and nothing more. A high-bay is legible because it
+     has three VALUES stacked: dark housing, a mid-tone reflector bell
+     catching light on its inner face, and a hot lens at the mouth. That
+     is what is added here — no extra light sources, no extra draw
+     complexity worth measuring, and all three tiers still ride the same
+     row snap-on so the doors surge is unchanged. */
+  /* sized for the SHOT, not for scale realism: these are read across the
+     hall at a grazing angle, where a shallow bell collapses to a 3px
+     line. A deep bell keeps a silhouette from anywhere on the floor. */
+  const reflGeo = new THREE.CylinderGeometry(6.5, 13, 12, 14, 1, true);
+  const lensGeo = new THREE.CircleGeometry(12, 18);
   for (let r = 0; r < 4; r++) {
     const y = 240 + r * 350;
     const housingMat = new THREE.MeshBasicMaterial({
-      color: new THREE.Color(0.09, 0.11, 0.14), fog: false });
+      color: new THREE.Color(0.09, 0.11, 0.14), fog: false,
+      transparent: true, opacity: 0 });
+    /* the bell sits a stop above the housing so the two never merge into
+       one silhouette; DoubleSide because the lit face is the INSIDE */
+    const reflMat = new THREE.MeshBasicMaterial({
+      color: new THREE.Color(0.20, 0.24, 0.29), fog: false,
+      side: THREE.DoubleSide, transparent: true, opacity: 0 });
+    /* the stem and boss need their OWN material: M.dark is shared with
+       half the scene, and the ceiling fades independently of all of it */
+    const metalMat = M.dark.clone();
+    metalMat.transparent = true; metalMat.opacity = 0;
+    const lensMat = new THREE.MeshBasicMaterial({
+      color: new THREE.Color(1.6, 1.45, 1.05), transparent: true, opacity: 0,
+      blending: THREE.AdditiveBlending, depthWrite: false,
+      toneMapped: false, fog: false, side: THREE.DoubleSide });
     const spriteMat = new THREE.SpriteMaterial({ map: glowTex,
       color: new THREE.Color(2.6, 2.35, 1.7), blending: THREE.AdditiveBlending,
       depthWrite: false, toneMapped: false, fog: false, opacity: 0 });
     for (let i = 0; i < 6; i++) {
       const x = 190 + i * 250;
-      const h = new THREE.Mesh(boxGeo(14, 14, 5), housingMat);
+      const h = new THREE.Mesh(boxGeo(12, 12, 9), housingMat);
       h.position.set(x, y, bayZ);
       plan.add(h);
+      /* reflector bell, flaring DOWN: CylinderGeometry runs along +Y and
+         rotation.x=PI/2 maps +Y to +Z, so radiusTop is the narrow end at
+         the housing and radiusBottom is the wide mouth below it */
+      const refl = new THREE.Mesh(reflGeo, reflMat);
+      refl.rotation.x = Math.PI / 2;
+      refl.position.set(x, y, bayZ - 10.5);   /* hangs off the housing base */
+      plan.add(refl);
+      /* the lens: a hard bright disc across the mouth. The sprite alone
+         was a soft blob with no edge — this gives the fixture a source */
+      const lens = new THREE.Mesh(lensGeo, lensMat);
+      lens.position.set(x, y, bayZ - 16.2);   /* flush across the bell mouth */
+      lens.renderOrder = 3;
+      plan.add(lens);
       /* suspension stem: the vertical line above the dot is what makes it
          read as HANGING rather than sitting on the floor */
-      const stem = new THREE.Mesh(boxGeo(1.6, 1.6, 26), M.dark);
-      stem.position.set(x, y, bayZ + 16);
+      const stem = new THREE.Mesh(boxGeo(1.6, 1.6, 26), metalMat);
+      stem.position.set(x, y, bayZ + 17.5);
       plan.add(stem);
-      /* small hot points, not floating orbs — high-bays at 44ft are dots */
+      /* and it has to hang FROM something — a boss where the stem meets
+         the deck, so the run terminates instead of fading out */
+      const boss = new THREE.Mesh(boxGeo(5, 5, 1.6), metalMat);
+      boss.position.set(x, y, bayZ + 30.5);
+      plan.add(boss);
+      /* small hot points, not floating orbs — high-bays at 44ft are dots.
+         Dropped below the new mouth so the glare reads as light LEAVING
+         the fixture rather than the housing itself being incandescent. */
       const sp = new THREE.Sprite(spriteMat);
-      sp.scale.setScalar(15); sp.position.set(x, y, bayZ - 5); sp.renderOrder = 3;
+      sp.scale.setScalar(17); sp.position.set(x, y, bayZ - 18); sp.renderOrder = 3;
       plan.add(sp);
-      state.fixtures.push({ parts: [h, stem, sp], x, y, z: bayZ });
+      state.fixtures.push({ parts: [h, refl, lens, stem, boss, sp], x, y, z: bayZ });
     }
-    state.houseRows.push({ housingMat, spriteMat,
-      base: new THREE.Color(0.16, 0.20, 0.24),
-      on: new THREE.Color(0.95, 0.9, 0.72) });   /* the sprite carries the light */
+    state.houseRows.push({ housingMat, spriteMat, reflMat, lensMat, metalMat,
+      base: new THREE.Color(0.10, 0.12, 0.15),
+      on: new THREE.Color(0.95, 0.9, 0.72),
+      /* the bell runs a full stop ahead of the housing all day and goes
+         hotter at doors — that value gap IS the form. Both sit LOW: a
+         pale fixture reads as a row of chalky traffic cones, and the
+         thing that should be bright up there is the lamp, not the metal. */
+      reflBase: new THREE.Color(0.20, 0.24, 0.30),
+      reflOn: new THREE.Color(1.10, 1.02, 0.80) });
   }
   /* SHADER-CONE SHAFTS (decree 6): one additive ShaderMaterial cone per
      fixture — fresnel-soft silhouette (|view-normal z|), tight hot throat
@@ -1569,7 +1623,9 @@ function init() {
   });
   state.shaftMats = [];
   for (let r = 0; r < state.houseRows.length; r++) state.shaftMats.push(mkShaftMat());
-  const shaftGeo = new THREE.ConeGeometry(19, bayZ - 8, 18, 1, true);
+  /* apex parks at the new bell mouth (bayZ-17) so the beam leaves the
+     fixture instead of starting inside the reflector and poking out */
+  const shaftGeo = new THREE.ConeGeometry(19, bayZ - 17, 18, 1, true);
   state.shaftPools = [];
   let fi2 = 0;
   for (const f of state.fixtures) {
@@ -1581,7 +1637,7 @@ function init() {
     if ((fi2++ + row) % 2) continue;
     const cone = new THREE.Mesh(shaftGeo, state.shaftMats[row]);
     cone.rotation.x = Math.PI / 2;     /* apex up at the fixture */
-    cone.position.set(f.x, f.y, (bayZ - 8) / 2);
+    cone.position.set(f.x, f.y, (bayZ - 17) / 2);
     cone.renderOrder = 4;
     plan.add(cone);
     f.parts.push(cone);
@@ -2037,24 +2093,59 @@ function applyShow(t, day, dim, beat, beatT) {
      is dim housings all day, then the hall's own fixtures become the event.
      Front-loaded stagger (jury 3rd pass: any capture late in the chapter
      must catch the hall LIT), and Doors must be the BRIGHTEST frame. */
+  /* THE CEILING IS NOT IN THE OPENING SHOT (owner 2026-08-21: "hide those
+     lights in this initial view, they don't look good whatsoever, but they
+     can be visible once you actually get into the animation"). Beats 0-1
+     are the top-down map and the rise — the fixtures hang across the upper
+     third of a frame that is meant to read as a clean drawing, and at that
+     camera they are a row of grey stubs against black. They fade up over
+     the first quarter of the first service beat, where the camera is down
+     in the hall and a ceiling is what sells the room.
+     Everything ceiling-side multiplies by ceilT, and the whole set stops
+     drawing at zero. */
+  const ceilT = beat <= 1 ? 0
+    : beat === 2 ? Math.min(1, Math.max(0, (beatT - 0.06) / 0.26))
+    : 1;
   for (let r = 0; r < state.houseRows.length; r++) {
     const hr = state.houseRows[r];
+    hr.housingMat.opacity = ceilT;
+    if (hr.reflMat) hr.reflMat.opacity = ceilT;
+    if (hr.metalMat) hr.metalMat.opacity = ceilT;
     /* the timelapse IS the light show: banks march on one by one across
        the ceiling; the rescue beat pulls them back down to one island */
     const lapseRt = beat === 5 ? Math.min(1, Math.max(0, (beatT - 0.3 - r * 0.14) / 0.22)) : 0;
     const rt = Math.max(Math.min(1, Math.max(0, (t - r * 0.07) / 0.22)), lapseRt) * dk;
     hr.housingMat.color.copy(hr.base).lerp(hr.on, rt);
-    hr.spriteMat.opacity = 0.8 * rt;
+    if (hr.reflMat) hr.reflMat.color.copy(hr.reflBase).lerp(hr.reflOn, rt);
+    /* the lens carries a low ember all day so the ceiling is never a row
+       of dead boxes, then goes to full with the row */
+    if (hr.lensMat) hr.lensMat.opacity = (0.22 + 0.68 * rt) * ceilT;
+    /* the lens disc is edge-on from a floor-level camera and vanishes;
+       the sprite is a billboard, so it is the ember that actually reads
+       from anywhere in the hall. A trace of it all day gives the ceiling
+       a pulse instead of a row of dead housings. */
+    hr.spriteMat.opacity = (0.07 + 0.8 * rt) * ceilT;
+    /* A WORK-LIGHT FLOOR (owner 2026-08-21: the hall view is lackluster).
+       Before doors every shaft was at exactly zero, so the map was one
+       flat sheet of blue with nothing in the air above it. A trace of
+       beam all day gives the hall depth and a reason for the fixtures to
+       be there; it is an order of magnitude under the doors surge, so
+       "lights on" still lands as the event it was tuned to be. */
     if (state.shaftMats && state.shaftMats[r])
-      state.shaftMats[r].uniforms.uOp.value = 0.10 * rt;
+      state.shaftMats[r].uniforms.uOp.value = (0.014 + 0.10 * rt) * dk * ceilT;
   }
   if (state.shaftPools)
     for (const sp2 of state.shaftPools) {
       const rt2 = Math.max(
         Math.min(1, Math.max(0, (t - sp2.row * 0.07) / 0.22)),
         beat === 5 ? Math.min(1, Math.max(0, (beatT - 0.3 - sp2.row * 0.14) / 0.22)) : 0) * dk;
-      sp2.m.opacity = 0.30 * rt2;
+      sp2.m.opacity = (0.05 + 0.30 * rt2) * dk * ceilT;
     }
+  /* nothing ceiling-side is on screen at zero — stop drawing all of it */
+  if (state.ceilVis !== (ceilT > 0.002)) {
+    state.ceilVis = ceilT > 0.002;
+    for (const f of state.fixtures) for (const pt of f.parts) pt.visible = state.ceilVis;
+  }
   /* jury r10 (Awwwards): the blueprint IS the banned Tron grid — it dies
      progressively as the day's work covers the hall, not all at once at
      doors. Pure function of (beat, beatT); doors t still completes it. */
