@@ -766,7 +766,9 @@
 
         .mi-ticket {
             position: absolute; bottom: calc(var(--matte) + 16px); left: 4%;
-            width: min(31ch, 38%);
+            /* widened with the type: 31ch broke the new sentence-case notes
+               onto four lines each, which is the density the owner flagged */
+            width: min(40ch, 41%);
             /* opaque enough to READ: at .82/.78 the floor-plan typography
                ran straight through the body copy ("RANCE" across "110 LED
                CABINETS") — two critics called it an unfinished dev build */
@@ -778,7 +780,7 @@
             -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
             border: 1px solid rgba(90, 200, 240, 0.26);
             border-top: 2px solid rgba(110, 210, 245, 0.85);
-            padding: 13px 16px 15px;
+            padding: 15px 18px 17px;
             opacity: 0; transform: translateY(12px);
             box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7),
                         0 0 44px rgba(70, 194, 255, 0.07);
@@ -812,19 +814,22 @@
         .mi-wo { display: block; font-size: 0.6rem; font-weight: 800; letter-spacing: .22em;
                  color: rgba(130, 205, 240, 0.75); margin-bottom: 8px; }
         .mi-ticket h3 { font-size: clamp(1.05rem, 2.3vw, 1.5rem); font-weight: 800;
-                        letter-spacing: -0.01em; margin: 0 0 10px; text-align: left; }
-        .mi-notes { list-style: none; margin: 0 0 14px; padding: 0;
-                    counter-reset: n; }
+                        letter-spacing: -0.01em; margin: 0 0 13px; text-align: left; }
+        /* READABILITY (owner 2026-08-21: "densely packed... makes you want
+           to overlook it"). These were uppercase 0.74rem at 82% white with
+           .03em tracking — three lines of that is a texture, not a
+           sentence. Sentence case, larger, brighter, and a hairline rule
+           instead of a numbered "1." that read as a form field. */
+        .mi-notes { list-style: none; margin: 0 0 16px; padding: 0; }
         .mi-notes li {
-            counter-increment: n;
-            position: relative; padding-left: 22px; margin-bottom: 6px;
-            font-size: 0.74rem; line-height: 1.55; letter-spacing: .03em;
-            color: rgba(226, 236, 244, 0.82); text-transform: uppercase;
+            position: relative; padding-left: 18px; margin-bottom: 9px;
+            font-size: 0.86rem; line-height: 1.5; letter-spacing: 0;
+            color: rgba(233, 242, 249, 0.92);
             opacity: 0;
         }
         .mi-notes li::before {
-            content: counter(n) "."; position: absolute; left: 0;
-            color: #6fd2f5; font-weight: 800;
+            content: ''; position: absolute; left: 0; top: 0.66em;
+            width: 9px; height: 1px; background: #6fd2f5;
         }
         .mi-ticket.n1 li:nth-child(1), .mi-ticket.n2 li:nth-child(-n+2),
         .mi-ticket.n3 li { opacity: 1; }
@@ -936,13 +941,15 @@
                      font-weight: 800; letter-spacing: .2em; margin-bottom: 5px; }
         .mi-card strong { display: block; color: #fff; font-size: 0.94rem;
                           font-weight: 800; margin-bottom: 6px; }
-        .mi-card span { display: block; font-size: 0.6rem; font-weight: 700;
-                        letter-spacing: .14em; color: rgba(170, 210, 232, 0.7); }
+        .mi-card span { display: block; font-size: 0.72rem; font-weight: 600;
+                        letter-spacing: .02em; color: rgba(190, 222, 240, 0.86); }
         .mi-card:hover { border-color: var(--gold-l); border-top-color: var(--gold-l); }
         .mi-card:focus-visible { outline: 2px solid var(--accent-teal); outline-offset: 3px; }
-        .mi-final { text-align: center; font-size: 0.6rem; font-weight: 800;
-                    letter-spacing: .18em; color: rgba(190, 220, 240, 0.85);
-                    margin-top: 4px; }
+        /* now a sentence, not a stat strip — .18em tracking made it a
+           decorative band nobody read */
+        .mi-final { text-align: center; font-size: 0.78rem; font-weight: 600;
+                    letter-spacing: .01em; color: rgba(190, 220, 240, 0.78);
+                    margin-top: 8px; }
 
         .mi-base { max-width: 1100px; margin: 0 auto; padding: 0 20px 80px; }
         .mi-base img { max-width: 100%; height: auto; }
@@ -1006,8 +1013,8 @@
         }
 
         @media (max-width: 420px) {
-            .mi-ticket { padding: 10px 12px 12px; }
-            .mi-notes li { font-size: 0.68rem; }
+            .mi-ticket { padding: 12px 13px 14px; }
+            .mi-notes li { font-size: 0.79rem; margin-bottom: 7px; }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -1719,26 +1726,30 @@
             </div>
             <div>
                 <p class="ap-copy">
-                    <strong>LVTSR provides skilled labor crews for every phase of your event.</strong> From complete booth installation and dismantle to on-site coordination, custom display setup, and emergency response&mdash;our experienced technicians handle the heavy lifting so you can focus on your business. Trusted labor partner for CES, SEMA, MAGIC, and every major Las Vegas trade show.
+                    <strong>LVTSR staffs Las Vegas show floors with skilled I&amp;D labor.</strong> Installers, floor leads, LED technicians and rapid-response teams &mdash; hired, vetted and insured by us, and run through a single point of contact so you are not chasing four vendors during move-in.
                 </p>
                 <ul class="ap-facts">
-                    <li><b>Vetted</b> &amp; Insured Crews</li>
-                    <li><b>Same-Day</b> Response</li>
+                    <li><b>One</b> Point Of Contact</li>
+                    <li><b>Union</b> Jurisdictions Handled</li>
                     <li><b>20+</b> Years On The Floor</li>
                 </ul>
             </div>
         </div>
 
         <div class="ap-sheet">
-            <p class="ap-lead"><b>One move-in day. Four crews.</b>
-                Scroll to run a real Las Vegas install &mdash; empty hall at 05:00,
-                show open at 16:00 &mdash; and meet each crew you can book.</p>
+            <span class="fl-eyebrow">Our Services</span>
+            <p class="ap-lead"><b>Four Services. Scroll The Floor.</b>
+                Each stop on the hall below is one service we provide &mdash; what the
+                crew does, how many people show up, and how to book it.</p>
         </div>
     </section>
 
-    <!-- ===== MOVE-IN — the scroll bar is the show clock ===== -->
+    <!-- ===== OUR SERVICES — scroll the floor, one service per stop.
+         The scroll bar is still the show clock; the copy no longer tells
+         a story around it (owner 2026-08-21) — each stop just states the
+         service, the crew and the booking. ===== -->
     <section class="mi" id="what-we-do-best" aria-labelledby="mi-h">
-        <h2 id="mi-h" class="sr-only">One move-in day: the four crews we put on your floor</h2>
+        <h2 id="mi-h" class="sr-only">Our four trade show labor services</h2>
 
         <noscript>
             <style>
@@ -1872,9 +1883,9 @@
                     </div>
 
                     <div class="mi-sheet">
-                        <h3 class="mi-sheet-h">Four crews. Pick your call time.</h3>
+                        <h3 class="mi-sheet-h">Four services. Book the crew you need.</h3>
                         <div class="mi-cards"></div>
-                        <p class="mi-final">4 Stands &middot; 19 Crew &middot; 135 Person-Hours &middot; Show Open 16:00</p>
+                        <p class="mi-final">Quoted to your booth, your hours and your move-in window</p>
                     </div>
                 </div>
             </div>
@@ -1884,29 +1895,29 @@
             <ol class="mi-list">
                 <li>
                     <h3>Installation &amp; Dismantle</h3>
-                    <p>Professional booth assembly from structural builds to final staging. Our crews handle complex setups with precision and speed.</p>
-                    <p><b>8-Person Crew</b> &middot; Call 0600 &middot; Stand 1006</p>
+                    <p>Full booth build and teardown &mdash; structure, flooring, rails and graphics. Empties tagged and cleared, dismantle booked on the same order.</p>
+                    <p><b>8-Person Crew</b> &middot; One foreman, seven installers</p>
                     <img src="assets/service-install.jpg" alt="LVTSR crew installing booth structure on the show floor" loading="lazy" decoding="async" width="480" height="640">
                     <a href="i-d-labor-request.html">Book this crew</a>
                 </li>
                 <li>
                     <h3>On-Site Coordination</h3>
-                    <p>Project management throughout your event. We coordinate with union labor, vendors, and venue staff to keep everything on schedule.</p>
-                    <p><b>Lead + Floor Manager</b> &middot; Call 0730 &middot; Stand 3042</p>
+                    <p>We run your floor &mdash; freight, power, rigging and show management. EAC credentials and insurance filed for you in advance.</p>
+                    <p><b>Lead + Floor Manager</b> &middot; On site through doors</p>
                     <img src="assets/service-coordination.jpg" alt="LVTSR coordinator directing crews and vendors during move-in" loading="lazy" decoding="async" width="675" height="690">
                     <a href="i-d-labor-request.html">Book this crew</a>
                 </li>
                 <li>
                     <h3>Custom LED Build</h3>
-                    <p>Large-format LED walls and custom displays, built and commissioned. From simple to complex, we execute your vision flawlessly.</p>
-                    <p><b>4 Techs + 2 I&amp;D</b> &middot; Call 0900 &middot; Stand 5020</p>
+                    <p>LED walls, custom displays and hanging signs, built and commissioned. Every cabinet pixel-mapped and colour-balanced before doors.</p>
+                    <p><b>4 Techs + 2 Installers</b> &middot; Truss flown ahead of build day</p>
                     <img src="assets/service-custom.jpg" alt="Technicians installing graphics and lighting on a custom display" loading="lazy" decoding="async" width="784" height="1168">
                     <a href="i-d-labor-request.html">Book this crew</a>
                 </li>
                 <li>
                     <h3>Emergency Response</h3>
-                    <p>Last-minute crew needs? On-site adjustments? We scale quickly with same-day labor solutions when you need them most.</p>
-                    <p><b>Rapid Team</b> &middot; On Call &middot; Stand 7050</p>
+                    <p>Missed freight, damaged crate, wrong graphic &mdash; fixed the same day. On site within the hour, finished before doors.</p>
+                    <p><b>Rapid Team Of 3</b> &middot; Four-hour minimum call</p>
                     <img src="assets/service-emergency.jpg" alt="LVTSR crew making a last-minute fix before show open" loading="lazy" decoding="async" width="784" height="1168">
                     <a href="i-d-labor-request.html">Book this crew</a>
                 </li>
@@ -1996,7 +2007,7 @@
         <div class="container">
             <div class="pricing-content">
                 <div class="pricing-left">
-                    <h2>Las Vegas I &amp; D Labor</h2>
+                    <h2>Pricing &amp; Terms</h2>
                     <p class="pricing-subtitle">Experienced crews, quoted to your show. No hidden fees. No surprises.</p>
                     <div class="pricing-details">
                         <p class="price-note">Every job is quoted on your crew size, hours and move-in window &mdash; send us the details and we'll come back within one business day.</p>
@@ -2006,12 +2017,12 @@
                 <div class="pricing-right">
                     <h3>What You Get</h3>
                     <ul class="pricing-includes">
-                        <li><strong>Experienced crews</strong> — 10+ years of trade show expertise</li>
+                        <li><strong>Experienced crews</strong> — 20+ years on Las Vegas show floors</li>
                         <li><strong>Fully insured</strong> — $2M liability coverage included</li>
                         <li><strong>Professional equipment</strong> — All tools provided at no extra cost</li>
                         <li><strong>Flexible scheduling</strong> — Evenings, weekends, and rush jobs welcome</li>
                         <li><strong>On-time guarantee</strong> — Late arrival = first hour free</li>
-                        <li><strong>Emergency availability</strong> — Same-day crews when you need them</li>
+                        <li><strong>Union compliant</strong> — We work within Las Vegas labor jurisdictions</li>
                     </ul>
                     <a href="i-d-labor-request.html" class="cta-button">Book Your Crew</a>
                 </div>
@@ -2176,31 +2187,35 @@
                crew sizes, call times and person-hours are calibrated to
                published Las Vegas I&D practice (Teamsters 631 / IATSE 720 /
                IBEW 357 jurisdiction, ST 0800-1630). Totals: 19 crew, 135 PH. */
+            /* SERVICE COPY, NOT STORY COPY (owner 2026-08-21): each note is
+               one plain fact in this order — what the service covers, who
+               shows up, what you get at the end. No narrative, sentence
+               case, short enough to read at a glance while scrolling. */
             var WO = [
                 { n:'01', num:'1006', name:'Installation &amp; Dismantle',
-                  rect:[202,152,199,99], call:'0600', crew:'8 &middot; Local 631', figs:8,
+                  rect:[202,152,199,99], call:'0600', crew:'8-Person Crew', figs:8,
                   hours:64,
-                  notes:['Complete booth build and teardown &mdash; structure, deck, rails, graphics.',
-                         '8-person crew: 1 foreman, 7 journeymen. On the floor at 06:00.',
-                         'Stamped engineering plans on site. Empties tagged and cleared by 14:00.'] },
+                  notes:['Full booth build and teardown &mdash; structure, flooring, rails and graphics.',
+                         'Eight-person crew: one foreman, seven installers.',
+                         'Empties tagged and cleared. Dismantle booked on the same order.'] },
                 { n:'02', num:'3042', name:'On-Site Coordination',
-                  rect:[1099,501,200,100], call:'0730', crew:'Lead + Floor Mgr', figs:2,
+                  rect:[1099,501,200,100], call:'0730', crew:'Lead + Floor Manager', figs:2,
                   hours:17, kind:'coord',
                   notes:['We run your floor &mdash; freight, power, rigging and show management.',
-                         'Lead plus floor manager, on site from 07:30 through doors.',
-                         'EAC credentials and insurance filed with show management in advance.'] },
+                         'A lead plus a floor manager, on site through doors.',
+                         'EAC credentials and insurance filed for you in advance.'] },
                 { n:'03', num:'5020', name:'Custom LED Build',
-                  rect:[551,800,299,100], call:'0900', crew:'4 Techs + 2 I&amp;D', figs:6,
+                  rect:[551,800,299,100], call:'0900', crew:'4 Techs + 2 Installers', figs:6,
                   hours:42, kind:'custom',
-                  notes:['Large-format LED walls and custom displays, built and commissioned.',
-                         '4 LED techs plus 2 install crew. Truss flown ahead of build day.',
-                         '110 cabinets pixel-mapped and color-balanced before doors.'] },
+                  notes:['LED walls, custom displays and hanging signs, built and commissioned.',
+                         'Four LED technicians plus two installers.',
+                         'Every cabinet pixel-mapped and colour-balanced before doors.'] },
                 { n:'04', num:'7050', name:'Emergency Response',
-                  rect:[1299,1149,99,100], call:'On Call', crew:'Rapid Team', figs:3,
+                  rect:[1299,1149,99,100], call:'On Call', crew:'Rapid Team Of 3', figs:3,
                   hours:12, kind:'rush',
-                  notes:['Freight missed, crate damaged, graphic wrong &mdash; we fix it same day.',
-                         'Rapid team of 3, four-hour minimum call. On site within the hour.',
-                         'Recrate, graphic swap, header re-hang &mdash; finished before doors.'] }
+                  notes:['Missed freight, damaged crate, wrong graphic &mdash; fixed the same day.',
+                         'Rapid team of three, four-hour minimum call.',
+                         'On site within the hour, finished before doors.'] }
             ];
 
             window.__MI = { stage: stage, WO: WO,
@@ -2456,9 +2471,9 @@
 
             cards.innerHTML = WO.map(function (w) {
                 return '<a class="mi-card" href="i-d-labor-request.html">' +
-                       '<b>' + w.n + ' &middot; Call ' + w.call + '</b>' +
+                       '<b>Service ' + w.n + '</b>' +
                        '<strong>' + w.name + '</strong>' +
-                       '<span>' + w.crew + ' &middot; Stand ' + w.num + '</span></a>';
+                       '<span>' + w.crew + ' &middot; Book &rarr;</span></a>';
             }).join('');
 
             var rectW = 1, rectH = 1, fit = 1, trackTop = 0, span = 1;
@@ -2499,17 +2514,17 @@
                 ticket.classList.remove('is-on');
 
                 if (c.kind === 'cold') {
-                    say.innerHTML = '05:00<small>Empty hall. Eleven hours to show open.</small>';
+                    say.innerHTML = 'One hall. Four services.<small>Scroll to see each crew we put on your floor.</small>';
                     say.classList.add('is-on');
                 } else if (c.kind === 'rise') {
-                    say.innerHTML = 'The crates are on the dock.<br><em>We show up.</em>';
+                    say.innerHTML = 'Book the crew you need.<br><em>Here is what each one does.</em>';
                     say.classList.add('is-on');
                 } else if (c.kind === 'lapse') {
-                    say.innerHTML = '12:40 &rarr; 14:47<small>Three builds done. The afternoon runs.</small>';
+                    say.innerHTML = 'Three services covered.<small>One left &mdash; the crew you call when something goes wrong.</small>';
                     say.classList.add('is-on');
                 } else if (c.kind === 'doors') {
                     /* is-on is granted by paint() at the surge frame */
-                    say.innerHTML = '16:00 &middot; Show Open<small>Aisles clear. Empties pulled. Every screen live.</small>';
+                    say.innerHTML = 'Booth ready. Doors open.<small>Every service above, on one floor, in one day.</small>';
                 } else if (c.kind === 'sheet') {
                     sheet.classList.add('is-on');
                 }
@@ -2538,14 +2553,14 @@
 
                 if (c.kind === 'wo') {
                     var w = WO[c.i];
-                    tWo.innerHTML = 'Work Order ' + w.n + ' &middot; Stand ' + w.num;
+                    tWo.innerHTML = 'Service ' + w.n + ' of 04';
                     tH.innerHTML = w.name;
                     for (var i = 0; i < tNotes.length; i++) tNotes[i].innerHTML = w.notes[i] || '';
                     ticket.classList.toggle('is-right', (c.i % 2) === 1);
                     ticket.classList.add('is-on');
                     if (live) live.textContent =
-                        'Work order ' + w.n + ' of 4: ' + w.name.replace('&amp;','and') +
-                        '. ' + w.crew + ', call ' + w.call + ', stand ' + w.num + '.';
+                        'Service ' + w.n + ' of 4: ' + w.name.replace('&amp;','and') +
+                        '. ' + w.crew + '. ' + w.notes[0].replace(/&mdash;/g, '—') ;
                 }
 
                 /* transit keeps the OUTGOING stand live — setStands(-1)
@@ -2927,7 +2942,9 @@
                the callback fires the moment the target crosses 60% of the
                viewport height — i.e. once it occupies the bottom 40% of
                the screen (owner 2026-08-20). One-shot: unobserve on hit. */
-            var revealEls = [document.querySelector('.ap-lead'), stage]
+            /* the whole on-ramp block fades in, not just the paragraph —
+               the eyebrow is a sibling of .ap-lead and was popping in hard */
+            var revealEls = [document.querySelector('.ap-sheet'), stage]
                 .filter(function (el) { return !!el; });
             revealEls.forEach(function (el) { el.classList.add('mi-reveal'); });
             if ('IntersectionObserver' in window) {
