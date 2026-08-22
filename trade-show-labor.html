@@ -910,8 +910,12 @@
             /* the caption lands on whatever the camera happens to be over —
                often a bright cyan booth field. A shadow is the only scrim
                that costs nothing and never boxes the type. */
-            text-shadow: 0 2px 14px rgba(2, 7, 12, 0.75),
-                         0 1px 3px rgba(2, 7, 12, 0.85);
+            /* tight and faint: a wide dark halo around type this large
+               reads as a grey smudge on the picture. The 2px pass buys the
+               edge contrast, the 12px pass only takes the harshest of the
+               background off, and neither is visible as a shape. */
+            text-shadow: 0 1px 2px rgba(2, 7, 12, 0.62),
+                         0 2px 12px rgba(2, 7, 12, 0.34);
         }
         .mi-say.is-on { opacity: 1; }
         .mi-say em { display: inline-block; }
@@ -953,13 +957,21 @@
                         font-size: 0.3em; font-weight: 700; letter-spacing: .07em;
                         line-height: 1.7;
                         color: #ffffff;
-                        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9); }
+                        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.92),
+                                     0 0 7px rgba(2, 7, 12, 0.66); }
         .mi-say small .mi-w { position: relative; }
         .mi-say small .mi-w::before {
             content: ''; position: absolute; z-index: -1;
-            inset: -0.42em -0.46em;
+            /* SUBTLE OR IT IS WRONG (owner 2026-08-21, fourth pass): the
+               halo has to do its job without being noticeable AT ALL. Wide
+               and faint beats tight and dark — a diffuse wash reads as the
+               scene being a shade deeper behind the words, while anything
+               denser reads as a shape stuck to the type. Remember overlaps
+               compound where words meet, so peak alpha stays well under
+               half; the tight text-shadow above carries the real contrast. */
+            inset: -0.52em -0.5em;
             background: radial-gradient(ellipse at center,
-                rgba(3, 8, 13, 0.62) 0%, rgba(3, 8, 13, 0.5) 42%,
+                rgba(3, 8, 13, 0.32) 0%, rgba(3, 8, 13, 0.2) 45%,
                 rgba(3, 8, 13, 0) 100%);
         }
 
@@ -979,7 +991,7 @@
            the hall behind it ranges from near-black to lit cyan floor */
         .mi-sheet-h { font-size: clamp(1.4rem, 4.4vw, 2.6rem); font-weight: 800;
                       text-align: center; margin-bottom: 4px; color: #fff;
-                      text-shadow: 0 2px 14px rgba(2,7,12,.8), 0 1px 3px rgba(2,7,12,.85); }
+                      text-shadow: 0 1px 2px rgba(2,7,12,.65), 0 2px 12px rgba(2,7,12,.38); }
         /* THE MARSHALLING BOARD — the CTA lives inside the hall: a tilted
            work-order board catching practical light, not a web modal */
         .mi-cards { display: grid; gap: 12px;
