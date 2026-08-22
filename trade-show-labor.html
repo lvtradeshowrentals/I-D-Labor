@@ -527,30 +527,51 @@
               not the brand's — so the eye reads "new thing, and it is the
               thing below".
            3. IT ENDS ON A CUE, not a full stop. */
+        /* AN INSET PANEL WAS NOT ENOUGH (owner 2026-08-22, second pass:
+           "it still feels like it's flowing together... I want boom, we're
+           entering a new world"). A bordered card floating on the intro's
+           own ground still belongs to that ground. So the block LEAVES it:
+           full-bleed edge to edge, and the surface underneath changes from
+           the section's blue-and-gold gradient to the animation's own
+           near-black. Crossing this rule is literally crossing into the
+           hall's world — and because the band bottoms out on exactly the
+           colour `.mi` starts on, the stage below then opens with no seam
+           at all. Drama from a hard change of ground, not from ornament. */
         .ap-sheet {
             position: relative;
             z-index: 1;
-            max-width: 1240px;
-            margin: clamp(46px, 6vw, 82px) auto calc(clamp(52px, 7vh, 88px) * -1);
-            padding: clamp(28px, 3.6vw, 46px) clamp(20px, 2.6vw, 36px)
-                     clamp(38px, 5vw, 62px);
-            border-top: 1px solid rgba(120, 205, 240, 0.26);
-            background: linear-gradient(180deg,
-                rgba(14, 32, 47, 0.62) 0%,
-                rgba(8, 18, 28, 0.34) 42%,
-                rgba(5, 9, 13, 0) 100%);
+            /* -20px cancels .ap's side padding, so this spans the section
+               (= the viewport) without touching 100vw and its scrollbar
+               rounding. The negative bottom margin eats .ap's bottom
+               padding so the band runs straight into the stage. */
+            margin: clamp(76px, 9vw, 138px) -20px calc(clamp(52px, 7vh, 88px) * -1);
+            padding: clamp(46px, 5.5vw, 78px) 20px clamp(54px, 6.5vw, 88px);
+            border-top: 1px solid rgba(130, 212, 245, 0.4);
+            background: linear-gradient(180deg, #070d14 0%, #05090d 58%, #05090d 100%);
         }
-        /* a short cyan tick riding the hairline, aligned to the eyebrow —
-           the one hard mark that says the rule above is deliberate */
+        /* the rule reads as LIT rather than drawn: a soft cyan bloom
+           hugging it, brightest at the left where the tick sits */
+        .ap-sheet::after {
+            content: ''; position: absolute; top: 0; left: 0; right: 0;
+            height: 120px; pointer-events: none;
+            background: linear-gradient(180deg,
+                rgba(90, 190, 235, 0.13) 0%, rgba(90, 190, 235, 0) 100%);
+            -webkit-mask-image: linear-gradient(90deg, #000 0%, rgba(0,0,0,.25) 62%, transparent 100%);
+                    mask-image: linear-gradient(90deg, #000 0%, rgba(0,0,0,.25) 62%, transparent 100%);
+        }
+        /* the hard mark that says the rule is deliberate */
         .ap-sheet::before {
             content: ''; position: absolute; top: -1px; left: 0;
-            width: clamp(56px, 8vw, 96px); height: 2px;
+            width: clamp(96px, 16vw, 240px); height: 3px;
             background: var(--teal-h);
+            box-shadow: 0 0 18px rgba(150, 214, 245, 0.55);
         }
+        .ap-sheet-in { position: relative; z-index: 1; max-width: 1240px; margin: 0 auto; }
 
         .ap-eyebrow {
-            display: inline-flex; align-items: center; gap: 11px;
-            font-size: 0.72rem; font-weight: 800; letter-spacing: 0.3em;
+            display: inline-flex; align-items: center; gap: 12px;
+            margin-bottom: clamp(16px, 2vw, 26px);
+            font-size: 0.76rem; font-weight: 800; letter-spacing: 0.32em;
             text-transform: uppercase;
             color: var(--teal-h);
         }
@@ -592,12 +613,16 @@
             line-height: 1.62;
             color: rgba(226, 236, 244, 0.72);
         }
+        /* sized as a SECTION TITLE now, near the intro headline's scale —
+           at 2.15rem it read as a bolded first sentence, which is exactly
+           why the two blocks felt like one */
         .ap-lead b {
             display: block;
             color: #fff; font-weight: 800;
-            font-size: clamp(1.45rem, 3.2vw, 2.15rem);
-            letter-spacing: -0.01em;
-            margin-bottom: 6px;
+            font-size: clamp(2rem, 4.6vw, 3.4rem);
+            line-height: 1.04;
+            letter-spacing: -0.022em;
+            margin-bottom: 14px;
         }
 
         @property --rake { syntax: "<angle>";  inherits: true; initial-value: 0deg; }
@@ -777,7 +802,11 @@
            two most expensive things in it: three full-hall rects filled
            with repeating <pattern>s, and a second transformed layer for the
            truss. Both are texture, not information; the plan reads fine
-           without them and the frame cost drops hard. */
+           without them and the frame cost drops hard.
+           Since 2026-08-22 the plan is baked into GL on desktop too, so
+           these layers are normally display:none already — this is now the
+           safety net for the case where rasterizePlan() fails and the live
+           SVG stays on screen. Keep it for that reason. */
         .mi-slow .fp-lay-plan > rect[fill^="url("],
         .mi-slow .fp-lay-truss { display: none; }
 
@@ -859,42 +888,6 @@
                 radial-gradient(46% 30% at 50% 70%,
                     rgba(198, 236, 255, .22), transparent 70%);
         }
-
-        .mi-js .fp-b { pointer-events: auto; cursor: pointer; }
-        .mi-js .fp-b:hover .fp-bn { opacity: 1; }
-        .mi-js .fp-b rect { transition: fill .16s ease, stroke .16s ease; }
-        .mi-js .fp-b:hover rect,
-        .mi-js .fp-b.is-picked rect {
-            fill: rgba(184, 165, 115, 0.30);
-            stroke: var(--gold-l);
-        }
-        .mi-js .fp-b:focus-visible rect { stroke: var(--accent-teal); stroke-width: 2; }
-
-        .mi-quote {
-            position: absolute; left: 50%; bottom: 12%;
-            transform: translate(-50%, 8px);
-            background: linear-gradient(168deg, #070d14 0%, #03070b 100%);
-            border: 1px solid rgba(255, 255, 255, 0.16);
-            border-top: 3px solid var(--teal-h);
-            padding: 12px 17px 13px; min-width: 268px;
-            opacity: 0; pointer-events: none;
-            box-shadow: 0 26px 60px rgba(0,0,0,.85), 0 6px 16px rgba(0,0,0,.6);
-            transition: opacity .2s ease, transform .28s cubic-bezier(.22,1,.36,1);
-            font-variant-numeric: tabular-nums;
-        }
-        .mi-quote.is-on { opacity: 1; transform: translate(-50%, 0); }
-        .mi-quote b { display: block; font-size: 0.62rem; font-weight: 800;
-                      letter-spacing: .2em; color: rgba(160,200,225,.6);
-                      margin-bottom: 6px; }
-        .mi-quote strong { display: block; color: #fff; font-size: 1.02rem;
-                           font-weight: 800; margin-bottom: 7px; letter-spacing: -.01em; }
-        .mi-quote span { display: block; font-size: 0.66rem; font-weight: 700;
-                         letter-spacing: .13em; color: rgba(226,236,244,.8);
-                         text-transform: uppercase; }
-        .mi-quote em { font-style: normal; color: var(--gold-l); }
-        .mi-quote i { display: block; margin-top: 8px; font-style: normal;
-                      font-size: 0.5rem; letter-spacing: .16em;
-                      color: rgba(160,200,225,.45); text-transform: uppercase; }
 
 
         .mi-flat { position: absolute; inset: 0; pointer-events: none; z-index: 7; transform: translateZ(0); }
@@ -1972,12 +1965,14 @@
         </div>
 
         <div class="ap-sheet">
-            <span class="ap-eyebrow">Our Services</span>
-            <p class="ap-lead"><b>Four Services. Scroll The Floor.</b>
-                Each stop on the hall below is one service we provide &mdash; what it
-                covers, what you get, and how to book it. Crew and hours are
-                quoted to your job.</p>
-            <span class="ap-cue" aria-hidden="true">Scroll<i></i></span>
+            <div class="ap-sheet-in">
+                <span class="ap-eyebrow">Our Services</span>
+                <p class="ap-lead"><b>Four Services. Scroll The Floor.</b>
+                    Each stop on the hall below is one service we provide &mdash; what it
+                    covers, what you get, and how to book it. Crew and hours are
+                    quoted to your job.</p>
+                <span class="ap-cue" aria-hidden="true">Scroll<i></i></span>
+            </div>
         </div>
     </section>
 
@@ -2103,7 +2098,6 @@
                         </a>
                     </article>
 
-                    <div class="mi-quote" role="status"></div>
 
                     <div class="mi-tb">
                         <span class="mi-tb-k">MI-01 &middot; NAB &rsquo;26 &middot; LVCC CENTRAL</span>
@@ -2901,17 +2895,6 @@
                 }
                 stage.classList.toggle('is-hud-out', c.kind === 'sheet');
 
-                var handed = c.kind === 'doors' || c.kind === 'sheet';
-
-                if (booths) {
-                    var tv = handed ? '0' : '-1';
-                    if (booths.getAttribute('data-tab') !== tv) {
-                        booths.setAttribute('data-tab', tv);
-                        Array.prototype.forEach.call(booths.querySelectorAll('.fp-b'),
-                            function (g) { g.setAttribute('tabindex', tv); });
-                    }
-                }
-
                 Array.prototype.forEach.call(sec.querySelectorAll('.fp-stand'),
                     function (st) {
                         var sn = +st.getAttribute('data-stand');
@@ -3006,6 +2989,11 @@
                         ') scale(' + s2.toFixed(4) + ')');
                 }
 
+                /* these three DOM writes only bite if rasterizePlan() failed
+                   and the live SVG is still on screen; when the plan is a GL
+                   texture (the normal path on every device now) MIGL's own
+                   planDim does the dimming. They are the fallback — do not
+                   delete them just because they look dead. */
                 if (booths) wStyle(booths, 'bo', 'opacity', (c.kind === 'wo' ? 0.34 : 1).toFixed(2));
                 if (furn) wStyle(furn, 'fo', 'opacity', (c.kind === 'wo' ? 0.30 : 1).toFixed(2));
                 if (aisl) wStyle(aisl, 'ao', 'opacity', (c.kind === 'wo' ? 0.40 : 1).toFixed(2));
@@ -3294,61 +3282,11 @@
 
             if (window.ResizeObserver) new ResizeObserver(onResize).observe(document.body);
 
-            var quote = sec.querySelector('.mi-quote');
-            var picked = null;
-
-            /* NO FABRICATED CREW MATHS (owner 2026-08-21). This used to
-               derive person-hours, a crew size and a day count from the
-               booth's square footage and print them as an estimate. Those
-               numbers were invented by a formula, and quoting a headcount
-               off floor area alone is not how any of these jobs get
-               priced. The panel now reports only what the drawing actually
-               knows — the stand and its size — and asks for the scope. */
-            function estimate(g) {
-                var size = g.getAttribute('data-size') || '';
-                var num  = g.getAttribute('data-n') || '';
-                var m = size.split(/[^0-9]+/).filter(Boolean);
-                if (m.length < 2) return null;
-                return { num: num, size: size, ft: +m[0] * +m[1] };
-            }
-
-            function showQuote(g) {
-                var q = estimate(g);
-                if (!q) return;
-                if (picked) picked.classList.remove('is-picked');
-                picked = g; g.classList.add('is-picked');
-                quote.innerHTML =
-                    '<b>Stand ' + q.num + ' &middot; ' + q.size + ' FT</b>' +
-                    '<strong>' + q.ft + ' <em>sq ft</em></strong>' +
-                    '<span>Any of the four services</span>' +
-                    '<i>Crew and hours quoted to your actual scope</i>';
-                quote.classList.add('is-on');
-                if (live) live.textContent =
-                    'Stand ' + q.num + ', ' + q.size + ' feet, ' + q.ft +
-                    ' square feet. Quoted to your scope.';
-            }
-
-            if (booths) {
-                booths.addEventListener('click', function (ev) {
-                    var g = ev.target.closest && ev.target.closest('.fp-b');
-                    if (g) showQuote(g);
-                });
-
-                if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-                    booths.addEventListener('mouseover', function (ev) {
-                        var g = ev.target.closest && ev.target.closest('.fp-b');
-                        if (g) showQuote(g);
-                    });
-                }
-
-                Array.prototype.forEach.call(booths.querySelectorAll('.fp-b'), function (g) {
-                    g.setAttribute('tabindex', '-1');
-                    g.setAttribute('role', 'button');
-                    var n = g.getAttribute('data-n'), sz = g.getAttribute('data-size');
-                    g.setAttribute('aria-label', 'Stand ' + n + ', ' + sz + ' feet.');
-                    g.addEventListener('focus', function () { showQuote(g); });
-                });
-            }
+            /* (the tap-a-booth quote panel is gone — owner 2026-08-22. It
+               only ever worked on desktop, and keeping its hit targets
+               alive was the one thing blocking the plan from being baked
+               into GL there. The plan is now a texture on every device and
+               the drawing is inert.) */
 
             measure();
             snap();

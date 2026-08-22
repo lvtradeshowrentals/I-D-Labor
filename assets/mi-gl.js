@@ -833,12 +833,20 @@ function rasterizePlan(px, done) {
        the stylesheet's own mobile rules never reach here: this rasteriser
        only copies rules that have a selectorText, so @media blocks are
        silently skipped. Drop the nodes instead. */
-    const drop = clone.querySelectorAll('.fp-tb, .fp-scale, .fp-north, .fp-dim, .fp-cols');
-    for (let i = 0; i < drop.length; i++) drop[i].parentNode.removeChild(drop[i]);
-    const dockT = clone.querySelectorAll('.fp-dock text, .fp-door text');
-    for (let i = 0; i < dockT.length; i++)
-      if ((dockT[i].textContent || '').indexOf('MAIN ENTRANCE') >= 0)
-        dockT[i].parentNode.removeChild(dockT[i]);
+    /* NARROW ONLY. On desktop the apron IS the look — the title block,
+       scale bar, compass and dimension rule are what make this read as a
+       drawing rather than a diagram, and the letterbox mattes frame them
+       instead of burying them. Dropping them here (which is what happened
+       the first time this ran on desktop) quietly deleted half the
+       draughting language. */
+    if (state.narrow) {
+      const drop = clone.querySelectorAll('.fp-tb, .fp-scale, .fp-north, .fp-dim, .fp-cols');
+      for (let i = 0; i < drop.length; i++) drop[i].parentNode.removeChild(drop[i]);
+      const dockT = clone.querySelectorAll('.fp-dock text, .fp-door text');
+      for (let i = 0; i < dockT.length; i++)
+        if ((dockT[i].textContent || '').indexOf('MAIN ENTRANCE') >= 0)
+          dockT[i].parentNode.removeChild(dockT[i]);
+    }
     let css = '';
     for (let si = 0; si < document.styleSheets.length; si++) {
       let rules = null;
@@ -895,7 +903,12 @@ function rasterizePlan(px, done) {
 function buildPlanPlane(plan, renderer) {
   /* 2560 is the width the mobile camera actually resolves: DPR 2 x 350css
      = 700 device px showing 1600/3.4 = 470 plan units -> 2383px needed */
-  rasterizePlan(state.narrow ? 2560 : 4096, (c) => {
+  /* 2560 is the width the mobile camera resolves. Desktop zooms further
+     in (s ~2.9 shows ~550 plan units across the frame) so it wants more,
+     but 4096 is a 64MB texture before mipmaps — real weight on exactly the
+     old GPUs this change exists to help. 3072 is the compromise; the plan
+     is dimmed under a hologram at the tightest framings anyway. */
+  rasterizePlan(state.narrow ? 2560 : 3072, (c) => {
     if (!c) return;
     const tex = new THREE.CanvasTexture(c);
     tex.colorSpace = THREE.SRGBColorSpace;
@@ -1679,7 +1692,17 @@ function init() {
     state.aisleGlow.push(q.material);
   }
 
-  if (mi.narrow) buildPlanPlane(plan, renderer);
+  /* THE PLAN IS A TEXTURE EVERYWHERE NOW (owner 2026-08-22). This was
+     mobile-only because the DOM SVG carried the booth hit targets for the
+     tap-a-quote panel, and baking it killed them. That feature is gone, so
+     desktop gets the same treatment — which matters, because desktop was
+     the choppy one precisely BECAUSE it kept re-rasterising the whole
+     vector drawing every scroll frame under a changing transform.
+     Note this also retires the DOM survey-laser overlay on desktop: it
+     lives inside .fp-lay-plan, which this hides. Mobile has shipped
+     without it since 2026-08-19; the GL pad ring and corner brackets carry
+     that beat now. */
+  buildPlanPlane(plan, renderer);
   if (!mi.narrow) buildCrowd(plan);
   /* (the hall-dust Points cloud is DELETED — owner 2026-08-20: "little
      sparkles that are really doing nothing… zero value". The electricity
