@@ -500,10 +500,11 @@
             --teal-h: #96d6f5;
         }
 
-        /* 560vh + the 19% the five dwell locks cost (see WARP in the JS) —
+        /* 560vh + the ~22% the six dwell locks cost (see WARP in the JS) —
            the holds are paid for with new scroll, so every other beat keeps
-           the pace it was tuned at */
-        .mi-track { position: relative; height: 665vh; }
+           the pace it was tuned at. Recompute when DW_K/DW_W change:
+           added = sum(K) * DW_W * 16/15. */
+        .mi-track { position: relative; height: 681vh; }
         /* (the CSS scroll-snap dwell that used to live here is gone with
            its .mi-lock targets — 1px proximity snaps on a track this tall
            have a catchment of half a viewport each, so every position in a
@@ -903,6 +904,11 @@
         }
         .mi-say.is-on { opacity: 1; }
         .mi-say em { display: inline-block; }
+        /* one word per span, landed in sequence by typeWords(). inline-block
+           so the lift transform applies; the whitespace between them stays
+           as real text nodes, so wrapping and text-wrap:balance behave
+           exactly as they did on the plain string. */
+        .mi-w { display: inline-block; opacity: 0; }
 
         .sr-live {
             position: absolute; width: 1px; height: 1px; padding: 0;
@@ -968,7 +974,7 @@
                           overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
         @media (max-width: 760px) {
-            .mi-track { height: 500vh; }
+            .mi-track { height: 511vh; }
             /* one column of chrome, never two: HUD top-right, skip chip
                top-left, captions BELOW both, tickets pinned to the bottom —
                on a phone nothing may ever share a band */
@@ -1010,7 +1016,29 @@
                the caption keeps its own top since --matte is gone. */
             .mi-stage { --matte: 0px; }
             .mi-skip { top: 58px; left: 10px; padding: 5px 8px; }
-            .mi-say { top: 104px !important; left: 5%; right: 5%; }
+            /* THE CAPTION OWNS THE DEAD BAND (owner 2026-08-21). Pinned at
+               104px it sat hard against the chrome rail with most of a
+               screen of black between it and the hall, which on a tall
+               phone reads as a mistake. It now drops to roughly a quarter
+               down — centring it in the gap above the picture — and takes
+               a real mobile type size (8.6vw beats the base clamp's 24px
+               floor, which was phone-hero type at desktop-caption scale).
+               max() keeps it clear of the 58px rail on short viewports.
+               NOT flex/grid-centred on purpose: the caption's markup is
+               bare text plus <br>/<em>/<small>, and either of those would
+               turn each text run into its own anonymous item and drop the
+               line breaks. */
+            .mi-say {
+                top: max(104px, 28%) !important; left: 5%; right: 5%;
+                font-size: clamp(1.9rem, 8.6vw, 2.9rem);
+                line-height: 1.06;
+            }
+            /* the subline is sized in em, so it was riding the base clamp's
+               24px floor down to about 7px — under the tracking it read as
+               a dotted rule, not a sentence. Bigger, and tracked in rather
+               than out so it still holds one line at 390px. */
+            .mi-say small { font-size: 0.32em; letter-spacing: .12em;
+                            margin-top: 12px; color: rgba(178, 212, 234, 0.72); }
             .mi-cards { grid-template-columns: 1fr; }
             /* the CTA sheet owns the frame — the HUD yields */
             .mi-stage.is-hud-out .mi-tb,
@@ -2400,6 +2428,12 @@
             }
             DWELL.push(CH[10].a + (CH[10].b - CH[10].a) * 0.30);
             DWELL_K.push(0.9);                    /* the 16:00 payoff, lighter */
+            /* and one on the rise headline, so the caption has room to TYPE
+               (owner 2026-08-21). Without it the whole sentence assembled
+               inside ~110px of phone scroll — technically word-by-word, but
+               too fast to read as anything but a flash. */
+            DWELL.push(CH[1].a + (CH[1].b - CH[1].a) * 0.30);
+            DWELL_K.push(0.9);
 
             /* cumulative scroll cost, normalised — WARP[i] is the scroll
                fraction at which story progress i/N is reached */
@@ -2578,6 +2612,59 @@
             var liveOn = false, raf = 0, last = 0, pPrev = 0, pVel = 0, isNear = true;
 
             var curCh = -1, shownMin = -1, noteN = -1;
+
+            /* WORD-BY-WORD CAPTIONS. setSay() re-wraps the caption's text
+               nodes into .mi-w spans, walking the tree so <br>, <em> and
+               <small> all survive and the words inside them are collected
+               too. typeWords(t) then lands them in order.
+
+               The windows overlap (LEAD words wide) so a word is still
+               easing in while the next starts — that overlap is what reads
+               as smooth typing instead of a stutter of hard pops. Opacity
+               is quantised to 2dp so a held scroll position stops writing
+               styles entirely. */
+            var sayWords = [];
+            var LEAD = 1.7;
+            function setSay(html) {
+                say.innerHTML = html;
+                sayWords = [];
+                (function walk(node) {
+                    var kids = Array.prototype.slice.call(node.childNodes);
+                    for (var i = 0; i < kids.length; i++) {
+                        var k = kids[i];
+                        if (k.nodeType === 1) { walk(k); continue; }
+                        if (k.nodeType !== 3) continue;
+                        var parts = k.nodeValue.split(/(\s+)/);
+                        var frag = document.createDocumentFragment();
+                        for (var j = 0; j < parts.length; j++) {
+                            if (!parts[j]) continue;
+                            if (/^\s+$/.test(parts[j])) {
+                                frag.appendChild(document.createTextNode(parts[j]));
+                                continue;
+                            }
+                            var s = document.createElement('span');
+                            s.className = 'mi-w';
+                            s.textContent = parts[j];
+                            frag.appendChild(s);
+                            sayWords.push(s);
+                        }
+                        node.replaceChild(frag, k);
+                    }
+                })(say);
+            }
+            function typeWords(t) {
+                var n = sayWords.length;
+                for (var i = 0; i < n; i++) {
+                    var a = clamp01((t * (n + LEAD) - i) / LEAD);
+                    a = Math.round(a * 100) / 100;
+                    var el = sayWords[i];
+                    if (el.__a === a) continue;
+                    el.__a = a;
+                    el.style.opacity = a;
+                    el.style.transform = a >= 1 ? 'none'
+                        : 'translateY(' + ((1 - a) * 0.22).toFixed(3) + 'em)';
+                }
+            }
             var navEl = document.querySelector('.navbar');
             var fpsN = 0, fpsT0 = 0, fpsDone = false;
 
@@ -2588,17 +2675,17 @@
                 ticket.classList.remove('is-on');
 
                 if (c.kind === 'cold') {
-                    say.innerHTML = 'One hall. Four services.<small>Scroll to see each crew we put on your floor.</small>';
+                    setSay('One hall. Four services.<small>Scroll to see each crew we put on your floor.</small>');
                     say.classList.add('is-on');
                 } else if (c.kind === 'rise') {
-                    say.innerHTML = 'Book the crew you need.<br><em>Here is what each one does.</em>';
+                    setSay('Book the crew you need.<br><em>Here is what each one does.</em>');
                     say.classList.add('is-on');
                 } else if (c.kind === 'lapse') {
-                    say.innerHTML = 'Three services covered.<small>One left &mdash; the crew you call when something goes wrong.</small>';
+                    setSay('Three services covered.<small>One left &mdash; the crew you call when something goes wrong.</small>');
                     say.classList.add('is-on');
                 } else if (c.kind === 'doors') {
                     /* is-on is granted by paint() at the surge frame */
-                    say.innerHTML = 'Booth ready. Doors open.<small>Every service above, on one floor, in one day.</small>';
+                    setSay('Booth ready. Doors open.<small>Every service above, on one floor, in one day.</small>');
                 } else if (c.kind === 'sheet') {
                     sheet.classList.add('is-on');
                 }
@@ -2838,18 +2925,38 @@
 
                 /* TYPE IS PRINTED ON THE FILM. Every caption and ticket is a
                    pure function of scroll — scrub backward and it un-prints.
-                   No wall-clock transition ever moves type again. */
-                var sayO = 0, saySc = 1;
-                if (c.kind === 'cold') sayO = ss(.06, .20, cp) * (1 - ss(.72, .92, cp));
-                else if (c.kind === 'rise') sayO = ss(.08, .22, cp) * (1 - ss(.80, .96, cp));
-                else if (c.kind === 'lapse') sayO = ss(.06, .20, cp) * (1 - ss(.82, .96, cp));
-                else if (c.kind === 'doors') {
-                    sayO = ss(.17, .23, cp);
+                   No wall-clock transition ever moves type again.
+
+                   THE CAPTION TYPES ITSELF IN (owner 2026-08-21). It used
+                   to cross-fade as one block; now the words land one after
+                   another. The reveal is driven by scroll like everything
+                   else here rather than a timer: a wall-clock typewriter
+                   would finish while the reader is still arriving, replay
+                   on every re-entry, and print forwards while the page
+                   scrubs backwards. So the container carries only the fade
+                   OUT and the doors scale, and sayType drives the words. */
+                var sayOut = 0, sayType = 0, saySc = 1;
+                /* the windows are WIDE on purpose. At ss(.05,.34) the whole
+                   sentence landed inside ~100px of scroll, which reads as a
+                   flash, not as typing. Running the reveal out to just past
+                   half the chapter means the words assemble over roughly a
+                   screen of scrolling and still leave a clear beat to read
+                   the finished line before it goes. */
+                if (c.kind === 'cold') {
+                    sayType = ss(.04, .52, cp); sayOut = 1 - ss(.72, .92, cp);
+                } else if (c.kind === 'rise') {
+                    sayType = ss(.04, .54, cp); sayOut = 1 - ss(.80, .96, cp);
+                } else if (c.kind === 'lapse') {
+                    sayType = ss(.04, .54, cp); sayOut = 1 - ss(.82, .96, cp);
+                } else if (c.kind === 'doors') {
+                    /* the surge frame is the beat — it types from there */
+                    sayType = ss(.17, .52, cp); sayOut = 1;
                     saySc = 0.9 + 0.1 * outBack(ss(.17, .30, cp));
                 }
-                wStyle(say, 'syO', 'opacity', sayO.toFixed(3));
+                wStyle(say, 'syO', 'opacity', sayOut.toFixed(3));
                 wStyle(say, 'syT', 'transform',
                     saySc === 1 ? 'none' : 'scale(' + saySc.toFixed(3) + ')');
+                typeWords(sayOut > 0 ? sayType : 0);
                 var tickO = 0, tickY = 18;
                 if (c.kind === 'wo') {
                     var ten = (w.kind === 'rush') ? ss(.26, .38, cp) : ss(.42, .54, cp);
