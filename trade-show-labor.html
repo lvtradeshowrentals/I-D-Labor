@@ -41,6 +41,12 @@
             --primary-bg: #1a2332;
             --accent-teal: #2d9cca;
             --accent-gold: #b8a573;
+            /* the hall's bright cyan. It was declared only on `.mi`, so
+               anything outside the animation that referenced it — the
+               services block's eyebrow, tick and scroll cue — silently got
+               an invalid value and fell back to inherited text colour. */
+            --teal-h: #96d6f5;
+            --gold-l: #d4bc7d;
             --text-primary: #f0eff4;
             --text-secondary: #a8acb1;
             --border-subtle: #2a3442;
@@ -447,6 +453,55 @@
 
         .ap-facts b { color: var(--accent-gold); font-weight: 700; }
 
+        /* THE FACTS BECOME ONE LINE THAT CYCLES (owner 2026-08-22). Three
+           static rows of the same uppercase grey read as one grey mass and
+           carried no motion at all — nothing here asked for attention. The
+           list now collapses to a single slot: each phrase flies in from
+           the right, locks, and shoots out left, on loop while the line
+           sits in the middle band of the viewport.
+
+           The stacked markup is untouched and is what no-JS and
+           reduced-motion users get — `is-cycling` is added by script only,
+           and every rule that changes the layout hangs off it. */
+        .ap-facts.is-cycling {
+            display: block;
+            position: relative;
+            overflow: hidden;
+            padding: 18px 0 0;
+            height: 52px;
+        }
+        .ap-facts.is-cycling li {
+            position: absolute; top: 18px; left: 0;
+            white-space: nowrap;
+            font-size: clamp(0.76rem, 2.5vw, 0.94rem);
+            letter-spacing: 0.16em;
+            color: var(--text-primary);
+            opacity: 0;
+            /* parked to the RIGHT and off — this is also the exit-return
+               state, so nothing may animate to it visibly */
+            transform: translate3d(64px, 0, 0);
+            will-change: transform, opacity;
+        }
+        /* IN — a long decelerate: it travels fast and settles hard */
+        .ap-facts.is-cycling li.is-in {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+            transition: transform .66s cubic-bezier(.16, 1, .3, 1),
+                        opacity .34s ease-out;
+        }
+        /* OUT — a short accelerate the other way: it leaves, it does not fade */
+        .ap-facts.is-cycling li.is-out {
+            opacity: 0;
+            transform: translate3d(-52px, 0, 0);
+            transition: transform .40s cubic-bezier(.7, 0, .84, 0),
+                        opacity .34s ease-in;
+        }
+        .ap-facts.is-cycling b {
+            display: inline-block;
+            margin-right: 2px;
+            color: var(--accent-gold);
+        }
+
         @media (min-width: 940px) {
             .ap-wrap { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: end; }
         }
@@ -454,11 +509,76 @@
         /* (the "300 FT" dimension rule that used to sit here is gone —
            owner 2026-08-20: out of place and earning nothing. The block
            now carries the on-ramp copy alone.) */
+
+        /* THIS IS A DIFFERENT SECTION AND HAS TO LOOK LIKE ONE (owner
+           2026-08-22: "it's basically identical to the section above it...
+           it all just blurs together"). It was: same gold rule-and-caps
+           eyebrow, same white bold headline, same bare ground. Three
+           changes give it its own identity and point it forward into the
+           hall instead of back at the intro —
+
+           1. IT HAS A GROUND. A hairline top edge plus a panel wash that
+              starts cool and fades to nothing at the bottom, so the block
+              physically separates from the copy above AND dissolves into
+              the black stage below. The gradient must reach 0 alpha: the
+              negative bottom margin parks this over the section edge.
+           2. THE EYEBROW SWITCHES SIDE. Gold rule-and-caps belongs to the
+              intro; this one is cyan on a cyan bar — the hall's colour,
+              not the brand's — so the eye reads "new thing, and it is the
+              thing below".
+           3. IT ENDS ON A CUE, not a full stop. */
         .ap-sheet {
             position: relative;
             z-index: 1;
             max-width: 1240px;
             margin: clamp(46px, 6vw, 82px) auto calc(clamp(52px, 7vh, 88px) * -1);
+            padding: clamp(28px, 3.6vw, 46px) clamp(20px, 2.6vw, 36px)
+                     clamp(38px, 5vw, 62px);
+            border-top: 1px solid rgba(120, 205, 240, 0.26);
+            background: linear-gradient(180deg,
+                rgba(14, 32, 47, 0.62) 0%,
+                rgba(8, 18, 28, 0.34) 42%,
+                rgba(5, 9, 13, 0) 100%);
+        }
+        /* a short cyan tick riding the hairline, aligned to the eyebrow —
+           the one hard mark that says the rule above is deliberate */
+        .ap-sheet::before {
+            content: ''; position: absolute; top: -1px; left: 0;
+            width: clamp(56px, 8vw, 96px); height: 2px;
+            background: var(--teal-h);
+        }
+
+        .ap-eyebrow {
+            display: inline-flex; align-items: center; gap: 11px;
+            font-size: 0.72rem; font-weight: 800; letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--teal-h);
+        }
+        .ap-eyebrow::before {
+            content: ''; width: 3px; height: 1em;
+            background: var(--teal-h); opacity: 0.85;
+        }
+
+        /* the block ends pointing DOWN — a pulsing hairline that reads as
+           "keep going" without being a widget */
+        .ap-cue {
+            display: inline-flex; flex-direction: column; align-items: flex-start;
+            gap: 9px; margin-top: clamp(20px, 2.6vw, 30px);
+            font-size: 0.58rem; font-weight: 800; letter-spacing: 0.26em;
+            text-transform: uppercase;
+            color: rgba(150, 214, 245, 0.7);
+        }
+        .ap-cue i {
+            display: block; width: 1px; height: 30px; transform-origin: top center;
+            background: linear-gradient(to bottom, var(--teal-h), transparent);
+            animation: apCue 2.1s ease-in-out infinite;
+        }
+        @keyframes apCue {
+            0%, 100% { transform: scaleY(0.34); opacity: 0.45; }
+            50%      { transform: scaleY(1);    opacity: 1; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .ap-cue i { animation: none; transform: scaleY(1); opacity: 0.8; }
         }
 
         /* THE ON-RAMP. Without this the reader fell out of a services
@@ -649,6 +769,17 @@
         .fp-hoist rect { fill: rgba(184, 165, 115, 0.45); }
 
         .fp-lay-truss { opacity: calc(var(--wall) * 0.30); }
+
+        /* WEAK-GPU FALLBACK (owner 2026-08-22). Set by the FPS probe, so it
+           never touches a machine that is coping. On desktop the floor plan
+           is still a live DOM SVG — every scroll frame re-rasterises the
+           whole vector tree under a changing transform — and these are the
+           two most expensive things in it: three full-hall rects filled
+           with repeating <pattern>s, and a second transformed layer for the
+           truss. Both are texture, not information; the plan reads fine
+           without them and the frame cost drops hard. */
+        .mi-slow .fp-lay-plan > rect[fill^="url("],
+        .mi-slow .fp-lay-truss { display: none; }
 
         /* (the fake wall extrusions are gone entirely — markup included.
            They read as "a complete wall around the whole hall" and could
@@ -1841,11 +1972,12 @@
         </div>
 
         <div class="ap-sheet">
-            <span class="fl-eyebrow">Our Services</span>
+            <span class="ap-eyebrow">Our Services</span>
             <p class="ap-lead"><b>Four Services. Scroll The Floor.</b>
                 Each stop on the hall below is one service we provide &mdash; what it
                 covers, what you get, and how to book it. Crew and hours are
                 quoted to your job.</p>
+            <span class="ap-cue" aria-hidden="true">Scroll<i></i></span>
         </div>
     </section>
 
@@ -3095,13 +3227,33 @@
                 raf = requestAnimationFrame(frame);
                 if (SNAP) { var rp = progress(); sp.x = rp; spCam.x = rp; paint(rp, rp); last = now; return; }
                 var dt = last ? Math.min((now - last) / 1000, .064) : 1/60; last = now;
+                /* THE AUTO-DOWNGRADE, RETUNED (owner 2026-08-22: desktop is
+                   choppy on an old GPU, mobile is smooth). Mobile is smooth
+                   BECAUSE it already runs the cheap path — no shadow maps,
+                   no depth/AO prepass, and the floor plan pre-rasterised
+                   into a GL texture. Desktop runs all three, and on top of
+                   that re-rasterises the whole DOM SVG plan every scroll
+                   frame under a changing transform.
+                   The old gate (under 22fps, measured over 2.6s) never
+                   fired on the machines that need it most: a card holding
+                   28-40fps feels bad but sails past the threshold, and 2.6s
+                   is long enough that the reader is already through the
+                   worst of it. Judge sooner, and judge against a bar that
+                   means "smooth", not "not a slideshow". */
                 if (!fpsDone && window.MIGL && !SNAP) {
                     if (!fpsT0) fpsT0 = now;
                     fpsN++;
-                    if (now - fpsT0 > 2600) {
+                    if (now - fpsT0 > 1400) {
                         fpsDone = true;
                         var fps = fpsN / ((now - fpsT0) / 1000);
-                        if (fps < 22 && MIGL.setQuality) MIGL.setQuality('lite');
+                        if (fps < 42) {
+                            if (MIGL.setQuality) MIGL.setQuality('lite');
+                            /* and shed the desktop-only vector cost: the
+                               pattern fills and the truss layer are pure
+                               decoration but they are the most expensive
+                               things in the SVG to re-raster */
+                            document.documentElement.classList.add('mi-slow');
+                        }
                     }
                 }
 
@@ -3251,6 +3403,82 @@
                 window.addEventListener('resize', apFade, { passive: true });
                 apFade();
             }
+
+            /* THE FACT LINE CYCLES (owner 2026-08-22). Three static rows of
+               identical uppercase grey were the flattest thing on the page.
+               They now share one slot: fly in from the right, lock, shoot
+               out left, next one up, on loop.
+
+               Runs on a wall clock, unlike everything inside the hall — and
+               that is correct HERE. This block is not scroll-scrubbed; it is
+               a plain page section, so a reader who stops still needs the
+               line to keep working. It is gated to the middle band of the
+               viewport so it never burns timers off-screen, and it resets to
+               the first phrase on re-entry so you always see them in order.
+
+               The stacked <li> markup is left exactly as it was: no-JS and
+               reduced-motion readers get all three lines at once, which is
+               why every layout rule hangs off `is-cycling`. */
+            (function initFacts() {
+                var ul = document.querySelector('.ap-facts');
+                if (!ul) return;
+                var items = Array.prototype.slice.call(ul.querySelectorAll('li'));
+                if (items.length < 2) return;
+                if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+                if (!('IntersectionObserver' in window)) return;
+
+                var IN_HOLD = 2450,   /* travel + the lock, before it leaves */
+                    OUT_GAP = 560;    /* the exit, plus a beat of empty line */
+                var idx = 0, timer = 0, live = false;
+
+                ul.classList.add('is-cycling');
+
+                function show() {
+                    if (!live) return;
+                    var el = items[idx];
+                    el.classList.remove('is-out');
+                    el.classList.add('is-in');
+                    timer = setTimeout(function () {
+                        if (!live) return;
+                        el.classList.remove('is-in');
+                        el.classList.add('is-out');
+                        timer = setTimeout(function () {
+                            if (!live) return;
+                            el.classList.remove('is-out');
+                            idx = (idx + 1) % items.length;
+                            show();
+                        }, OUT_GAP);
+                    }, IN_HOLD);
+                }
+                function stop() {
+                    live = false;
+                    clearTimeout(timer);
+                    /* let whatever is on screen leave the way it normally
+                       would, then reset — snapping it back to the parked
+                       right-hand state would read as a reverse slide */
+                    items.forEach(function (el) {
+                        if (el.classList.contains('is-in')) {
+                            el.classList.remove('is-in');
+                            el.classList.add('is-out');
+                        }
+                    });
+                    setTimeout(function () {
+                        if (live) return;
+                        items.forEach(function (el) { el.classList.remove('is-in', 'is-out'); });
+                        idx = 0;
+                    }, OUT_GAP);
+                }
+                new IntersectionObserver(function (en) {
+                    var vis = en[en.length - 1].isIntersecting;
+                    if (vis === live) return;
+                    if (vis) { live = true; show(); } else { stop(); }
+                /* starts once the line has climbed into the top 70% of the
+                   screen, and keeps running until it leaves off the top. A
+                   symmetric middle band was the first attempt and it left
+                   the slot BLANK whenever the reader parked just outside
+                   it — an empty 52px gap where three lines used to be. */
+                }, { rootMargin: '0px 0px -30% 0px' }).observe(ul);
+            })();
 
             /* one gate for the render loop: near the track, tab visible,
                and the picture has not dissolved out yet */
