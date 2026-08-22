@@ -527,75 +527,109 @@
               not the brand's — so the eye reads "new thing, and it is the
               thing below".
            3. IT ENDS ON A CUE, not a full stop. */
-        /* AN INSET PANEL WAS NOT ENOUGH (owner 2026-08-22, second pass:
-           "it still feels like it's flowing together... I want boom, we're
-           entering a new world"). A bordered card floating on the intro's
-           own ground still belongs to that ground. So the block LEAVES it:
-           full-bleed edge to edge, and the surface underneath changes from
-           the section's blue-and-gold gradient to the animation's own
-           near-black. Crossing this rule is literally crossing into the
-           hall's world — and because the band bottoms out on exactly the
-           colour `.mi` starts on, the stage below then opens with no seam
-           at all. Drama from a hard change of ground, not from ornament. */
+        /* THE THRESHOLD (owner 2026-08-22, third pass). Two earlier
+           attempts changed the SURFACE — an inset panel, then a full-bleed
+           dark band — and both were rejected for the same reason: the
+           composition never changed. Left-aligned eyebrow, big white
+           headline, grey paragraph, on dark. That is the page's one and
+           only layout, so re-skinning it could never read as a new place.
+
+           So this block leaves the page's design language entirely:
+
+           1. THE GROUND INVERTS. Every other section on this site is dark.
+              This one is light. Nothing else available is a bigger break,
+              and it earns its keep twice — the reader crosses out of the
+              intro into daylight, and then the hall below cuts back to
+              black, which is the actual "doors open" moment.
+           2. THE COMPOSITION CENTRES. The whole page is left-aligned and
+              asymmetric; this is a symmetrical title card.
+           3. IT IS BRACKETED. Corner marks in the hall's own teal — the
+              same device the animation draws around every stand pad — so
+              the threshold belongs to the floor, not to the intro.
+
+           The band still bottoms out flush against the stage (negative
+           bottom margin eats .ap's padding), so light -> black is a hard
+           cut with no gap. */
         .ap-sheet {
             position: relative;
             z-index: 1;
             /* -20px cancels .ap's side padding, so this spans the section
                (= the viewport) without touching 100vw and its scrollbar
-               rounding. The negative bottom margin eats .ap's bottom
-               padding so the band runs straight into the stage. */
+               rounding. */
             margin: clamp(76px, 9vw, 138px) -20px calc(clamp(52px, 7vh, 88px) * -1);
-            padding: clamp(46px, 5.5vw, 78px) 20px clamp(54px, 6.5vw, 88px);
-            border-top: 1px solid rgba(130, 212, 245, 0.4);
-            background: linear-gradient(180deg, #070d14 0%, #05090d 58%, #05090d 100%);
+            padding: clamp(30px, 3.6vw, 52px) 20px clamp(34px, 4vw, 56px);
+            background:
+                linear-gradient(180deg, #f6f7f8 0%, #e7eaed 62%, #dfe4e8 100%);
+            border-top: 1px solid rgba(20, 112, 143, 0.5);
+            color: #0b1116;
         }
-        /* the rule reads as LIT rather than drawn: a soft cyan bloom
-           hugging it, brightest at the left where the tick sits */
+        /* the faintest drafting grid, so the light ground still belongs to
+           a floor plan and not to a generic marketing block */
         .ap-sheet::after {
-            content: ''; position: absolute; top: 0; left: 0; right: 0;
-            height: 120px; pointer-events: none;
-            background: linear-gradient(180deg,
-                rgba(90, 190, 235, 0.13) 0%, rgba(90, 190, 235, 0) 100%);
-            -webkit-mask-image: linear-gradient(90deg, #000 0%, rgba(0,0,0,.25) 62%, transparent 100%);
-                    mask-image: linear-gradient(90deg, #000 0%, rgba(0,0,0,.25) 62%, transparent 100%);
+            content: ''; position: absolute; inset: 0; pointer-events: none;
+            background-image:
+                linear-gradient(rgba(20, 112, 143, 0.09) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(20, 112, 143, 0.09) 1px, transparent 1px);
+            background-size: 49.87px 49.87px;
+            -webkit-mask-image: radial-gradient(120% 90% at 50% 40%, #000 10%, transparent 76%);
+                    mask-image: radial-gradient(120% 90% at 50% 40%, #000 10%, transparent 76%);
         }
-        /* the hard mark that says the rule is deliberate */
+        /* light under the door: a bright teal segment centred on the seam */
         .ap-sheet::before {
-            content: ''; position: absolute; top: -1px; left: 0;
-            width: clamp(96px, 16vw, 240px); height: 3px;
-            background: var(--teal-h);
-            box-shadow: 0 0 18px rgba(150, 214, 245, 0.55);
+            content: ''; position: absolute; top: -2px; left: 50%;
+            transform: translateX(-50%);
+            width: clamp(140px, 26vw, 380px); height: 3px;
+            background: #14708f;
+            box-shadow: 0 0 26px rgba(20, 112, 143, 0.55);
         }
-        .ap-sheet-in { position: relative; z-index: 1; max-width: 1240px; margin: 0 auto; }
+        .ap-sheet-in {
+            position: relative; z-index: 1;
+            max-width: 940px; margin: 0 auto;
+            text-align: center;
+            padding: clamp(40px, 4.6vw, 66px) clamp(28px, 4vw, 60px)
+                     clamp(40px, 4.6vw, 62px);
+        }
+        /* CORNER MARKS — the animation brackets every stand pad exactly like
+           this. Two spans, two corners each. */
+        .ap-corner { position: absolute; inset: 0; pointer-events: none; }
+        .ap-corner::before, .ap-corner::after {
+            content: ''; position: absolute;
+            width: clamp(20px, 3vw, 34px); height: clamp(20px, 3vw, 34px);
+            border: 2px solid #14708f; opacity: 0.75;
+        }
+        .ap-corner-t::before { top: 0; left: 0;  border-right: 0; border-bottom: 0; }
+        .ap-corner-t::after  { top: 0; right: 0; border-left: 0;  border-bottom: 0; }
+        .ap-corner-b::before { bottom: 0; left: 0;  border-right: 0; border-top: 0; }
+        .ap-corner-b::after  { bottom: 0; right: 0; border-left: 0;  border-top: 0; }
 
+        /* symmetrical rules either side — the intro's eyebrow has ONE rule,
+           on the left; making this one symmetric is half the tell */
         .ap-eyebrow {
-            display: inline-flex; align-items: center; gap: 12px;
-            margin-bottom: clamp(16px, 2vw, 26px);
-            font-size: 0.76rem; font-weight: 800; letter-spacing: 0.32em;
+            display: inline-flex; align-items: center; gap: clamp(12px, 2vw, 20px);
+            margin-bottom: clamp(18px, 2.2vw, 30px);
+            font-size: 0.72rem; font-weight: 800; letter-spacing: 0.34em;
             text-transform: uppercase;
-            color: var(--teal-h);
+            color: #14708f;
         }
-        .ap-eyebrow::before {
-            content: ''; width: 3px; height: 1em;
-            background: var(--teal-h); opacity: 0.85;
+        .ap-eyebrow::before, .ap-eyebrow::after {
+            content: ''; width: clamp(20px, 4vw, 48px); height: 1px;
+            background: currentColor; opacity: 0.5;
         }
 
-        /* the block ends pointing DOWN — a pulsing hairline that reads as
-           "keep going" without being a widget */
         .ap-cue {
-            display: inline-flex; flex-direction: column; align-items: flex-start;
-            gap: 9px; margin-top: clamp(20px, 2.6vw, 30px);
+            display: inline-flex; flex-direction: column; align-items: center;
+            gap: 10px; margin-top: clamp(24px, 3vw, 38px);
             font-size: 0.58rem; font-weight: 800; letter-spacing: 0.26em;
             text-transform: uppercase;
-            color: rgba(150, 214, 245, 0.7);
+            color: rgba(20, 112, 143, 0.85);
         }
         .ap-cue i {
-            display: block; width: 1px; height: 30px; transform-origin: top center;
-            background: linear-gradient(to bottom, var(--teal-h), transparent);
+            display: block; width: 1px; height: 34px; transform-origin: top center;
+            background: linear-gradient(to bottom, #14708f, transparent);
             animation: apCue 2.1s ease-in-out infinite;
         }
         @keyframes apCue {
-            0%, 100% { transform: scaleY(0.34); opacity: 0.45; }
+            0%, 100% { transform: scaleY(0.34); opacity: 0.4; }
             50%      { transform: scaleY(1);    opacity: 1; }
         }
         @media (prefers-reduced-motion: reduce) {
@@ -606,23 +640,26 @@
            paragraph straight into a dark hall at 05:00 with a countdown
            and no idea what they were watching (owner 2026-08-20). One
            line states the premise, the clock and the payoff. */
+        /* INK ON A LIGHT GROUND now — this block inverted (see THE
+           THRESHOLD above), so every colour in it had to come with it. */
         .ap-lead {
-            margin: 16px 0 0;
-            max-width: 60ch;
-            font-size: clamp(0.92rem, 1.5vw, 1.04rem);
+            margin: 0 auto;
+            max-width: 52ch;
+            font-size: clamp(0.95rem, 1.5vw, 1.08rem);
             line-height: 1.62;
-            color: rgba(226, 236, 244, 0.72);
+            color: #4c5862;
         }
         /* sized as a SECTION TITLE now, near the intro headline's scale —
            at 2.15rem it read as a bolded first sentence, which is exactly
            why the two blocks felt like one */
         .ap-lead b {
             display: block;
-            color: #fff; font-weight: 800;
+            color: #0a1015; font-weight: 800;
             font-size: clamp(2rem, 4.6vw, 3.4rem);
             line-height: 1.04;
-            letter-spacing: -0.022em;
-            margin-bottom: 14px;
+            letter-spacing: -0.024em;
+            margin-bottom: clamp(14px, 1.6vw, 20px);
+            text-wrap: balance;
         }
 
         @property --rake { syntax: "<angle>";  inherits: true; initial-value: 0deg; }
@@ -693,6 +730,24 @@
         .mi-stage.is-hud-out .mi-matte-b { transform: translateY(101%); }
         .navbar.mi-dim { opacity: 0.28; transition: opacity .4s ease; }
         .navbar.mi-dim:hover, .navbar.mi-dim:focus-within { opacity: 1; }
+
+        /* THE NAV INVERTS OVER THE THRESHOLD. The bar is fixed and fully
+           transparent, which works because every section it crosses is
+           dark — except the light threshold band, where white-on-white
+           made the brand and the links vanish. `on-light` is toggled by
+           scroll position while that band sits under the bar. */
+        .navbar.on-light .navbar-brand h2 { color: #0a1015; }
+        .navbar.on-light .navbar-menu a { color: #55606a; }
+        .navbar.on-light .navbar-menu a:hover,
+        .navbar.on-light .navbar-menu a.active { color: #14708f; }
+        .navbar.on-light .navbar-phone a { color: #8a6f2e; border-color: #a98f4e; }
+        .navbar.on-light .navbar-phone a:hover { background: rgba(138, 111, 46, 0.09); }
+        .navbar.on-light .hamburger span { background: #0a1015; }
+        .navbar .navbar-brand h2,
+        .navbar .navbar-menu a,
+        .navbar .navbar-phone a,
+        .navbar .hamburger span { transition: color .28s ease, background-color .28s ease,
+                                              border-color .28s ease; }
         /* (the near-lens turbulence sheets are gone — with the dust cloud
            they were the "sparkles doing nothing" the owner cut 2026-08-20) */
         .mi-lite .mi-ticket, .mi-lite .mi-tb, .mi-lite .mi-skip {
@@ -1966,6 +2021,8 @@
 
         <div class="ap-sheet">
             <div class="ap-sheet-in">
+                <span class="ap-corner ap-corner-t" aria-hidden="true"></span>
+                <span class="ap-corner ap-corner-b" aria-hidden="true"></span>
                 <span class="ap-eyebrow">Our Services</span>
                 <p class="ap-lead"><b>Four Services. Scroll The Floor.</b>
                     Each stop on the hall below is one service we provide &mdash; what it
@@ -3341,6 +3398,27 @@
                 window.addEventListener('resize', apFade, { passive: true });
                 apFade();
             }
+
+            /* THE NAV OVER THE LIGHT BAND. Pure geometry: is the threshold
+               currently behind the fixed bar? Cheap enough to run on every
+               scroll frame behind a rAF gate, and it reverses exactly. */
+            (function initNavInvert() {
+                var nav = document.querySelector('.navbar');
+                var band = document.querySelector('.ap-sheet');
+                if (!nav || !band) return;
+                var raf = 0;
+                function check() {
+                    raf = 0;
+                    var h = nav.offsetHeight || 70;
+                    var r = band.getBoundingClientRect();
+                    nav.classList.toggle('on-light', r.top <= h * 0.6 && r.bottom >= 0);
+                }
+                window.addEventListener('scroll', function () {
+                    if (!raf) raf = requestAnimationFrame(check);
+                }, { passive: true });
+                window.addEventListener('resize', check, { passive: true });
+                check();
+            })();
 
             /* THE FACT LINE CYCLES (owner 2026-08-22). Three static rows of
                identical uppercase grey were the flattest thing on the page.
