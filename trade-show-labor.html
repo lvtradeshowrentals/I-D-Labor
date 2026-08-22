@@ -500,11 +500,12 @@
             --teal-h: #96d6f5;
         }
 
-        /* 560vh + the ~22% the six dwell locks cost (see WARP in the JS) —
-           the holds are paid for with new scroll, so every other beat keeps
-           the pace it was tuned at. Recompute when DW_K/DW_W change:
-           added = sum(K) * DW_W * 16/15. */
-        .mi-track { position: relative; height: 681vh; }
+        /* 560vh + the ~27% the eight dwell holds cost (see WARP in the JS) —
+           they are paid for with new scroll, so every other beat keeps the
+           pace it was tuned at. RECOMPUTE BOTH HEIGHTS when DW_K/DW_W
+           change: added = sum(K) * DW_W * 16/15, currently 10.4 * .026 *
+           16/15 = 0.288. */
+        .mi-track { position: relative; height: 722vh; }
         /* (the CSS scroll-snap dwell that used to live here is gone with
            its .mi-lock targets — 1px proximity snaps on a track this tall
            have a catchment of half a viewport each, so every position in a
@@ -764,15 +765,6 @@
                       font-size: 0.5rem; letter-spacing: .16em;
                       color: rgba(160,200,225,.45); text-transform: uppercase; }
 
-        .mi-probe {
-            position: absolute; left: 50%; transform: translateX(-50%);
-            bottom: 5%; font-size: 0.54rem; font-weight: 800;
-            letter-spacing: .22em; text-transform: uppercase;
-            color: rgba(196, 224, 242, 0.78);
-            text-shadow: 0 1px 8px rgba(2,7,12,.95), 0 1px 2px rgba(2,7,12,.9);
-            opacity: 0; transition: opacity .4s ease;
-        }
-        .mi-probe.is-on { opacity: 1; }
 
         .mi-flat { position: absolute; inset: 0; pointer-events: none; z-index: 7; transform: translateZ(0); }
         .mi-flat a, .mi-flat button { pointer-events: auto; }
@@ -998,10 +990,6 @@
         .mi-card:focus-visible { outline: 2px solid var(--accent-teal); outline-offset: 3px; }
         /* now a sentence, not a stat strip — .18em tracking made it a
            decorative band nobody read */
-        .mi-final { text-align: center; font-size: 0.8rem; font-weight: 600;
-                    letter-spacing: .01em; color: rgba(226, 240, 250, 0.95);
-                    margin-top: 10px;
-                    text-shadow: 0 1px 10px rgba(2,7,12,.95), 0 1px 3px rgba(2,7,12,.9); }
 
         .mi-base { max-width: 1100px; margin: 0 auto; padding: 0 20px 80px; }
         .mi-base img { max-width: 100%; height: auto; }
@@ -1009,7 +997,7 @@
                           overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
         @media (max-width: 760px) {
-            .mi-track { height: 511vh; }
+            .mi-track { height: 541vh; }
             /* one column of chrome, never two: HUD top-right, skip chip
                top-left, captions BELOW both, tickets pinned to the bottom —
                on a phone nothing may ever share a band */
@@ -1074,7 +1062,16 @@
                than out so it still holds one line at 390px. */
             .mi-say small { font-size: 0.32em; letter-spacing: .12em;
                             margin-top: 12px; color: rgba(178, 212, 234, 0.72); }
-            .mi-cards { grid-template-columns: 1fr; }
+            /* THE SHEET OWNS THE FRAME (owner 2026-08-21). With the two
+               caption lines under it removed, a compact stack left a dead
+               band of bare scene below the last card. The group is spread
+               and the cards are given real presence so it fills the phone
+               instead of floating in the middle of it. */
+            .mi-cards { grid-template-columns: 1fr; gap: 14px; }
+            .mi-sheet { padding: 3vh 4vw; gap: 18px; }
+            .mi-card { padding: 17px 17px 18px; }
+            .mi-card strong { font-size: 1.04rem; margin-bottom: 7px; }
+            .mi-card b { font-size: 0.6rem; margin-bottom: 6px; }
             /* the CTA sheet owns the frame — the HUD yields */
             .mi-stage.is-hud-out .mi-tb,
             .mi-stage.is-hud-out .mi-skip { opacity: 0; pointer-events: none;
@@ -1941,7 +1938,6 @@
                     </article>
 
                     <div class="mi-quote" role="status"></div>
-                    <p class="mi-probe">Tap any booth on the floor plan</p>
 
                     <div class="mi-tb">
                         <span class="mi-tb-k">MI-01 &middot; NAB &rsquo;26 &middot; LVCC CENTRAL</span>
@@ -1955,7 +1951,6 @@
                     <div class="mi-sheet">
                         <h3 class="mi-sheet-h">Four services. Book the crew you need.</h3>
                         <div class="mi-cards"></div>
-                        <p class="mi-final">Quoted to your booth, your hours and your move-in window</p>
                     </div>
                 </div>
             </div>
@@ -2464,12 +2459,23 @@
             }
             DWELL.push(CH[10].a + (CH[10].b - CH[10].a) * 0.30);
             DWELL_K.push(0.9);                    /* the 16:00 payoff, lighter */
-            /* and one on the rise headline, so the caption has room to TYPE
-               (owner 2026-08-21). Without it the whole sentence assembled
-               inside ~110px of phone scroll — technically word-by-word, but
-               too fast to read as anything but a flash. */
-            DWELL.push(CH[1].a + (CH[1].b - CH[1].a) * 0.30);
-            DWELL_K.push(0.9);
+            /* AND ONE ON EVERY CAPTION, so each has room to TYPE (owner
+               2026-08-21, twice). A caption beat is short — `lapse` is 3.8%
+               of the whole track — so without a hold the sentence assembles
+               inside ~70px of phone scroll and the reader passes it before
+               it registers. These holds are what buy the typing its time;
+               the beats that already had one (rise, doors) read correctly
+               and the ones that did not are exactly the ones that flashed. */
+            DWELL.push(CH[1].a + (CH[1].b - CH[1].a) * 0.30);   /* rise */
+            DWELL_K.push(1.0);
+            DWELL.push(CH[0].a + (CH[0].b - CH[0].a) * 0.30);   /* cold open */
+            DWELL_K.push(1.0);
+            /* the timelapse is the shortest chapter on the track (3.8%), so
+               it needs the strongest hold to type at the same rate as the
+               rest — measured, not guessed: 91px of phone scroll at K 1.0
+               against ~130px everywhere else. */
+            DWELL.push(CH[7].a + (CH[7].b - CH[7].a) * 0.30);   /* timelapse */
+            DWELL_K.push(1.5);
 
             /* cumulative scroll cost, normalised — WARP[i] is the scroll
                fraction at which story progress i/N is reached */
@@ -2745,7 +2751,6 @@
                 stage.classList.toggle('is-hud-out', c.kind === 'sheet');
 
                 var handed = c.kind === 'doors' || c.kind === 'sheet';
-                if (probe) probe.classList.toggle('is-on', handed);
 
                 if (booths) {
                     var tv = handed ? '0' : '-1';
@@ -2996,14 +3001,14 @@
                    screen of scrolling and still leave a clear beat to read
                    the finished line before it goes. */
                 if (c.kind === 'cold') {
-                    sayType = ss(.04, .52, cp); sayOut = 1 - ss(.72, .92, cp);
+                    sayType = ss(.03, .58, cp); sayOut = 1 - ss(.72, .92, cp);
                 } else if (c.kind === 'rise') {
-                    sayType = ss(.04, .54, cp); sayOut = 1 - ss(.80, .96, cp);
+                    sayType = ss(.03, .62, cp); sayOut = 1 - ss(.80, .96, cp);
                 } else if (c.kind === 'lapse') {
-                    sayType = ss(.04, .54, cp); sayOut = 1 - ss(.82, .96, cp);
+                    sayType = ss(.03, .68, cp); sayOut = 1 - ss(.82, .96, cp);
                 } else if (c.kind === 'doors') {
                     /* the surge frame is the beat — it types from there */
-                    sayType = ss(.17, .52, cp); sayOut = 1;
+                    sayType = ss(.17, .58, cp); sayOut = 1;
                     saySc = 0.9 + 0.1 * outBack(ss(.17, .30, cp));
                 }
                 wStyle(say, 'syO', 'opacity', sayOut.toFixed(3));
@@ -3119,7 +3124,6 @@
             if (window.ResizeObserver) new ResizeObserver(onResize).observe(document.body);
 
             var quote = sec.querySelector('.mi-quote');
-            var probe = sec.querySelector('.mi-probe');
             var picked = null;
 
             /* NO FABRICATED CREW MATHS (owner 2026-08-21). This used to
