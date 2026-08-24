@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>holoDeck review harness</title>
+<style>
+  html, body { margin: 0; background: #060b10; }
+  canvas { display: block; }
+  #tag { position: fixed; left: 10px; top: 8px; color: #7fd8e8;
+         font: 600 13px/1.4 monospace; white-space: pre; }
+</style>
+<script type="importmap">{"imports":{"three":"./assets/three.module.min.js"}}</script>
+</head>
+<body>
+<div id="tag"></div>
+<script type="module">
+/* TEMPORARY REVIEW HARNESS (safe to delete). Renders the REAL holoDeck()
+   from assets/mi-gl.js as a plain wireframe with an orbitable still
+   camera, for headless architecture screenshots.
+   Params: ?az=35&el=18&dist=62&tx=0&ty=8&tz=0&label=front */
+import * as THREE from 'three';
+
+const src = await (await fetch('assets/mi-gl.js?raw=' + Math.random())).text();
+const cut = (from, to) => {
+  const a = src.indexOf(from), b = src.indexOf(to, a);
+  if (a < 0 || b < 0) throw new Error('marker not found: ' + from);
+  return src.slice(a, b);
+};
+const code = cut('function holoCollect()', '/* ============ THE FOUR HOLO STANDS')
+           + cut('function holoDeck(c, d)', 'function mountHolo');
+const fns = new Function('THREE',
+  code + '\nreturn { holoCollect, holoDeck, holoGate, holoCanyon, holoHalo };')(THREE);
+
+const q = new URLSearchParams(location.search);
+/* ?fn=deck|gate|canyon|halo picks the stand; dims mirror the WO rects */
+const FN = q.get('fn') || 'deck';
+const DIMS = {
+  deck:   { W: 39.8, D: 19.8, H: 30 },
+  gate:   { W: 40,   D: 20,   H: 28 },
+  canyon: { W: 59.8, D: 20,   H: 26 },
+  halo:   { W: 19.8, D: 20,   H: 22 },
+};
+const dims = DIMS[FN];
+const c = fns.holoCollect();
+fns['holo' + FN[0].toUpperCase() + FN.slice(1)](c, dims);
+const g = c.build();
+const P = (k, dflt) => q.has(k) ? parseFloat(q.get(k)) : dflt;
+const az = P('az', 35) * Math.PI / 180, el = P('el', 18) * Math.PI / 180;
+const dist = P('dist', 62);
+const target = new THREE.Vector3(P('tx', 0), P('ty', 8), P('tz', 0));
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x060b10);
+scene.add(new THREE.LineSegments(g.lg,
+  new THREE.LineBasicMaterial({ color: 0x59d8e6, transparent: true, opacity: 0.95 })));
+const shell = new THREE.Mesh(g.sg, new THREE.MeshBasicMaterial({
+  color: 0x0e5f70, transparent: true, opacity: 0.10,
+  side: THREE.DoubleSide, depthWrite: false }));
+scene.add(shell);
+const grid = new THREE.GridHelper(80, 40, 0x1b3945, 0x122630);
+scene.add(grid);
+/* pad outline, front (aisle) = +z */
+const PW = dims.W / 2, PD = dims.D / 2;
+const pad = new THREE.BufferGeometry().setFromPoints([
+  new THREE.Vector3(-PW, 0.02, -PD), new THREE.Vector3(PW, 0.02, -PD),
+  new THREE.Vector3(PW, 0.02, PD), new THREE.Vector3(-PW, 0.02, PD),
+  new THREE.Vector3(-PW, 0.02, -PD)]);
+scene.add(new THREE.Line(pad, new THREE.LineBasicMaterial({ color: 0xb8a573 })));
+
+const cam = new THREE.PerspectiveCamera(38, innerWidth / innerHeight, 0.1, 500);
+cam.position.set(
+  target.x + dist * Math.cos(el) * Math.sin(az),
+  target.y + dist * Math.sin(el),
+  target.z + dist * Math.cos(el) * Math.cos(az));
+cam.lookAt(target);
+
+const r = new THREE.WebGLRenderer({ antialias: true });
+r.setSize(innerWidth, innerHeight);
+r.setPixelRatio(1);
+document.body.appendChild(r.domElement);
+r.render(scene, cam);
+document.getElementById('tag').textContent =
+  FN + ' ' + (q.get('label') || '') + '  az=' + q.get('az') + ' el=' + q.get('el') +
+  '\n+z = aisle/front, model feet, pad ' + dims.W + ' x ' + dims.D +
+  ', H budget ' + dims.H;
+window.__done = true;
+</script>
+</body>
+</html>

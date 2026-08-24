@@ -1068,8 +1068,12 @@ function holoCollect() {
         q = new THREE.Quaternion(), one = new THREE.Vector3(1, 1, 1),
         v = new THREE.Vector3();
   return {
-    add(geo, x, y, z, ry, rx, thresh) {
-      eul.set(rx || 0, ry || 0, 0, 'YXZ');
+    add(geo, x, y, z, ry, rx, thresh, rz) {
+      /* rz (roll) added for holoDeck v2: sloped stair stringers and
+         handrails need a rotation about the run axis' normal — a box long
+         in x rolled by the pitch angle. YXZ order keeps ry/rx behaviour
+         identical for every existing call. */
+      eul.set(rx || 0, ry || 0, rz || 0, 'YXZ');
       q.setFromEuler(eul);
       v.set(x || 0, y || 0, z || 0);
       m4.compose(v, q, one);
@@ -1106,81 +1110,362 @@ function holoCollect() {
    _holokit-v2-wip.js — these placeholders hold the choreography until
    that work resumes. Model space: feet, y up, x = long axis, z = toward
    the aisle. */
-function holoDeck(c, d) {           /* C1006 — 40x20 double-deck */
+function holoDeck(c, d) {
+  /* C1006 — 40x20 DOUBLE-DECK, v2 (2026-08-23). The v1 placeholder had
+     toy architecture: 18in risers climbing to a point below the deck,
+     rails with no opening at the stair head, a canopy on sticks. This
+     rebuild follows a researched engineering brief (IBC 1011 stairs,
+     beMatrix/ExpoDeck-type structure) — every number below is a real
+     construction dimension in feet. Parti: deck over the back 12ft at
+     12'0", open double-height front zone, hero stair as a solid closed-
+     stringer wedge across the front face, rooftop sign blade carried by
+     the back column lines. All heights sit on the 0.5ft raised floor. */
   const W = d.W, D = d.D, W2 = W / 2, D2 = D / 2;
   const B = (w, h, dp) => new THREE.BoxGeometry(w, h, dp);
-  c.add(B(W - 2, 0.5, D - 2), 0, 0.25, 0);
-  for (const cx of [-W2 + 3, 0, W2 - 3])
-    for (const cz of [-D2 + 2.5, D2 - 2.5])
-      c.add(B(1.1, 12, 1.1), cx, 6.5, cz);
-  c.add(B(W - 5, 1.4, D - 4), 0, 13.2, 0);             /* deck */
-  for (const cz of [D2 - 2.2, -D2 + 2.2]) {
-    c.add(B(W - 6, 0.28, 0.28), 0, 17.0, cz);          /* rails */
-    for (let px = -W2 + 4; px <= W2 - 4; px += 4)
-      c.add(B(0.22, 3.0, 0.22), px, 15.4, cz);
+  const FL = 0.5;                    /* raised show floor (plinth top) */
+  const DK = FL + 12.0;              /* deck walking surface */
+  const R = 6.857 / 12, T = 11 / 12; /* riser 6-7/8in, tread 11in (IBC) */
+  const SLOPE = Math.atan2(R, T);    /* 31.9deg — real stair pitch */
+  const ZF = D2 - 7.3;               /* deck front face (back 12ft) */
+  /* raised floor runs one foot shy of the pad line so every back-of-
+     house element (wall, plates, closet) LANDS on it — jury r1: the
+     back wall and plates hung past the old D-2 floor edge */
+  c.add(B(W - 1, 0.5, D - 1), 0, 0.25, 0);
+
+  /* -------- deck structure: columns > beams > joists > slab -------- */
+  const COLX = [-W2 + 1.5, -W2 / 2 + 0.5, 0, W2 / 2 - 0.5, W2 - 1.5];
+  for (const cx of COLX) {
+    for (const cz of [ZF - 0.6, -D2 + 1.1]) {          /* two rows, 4in posts */
+      c.add(B(0.35, 10.75, 0.35), cx, FL + 5.375, cz);
+      c.add(B(1.0, 0.1, 1.0), cx, FL + 0.05, cz);      /* base plates */
+    }
+    /* primary beams span the short (12ft) way, row to row, tight under
+       the slab with the column tops meeting their undersides */
+    c.add(B(0.55, 0.9, ZF + D2 - 1.7), cx, DK - 1.0, ZF - 0.6 - (ZF + D2 - 1.7) / 2);
   }
-  c.add(B(W - 12, 1.0, D - 8), 0, 24.5, 0);            /* canopy */
-  for (const cx of [-W2 + 7, W2 - 7])
-    for (const cz of [-D2 + 4.5, D2 - 4.5])
-      c.add(B(0.9, 10.6, 0.9), cx, 19.2, cz);
-  c.add(B(10, 5.5, 0.7), -W2 + 9, 27.6, -4.8);         /* rooftop sign blade */
-  c.add(B(W - 9, 9.5, 0.6), 0, 5.0, -D2 + 1.2);        /* back wall */
-  for (let i = 0; i < 8; i++)                          /* stair run */
-    c.add(B(1.35, 0.5, 4.6), W2 - 3.4 - i * 1.35, 12.4 - i * 1.5, D2 - 4.6);
-  c.add(B(7, 3.4, 2.6), -W2 + 6.5, 1.95, D2 - 3.2);    /* counter */
+  /* (joists deleted, jury r1: through a transparent slab they read as
+     loose lumber lying ON the deck — beams + slab carry the story) */
+  c.add(B(W - 1, 0.55, 12.0), 0, DK - 0.28, ZF - 6.0); /* deck slab */
+  /* fascia lightbox band: ONE confident 2.5ft branded band wrapping all
+     four deck edges, flush with the walking surface, corners closed */
+  c.add(B(W - 0.7, 2.5, 0.3), 0, DK - 1.25, ZF + 0.05);
+  c.add(B(W - 0.7, 2.5, 0.3), 0, DK - 1.25, ZF - 12.1);
+  for (const s of [-1, 1])
+    c.add(B(0.3, 2.5, 12.4), s * (W2 - 0.35), DK - 1.25, ZF - 6.05);
+
+  /* -------- hero stair: 21 risers to the deck, wedge on the front ----
+     top landing at x -11.4..-7.4 arrives flush with the deck through a
+     4ft guardrail opening; 20 treads descend rightward from the landing;
+     the 21st riser is the step off the bottom tread to the floor. */
+  const SW2 = 2.0, SZ = ZF + 2.15;   /* 4ft hero width, band off the deck face */
+  const TOPX = -7.4;
+  for (let j = 1; j <= 20; j++) {
+    const yt = DK - j * R, xf = TOPX + (j - 1) * T;
+    c.add(B(T, 0.18, 3.9), xf + T / 2, yt - 0.09, SZ);           /* tread */
+    /* closed riser UNDER each nosing, rising to the surface above it */
+    c.add(B(0.1, R, 3.9), xf + 0.05, yt + R / 2, SZ);
+  }
+  /* the 21st riser: bottom tread edge down to the raised floor (inset a
+     hair so it never draws coplanar with the tread face) */
+  c.add(B(0.1, DK - 20 * R - FL, 3.9), TOPX + 20 * T - 0.06,
+    (DK - 20 * R + FL) / 2, SZ);
+  /* nosing line: (TOPX, DK) -> (TOPX+20T, DK-20R); everything sloped
+     hangs off its midpoint. Raked ends are TRIMMED: ~1ft at the top so
+     the panel dies inside the landing parapet, ~1ft at the bottom so it
+     lands on the newel instead of overshooting the last riser. */
+  const MX = TOPX + 10 * T, MY = DK - 10 * R, SL = 20 * T / Math.cos(SLOPE);
+  /* closed outer stringer/balustrade: solid parapet 42in above nosings */
+  c.add(B(SL - 1.8, 3.35, 0.14), MX - 0.09, MY + 1.58, SZ + SW2 - 0.1, 0, 0, 22, -SLOPE);
+  c.add(B(SL - 1.8, 0.18, 0.3), MX - 0.09, MY + 3.65, SZ + SW2 - 0.1, 0, 0, 22, -SLOPE);
+  /* grounded newel closes the wedge's bottom edge on both faces */
+  c.add(B(0.5, 3.6, 0.2), 10.9, FL + 1.8, SZ + SW2 - 0.1);
+  /* inner handrail at 36in riding the fascia, terminated both ends:
+     a floor newel at the bottom, a landing post at the top */
+  c.add(B(SL + 0.3, 0.15, 0.15), MX, MY + 3.0, SZ - SW2 + 0.15, 0, 0, 22, -SLOPE);
+  c.add(B(0.12, 3.6, 0.12), 10.9, FL + 1.8, SZ - SW2 + 0.15);
+  c.add(B(0.12, 3.0, 0.12), -7.6, DK + 1.5, SZ - SW2 + 0.15);
+  /* sloped soffit plate closes the underside; trimmed clear of the floor
+     at the foot and of the parapet at the head */
+  c.add(B(SL - 3.2, 0.15, 3.9), MX - 0.51, MY - 0.98, SZ, 0, 0, 22, -SLOPE);
+  /* under-stair storage: five stepped volumes riding the soffit line so
+     the wedge reads SOLID (jury r1: two loose crates under a bridge) */
+  for (const [x0, x1] of [[-7.4, -4.3], [-4.3, -1.2], [-1.2, 1.9],
+                          [1.9, 5.0], [5.0, 8.1]]) {
+    const top = DK - (x1 - TOPX) / T * R - 1.4;
+    c.add(B(x1 - x0 - 0.05, top - FL, 3.8), (x0 + x1) / 2, (top + FL) / 2, SZ);
+  }
+  /* top landing: slab flush with the deck, closet below, parapet + end
+     panel above — the horizontal rail run doubles as the 12in handrail
+     extension past the top riser */
+  c.add(B(4.0, 1.3, 4.0), -9.4, DK - 0.65, SZ);
+  c.add(B(3.9, 10.7, 3.8), -9.4, FL + 5.35, SZ);
+  c.add(B(4.2, 4.7, 0.14), -9.4, DK + 1.15, SZ + SW2 - 0.1);
+  c.add(B(4.4, 0.18, 0.3), -9.4, DK + 3.5, SZ + SW2 - 0.1);
+  c.add(B(0.14, 4.7, 3.9), -11.45, DK + 1.15, SZ);
+  c.add(B(0.3, 0.18, 4.1), -11.45, DK + 3.5, SZ);
+
+  /* -------- 42in glass guardrail on every open deck edge ------------
+     posts + continuous top cap + glass infill; the front edge breaks at
+     the stair head (x -11.4..-7.4) and returns with jamb posts there */
+  const rail = (x0, z0, x1, z1) => {
+    const dx = x1 - x0, dz = z1 - z0, L = Math.hypot(dx, dz);
+    const n = Math.max(1, Math.round(L / 4.4));
+    for (let i = 0; i <= n; i++) {
+      const t = i / n;
+      c.add(B(0.14, 3.4, 0.14), x0 + dx * t, DK + 1.7, z0 + dz * t);
+    }
+    const ry = Math.atan2(-dz, dx);
+    c.add(B(L + 0.14, 0.18, 0.25), x0 + dx / 2, DK + 3.5, z0 + dz / 2, ry);
+    c.add(B(L - 0.2, 2.7, 0.07), x0 + dx / 2, DK + 1.85, z0 + dz / 2, ry);
+  };
+  rail(-W2 + 0.65, ZF - 0.25, -11.45, ZF - 0.25);      /* front, left of stair */
+  rail(-7.45, ZF - 0.25, W2 - 0.65, ZF - 0.25);        /* front, right of stair */
+  for (const s of [-1, 1])                             /* both ends */
+    rail(s * (W2 - 0.65), ZF - 0.35, s * (W2 - 0.65), -D2 + 0.75);
+  /* back rail runs in three segments so glass and cap BUTT the sign
+     fins (x +-8.95..9.95) instead of passing through them */
+  rail(-W2 + 0.65, -D2 + 0.75, -10.0, -D2 + 0.75);
+  rail(-8.9, -D2 + 0.75, 8.9, -D2 + 0.75);
+  rail(10.0, -D2 + 0.75, W2 - 0.65, -D2 + 0.75);
+
+  /* -------- under-deck program --------
+     back wall LANDS on the raised floor and RISES to the slab underside
+     (jury r1: it floated behind the plinth with a slot at the top) */
+  c.add(B(W - 2, 11.45, 0.35), 0, FL + 5.725, -D2 + 0.75);
+  /* rear elevation gets a designed face for the turntable: three
+     recessed panel frames on the wall's outside */
+  for (const px of [-13, 0, 13])
+    c.add(B(8, 6, 0.18), px, FL + 4.0, -D2 + 0.48);
+  c.add(B(14, 7, 0.3), 2, FL + 6.0, -D2 + 1.05);                 /* LED wall */
+  /* glass meeting room, walls on the column lines, closed by the back
+     wall; the thin front face reads as glass through the shell fresnel */
+  c.add(B(8.95, 9, 0.08), -13.93, FL + 4.5, -1.9);
+  c.add(B(0.3, 9, 7.1), -9.45, FL + 4.5, -5.45);
+  c.add(B(0.3, 9, 7.1), -18.4, FL + 4.5, -5.45);
+  c.add(B(9.25, 0.2, 7.3), -13.93, FL + 9.1, -5.45);
+  for (const px of [12, 16.5])                         /* demo plinths */
+    c.add(B(2.5, 3.0, 2.0), px, FL + 1.5, -2.5);
+
+  /* -------- open front zone: one clean angled reception counter on the
+     right, a 10ft media totem + inlaid floor graphic on the left -------- */
+  c.add(B(6, 3.5, 2.5), 16.1, FL + 1.75, 7.3, -0.2);
+  c.add(B(4, 10, 1.5), -15.5, FL + 5, 6.5);
+  c.add(B(7, 0.06, 5), -15, FL + 0.06, 4.2);
+
+  /* -------- deck hospitality, silhouette scale: 10ft bar against the
+     back rail with four stools, two facing sofas + table clear of the
+     4ft front circulation path, planters at the front corners -------- */
+  c.add(B(8, 3.5, 2.0), -14.5, DK + 1.75, -8.0);                 /* bar */
+  for (const sx of [-17, -15, -13, -11])
+    c.add(new THREE.CylinderGeometry(0.75, 0.75, 2.5, 24), sx, DK + 1.25, -6.4);
+  c.add(B(3, 1.2, 7), 6.6, DK + 0.6, -5.0);                      /* sofa seats */
+  c.add(B(0.7, 2.6, 7), 4.85, DK + 1.3, -5.0);                   /* + backs */
+  c.add(B(3, 1.2, 7), 11.4, DK + 0.6, -5.0);
+  c.add(B(0.7, 2.6, 7), 13.15, DK + 1.3, -5.0);
+  c.add(new THREE.CylinderGeometry(0.85, 0.85, 1.3, 32), 9, DK + 0.65, -5.0);
+  for (const s of [-1, 1])                                       /* planters */
+    c.add(B(2, 3, 2), s * 18.2, DK + 1.5, 1.2);
+
+  /* -------- rooftop sign: two 1x3ft vertical fins continue the back
+     column lines from the deck to 29ft; the 6ft blade spans between
+     them and dies into their faces — no stub beams, no toothpicks */
+  for (const s of [-1, 1])
+    c.add(B(1.0, 16.5, 2.2), s * (W2 / 2 - 0.5), DK + 8.25, -D2 + 1.6);
+  c.add(B(W / 2 - 2.0, 6, 0.55), 0, DK + 13.5, -D2 + 1.6);       /* blade */
 }
-function holoGate(c, d) {           /* C3042 — 40x20 portal gateway */
+function holoGate(c, d) {
+  /* C3042 — 40x20 CLASSIC ISLAND, v3 (2026-08-23). v2 was a portal of
+     clad towers + a truss header + rigged cubes: structurally correct
+     but it read as a construction site, not an exhibit (owner: "too
+     overly complex"). This is the language a show floor actually
+     speaks — a graphic back wall with a brand header, an enclosed
+     meeting room, an open demo floor, a reception counter, a lounge,
+     and the one element that says TRADE SHOW at a glance: a hanging
+     sign on cables up to the hall steel. Fewer, bigger, calmer parts. */
   const W = d.W, D = d.D, W2 = W / 2, D2 = D / 2;
   const B = (w, h, dp) => new THREE.BoxGeometry(w, h, dp);
-  c.add(B(W - 2, 0.5, D - 2), 0, 0.25, 0);
+  const FL = 0.5;
+  c.add(B(W - 1, 0.5, D - 1), 0, 0.25, 0);             /* raised floor */
+
+  /* -------- back wall: 34ft of graphic, brand header, one return ----
+     GRAPHICS FACE THE AISLE. They were mounted at -D2+0.72, which is
+     the BACK face — every panel faced the neighbour and the money side
+     was a blank slab (jury r1). Only the right end takes a return: the
+     meeting room caps the left end, and a return there speared the
+     room's roof and a chair. */
+  c.add(B(34, 14, 0.5), 0, FL + 7, -D2 + 1);
+  for (const px of [-3.2, 5, 13.2])                    /* graphic panels */
+    c.add(B(6.4, 9, 0.2), px, FL + 6.5, -D2 + 1.35);
+  c.add(B(34.4, 2, 0.9), 0, FL + 13.3, -D2 + 1);       /* header band */
+  c.add(B(34.4, 0.6, 1.0), 0, FL + 0.3, -D2 + 1);      /* base */
+  c.add(B(0.5, 14, 4), 17, FL + 7, -D2 + 2.75);        /* end return */
+
+  /* -------- enclosed meeting room, left end, flush to the wall line
+     (it used to hang 2ft past it, leaving a 2x9ft hole in its back) -- */
+  for (const px of [-15.5, -8.5])                      /* front, door gap */
+    c.add(B(3, 9, 0.15), px, FL + 4.5, 0.25);
+  for (const px of [-17, -7])                          /* side walls */
+    c.add(B(0.15, 9, 9.3), px, FL + 4.5, -4.4);
+  c.add(B(10.2, 0.3, 9.4), -12, FL + 9.15, -4.35);     /* roof */
+  c.add(B(4.2, 0.3, 0.3), -12, FL + 8.85, 0.25);       /* door header */
+  c.add(B(5, 2.5, 3), -12, FL + 1.25, -4);             /* table */
+  for (const cx of [-16, -8]) for (const cz of [-5.5, -2.5])
+    c.add(B(1.6, 2.8, 1.6), cx, FL + 1.4, cz);         /* chairs */
+
+  /* -------- open demo floor: three plinths with monitors -------- */
+  for (const px of [-1, 5, 11]) {
+    c.add(B(3, 3, 2), px, FL + 1.5, -1);
+    c.add(B(3.4, 2.2, 0.25), px, FL + 4.1, -1);
+  }
+  /* -------- brand lightbox tower: 20ft so it reads as a beacon over
+     the 14.8ft wall header, not as a bump on the end of it -------- */
+  c.add(B(3.5, 20, 3.5), 17, FL + 10, -1.5);
+  c.add(B(4, 0.5, 4), 17, FL + 0.25, -1.5);
+  /* -------- reception counter, angled to the aisle -------- */
+  c.add(B(8, 3.5, 2.5), 13, FL + 1.75, 6.5, -0.25);
+  c.add(B(8.2, 0.2, 2.7), 13, FL + 3.6, 6.5, -0.25);
+  /* -------- lounge, front left: it was sitting dead centre blocking
+     the walk-in while the front-left quadrant sat empty -------- */
+  for (const cx of [-15, -10])
+    c.add(B(2.5, 2.2, 2.5), cx, FL + 1.1, 5.5);
+  c.add(new THREE.CylinderGeometry(1.2, 1.2, 1.3, 12), -12.5, FL + 0.65, 5.5);
+
+  /* -------- THE HANGING SIGN: 22x8 banner, bottom at 18.5ft, flown
+     on four cables to the hall steel (the booth itself carries none of
+     it — this is the one honestly-flown element on the floor) ------- */
+  c.add(B(22, 4, 8), 0, FL + 20, -2);
+  for (const sx of [-11, 11]) for (const sz of [-6, 2])
+    c.add(B(0.07, 5, 0.07), sx, FL + 24.5, sz);
+}
+function holoCanyon(c, d) {
+  /* C5020 — 60x20 LED THEATRE, v3 (2026-08-23). v2 was two angled 20ft
+     LED walls on four ground-support towers each, plus a six-legged
+     truss ring — every bit of it code-correct and every bit of it
+     visible, so the booth read as its own falsework (owner: "too overly
+     complex"; jury: "structure outshouting content", "a leg in the
+     money shot"). v3 says the same thing with a fraction of the parts:
+     ONE big LED wall you can actually read, angled graphic wings, a
+     theatre of benches facing it, demo pods, and a long hanging banner.
+     The wall's support is four slim posts and a rail behind it —
+     present, honest, and out of the picture. */
+  const W = d.W, D = d.D, W2 = W / 2, D2 = D / 2;
+  const B = (w, h, dp) => new THREE.BoxGeometry(w, h, dp);
+  const FL = 0.5;
+  c.add(B(W - 1, 0.5, D - 1), 0, 0.25, 0);             /* raised floor */
+
+  /* -------- the hero: one 32x16 LED wall + brand header --------
+     seams on an 8ft module: 32 divides into four clean bays. A 4ft
+     module put twelve verticals across the hero surface and the wall
+     read as a mullioned cage (jury r2) — and pushing them to +-14 left
+     2ft half-cabinets at the ends. Four lines, four bays, done. */
+  c.add(B(32, 16, 0.7), 0, FL + 8, -8.2);
+  for (const px of [-8, 0, 8])                         /* cabinet seams */
+    c.add(B(0.25, 16, 0.9), px, FL + 8, -8.2);
+  c.add(B(32, 0.25, 0.9), 0, FL + 8, -8.2);
+  c.add(B(32.4, 2, 1.0), 0, FL + 17, -8.2);            /* header band */
+  /* ground support: four posts + a rail, LANDING on the deck (the base
+     plates used to cantilever 3in off the back edge) and finishing at
+     the wall top so the header hides them */
+  for (const px of [-12, -4, 4, 12]) {
+    c.add(B(0.8, 16, 0.8), px, FL + 8, -8.7);
+    c.add(B(1.6, 0.25, 1.6), px, FL + 0.125, -8.7);
+  }
+  c.add(B(32, 0.6, 0.6), 0, FL + 15.5, -8.95);
+  /* -------- angled graphic wings, lapping ~1ft onto the wall ends --- */
   for (const s of [-1, 1]) {
-    c.add(B(5, 25, 5.5), s * (W2 - 3.2), 13.0, 0);     /* towers */
-    c.add(B(9, 13, 0.6), s * (W2 - 9.5), 7.0, -D2 + 1.6, s * -0.42);
-    c.add(new THREE.CylinderGeometry(2.1, 2.1, 3.4, 20),
-      s * (W2 - 10), 2.2, D2 - 3);                     /* counters */
+    c.add(B(10, 14, 0.5), s * 19.3, FL + 7, -6.2, -s * 0.5);
+    c.add(B(10.2, 0.5, 1.0), s * 19.3, FL + 0.25, -6.2, -s * 0.5);
   }
-  c.add(B(W, 3.4, 6), 0, 26.0, 0);                     /* header */
-  c.add(B(W - 11, 2.0, 4), 0, 21.0, 0);                /* inner beam */
-  /* twin hung cubes at 45s — the kinetic centrepiece */
-  c.add(B(6.5, 6.5, 6.5), 0, 13.0, 0, Math.PI / 4);
-  c.add(B(6.5, 6.5, 6.5), 0, 13.0, 0, Math.PI / 4, Math.PI / 4);
-}
-function holoCanyon(c, d) {         /* C5020 — 60x20 LED canyon */
-  const W = d.W, D = d.D, W2 = W / 2, D2 = D / 2;
-  const B = (w, h, dp) => new THREE.BoxGeometry(w, h, dp);
-  c.add(B(W - 2, 0.5, D - 2), 0, 0.25, 0);
-  for (const s of [-1, 1]) {                           /* canyon walls */
-    const ry = -s * 0.30;
-    c.add(B(24, 20.5, 1.4), s * 13.5, 10.75, -1.2, ry);
-    /* LED cabinet seams — a bare 24ft rectangle read as empty glass;
-       vertical divisions give the sheet its panel structure */
-    for (const dx of [-8, -2.7, 2.7, 8])
-      c.add(B(0.3, 20.5, 1.6), s * 13.5 + dx * Math.cos(ry), 10.75,
-        -1.2 - dx * Math.sin(ry), ry);
-    c.add(B(24, 0.3, 1.6), s * 13.5, 10.75, -1.2, ry);
+  /* -------- theatre: three bench rows on a 4ft pitch. At a 3ft pitch
+     with 2.5ft benches there were six inches of legroom and the rows
+     fused into one striped slab (jury r2). -------- */
+  for (const cz of [-4, 0, 4])
+    c.add(B(18, 1.5, 1.6), 0, FL + 0.75, cz);
+  /* -------- reception counter, front left -------- */
+  c.add(B(8, 3.5, 2.5), -18, FL + 1.75, 6.5, 0.25);
+  c.add(B(8.2, 0.2, 2.7), -18, FL + 3.6, 6.5, 0.25);
+  /* -------- demo pods, front right -------- */
+  for (const px of [13, 19, 25]) {
+    c.add(B(3, 3, 2), px, FL + 1.5, 6.5);
+    c.add(B(3.4, 2.2, 0.25), px, FL + 4.1, 6.5);
   }
-  c.add(B(15, 21.5, 1.4), 0, 11.25, -D2 + 1.6);        /* centre screen */
-  for (const dx of [-3.7, 3.7])
-    c.add(B(0.3, 21.5, 1.6), dx, 11.25, -D2 + 1.6);
-  for (const cz of [D2 - 3, -D2 + 3])
-    c.add(B(W - 9, 0.9, 0.9), 0, 24.2, cz);            /* truss ring */
-  for (const cx of [-W2 + 4.5, W2 - 4.5])
-    c.add(B(0.9, 0.9, D - 6), cx, 24.2, 0);
-  c.add(B(17, 5.2, 0.8), 0, 21.4, 2.6, 0, 0.30);       /* tilted header */
-  for (const cx of [-W2 + 7, -W2 + 21, W2 - 21, W2 - 7])
-    c.add(B(1.8, 9.0, 1.8), cx, 4.75, D2 - 2.2);       /* media totems */
+  /* -------- brand lightbox towers: 18ft, bookending the wall header
+     on its own datum instead of matching the wings' 14 -------- */
+  for (const s of [-1, 1]) {
+    c.add(B(3.5, 18, 3.5), s * 27.4, FL + 9, -4);
+    c.add(B(3.8, 0.5, 3.8), s * 27.4, FL + 0.25, -4);
+  }
+  /* -------- hanging banner: spans the BOOTH (40ft), not the screen,
+     with clear daylight over the header — at 28ft sitting 1ft into the
+     header band it had stopped reading as flown (jury r2) -------- */
+  c.add(B(40, 3.5, 6), 0, FL + 21.25, 0);
+  for (const sx of [-20, 20]) for (const sz of [-3, 3])
+    c.add(B(0.07, 2.5, 0.07), sx, FL + 24.25, sz);
 }
-function holoHalo(c, d) {           /* C7050 — 20x20 halo pavilion */
+function holoHalo(c, d) {
+  /* C7050 — 20x20 HALO PAVILION, v3 (2026-08-23). The crown has a LOAD
+     PATH now: the totem's mast carries the upper ring on four spoke
+     arms, and the lower ring hangs from the upper on four RAKED rods.
+     (Vertical rods were the v2 bug — a vertical rod cannot join two
+     rings of different radii, it lands inside one shell and outside
+     the other, so the lower ring hung on nothing.) The drum was also
+     dropped to 12ft and its studs halved: at 13.5ft with 17 studs it
+     was a palisade fence that swallowed the aisle opening and left the
+     crown reading as a lid rather than a halo. Taper 7.3 -> 6.5 -> 6.0
+     so the crown genuinely overhangs. */
   const W = d.W, D = d.D, D2 = D / 2;
   const B = (w, h, dp) => new THREE.BoxGeometry(w, h, dp);
   const C = THREE.CylinderGeometry;
-  c.add(B(W - 1, 0.5, D - 1), 0, 0.25, 0);
-  c.add(new C(7.4, 7.4, 2.4, 48, 1, true), 0, 18.2, 0);
-  c.add(new C(5.6, 5.6, 1.2, 48, 1, true), 0, 16.4, 0);
-  c.add(B(2.6, 15.4, 2.6), 0, 8.2, 0);                 /* totem */
-  c.add(new C(8.4, 8.4, 10.5, 32, 1, true,
-    Math.PI * 0.62, Math.PI * 0.76), 0, 5.75, 0);      /* back drum */
-  c.add(new C(2.3, 2.3, 3.4, 24), 5.2, 2.2, D2 - 3.4);
+  const FL = 0.5;
+  const DR = 6.0, DH = 12, DCZ = -2.1,
+        A0 = 80 * Math.PI / 180, AL = 200 * Math.PI / 180;
+  c.add(B(W - 1, 0.5, D - 1), 0, 0.25, 0);             /* raised floor */
+
+  /* -------- drum: 200deg shell opening to the aisle, floor/mid/top
+     tracks and studs every 25deg, radial returns at both open ends --- */
+  c.add(new C(DR + 0.05, DR + 0.05, DH, 48, 1, true, A0, AL),
+    0, FL + DH / 2, DCZ);
+  for (let k = 0; k <= 8; k++) {
+    const a = A0 + AL * k / 8;
+    c.add(B(0.22, DH, 0.22), DR * Math.sin(a), FL + DH / 2,
+      DCZ + DR * Math.cos(a));
+  }
+  for (const ty of [0.125, DH / 2, DH - 0.15])
+    for (let k = 0; k < 8; k++) {
+      const a = A0 + AL * (k + 0.5) / 8;
+      c.add(B(2.62, 0.25, 0.25), DR * Math.sin(a), FL + ty,
+        DCZ + DR * Math.cos(a), a);
+    }
+  for (const s of [-1, 1]) {
+    const a = s > 0 ? A0 : A0 + AL;
+    c.add(B(2, DH, 0.3), (DR - 1) * Math.sin(a), FL + DH / 2,
+      DCZ + (DR - 1) * Math.cos(a), a - Math.PI / 2);
+  }
+  /* -------- central totem + the mast that carries the crown -------- */
+  c.add(B(4, 0.75, 4), 0, FL + 0.375, DCZ);            /* base plinth */
+  c.add(B(2.5, 15, 2.5), 0, FL + 8, DCZ);              /* totem */
+  c.add(B(0.7, 4.25, 0.7), 0, FL + 17.375, DCZ);       /* mast, flush at 20 */
+  /* -------- upper halo on four spoke arms, set at the band's centre
+     so the ring screens them (at the top edge they read as a gunsight
+     X sitting on the crown) -------- */
+  c.add(new C(7.3, 7.3, 2, 48, 1, true), 0, FL + 18.5, DCZ);
+  c.add(B(14.6, 0.3, 0.45), 0, FL + 18.5, DCZ);        /* spokes x */
+  c.add(B(0.45, 0.3, 14.6), 0, FL + 18.5, DCZ);        /* spokes z */
+  /* -------- lower halo on four RAKED rods: rz tilts each rod inside
+     its own radial plane, then ry = a - PI/2 swings that plane to
+     azimuth a. Ends land on r 7.3 / y 18.1 and r 6.5 / y 17.0. ------ */
+  c.add(new C(6.5, 6.5, 1.5, 48, 1, true), 0, FL + 15.75, DCZ);
+  for (let k = 0; k < 4; k++) {
+    const a = k * Math.PI / 2;
+    c.add(B(0.35, 1.36, 0.35), 6.9 * Math.sin(a), FL + 17.05,
+      DCZ + 6.9 * Math.cos(a), a - Math.PI / 2, 0, 22, -0.629);
+  }
+  /* -------- aisle counter: a 6ft round reception, which is what a
+     20x20 pavilion needs — the 3ft one read as a stool, and the two
+     loose planter cubes read as debris and are gone -------- */
+  c.add(new C(3, 3, 3.5, 16), 5.8, FL + 1.75, 6.3);
+  c.add(new C(3.2, 3.2, 0.18, 32), 5.8, FL + 3.6, 6.3);
+  c.add(new C(6.8, 6.8, 0.06, 48, 1, true), 0, FL + 0.03, DCZ);
 }
 function mountHolo(bo, designFn) {
   const c = holoCollect();
