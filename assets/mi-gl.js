@@ -45,7 +45,7 @@ const state = {
   houseRows: [], aisleGlow: [],
   post: null, shadowDirty: true, keyLight: null,
   practicals: [], sway: [], ledClones: [],
-  holoT: { value: 0 }, streakU: null, lastT: null,
+  holoT: { value: 0 }, fleet: null, lastT: null,
 };
 
 /* ================= textures ================= */
@@ -782,6 +782,525 @@ function updateCrowd(show) {
   c.torso.instanceMatrix.needsUpdate = true;
   c.head.instanceMatrix.needsUpdate = true;
   c.legs.instanceMatrix.needsUpdate = true;
+}
+
+/* ================= THE FREIGHT FLEET =================
+   Owner 2026-08-24. The aisle current used to be three shader ribbons —
+   "streaks of light running down the aisles". Same three lanes, same
+   alternating directions, same slow current: the thing MOVING down them is
+   now what would actually be moving down a hall on build day. A hall with
+   freight in the aisles is a hall being built; a hall with light streaks in
+   the aisles is a screensaver.
+
+   The truck is a 5,000lb-class IC counterbalance forklift measured off real
+   spec sheets (Toyota 8FGCU25, cross-checked Hyster H50XT / Yale GLC050):
+   7.8ft to the fork face, 11.3ft over the forks, 3.5ft wide, 6.7ft to the
+   top of the overhead guard, 4.9ft wheelbase, 2.1ft drive tyres up front
+   and 1.55ft steer tyres set inboard behind, 1.5ft of counterweight past
+   the rear axle. It is modelled in FEET in the same model space the booths
+   use (x = plan east / forward, y = up, z = plan south) and mounted through
+   the same ft->plan basis swap.
+
+   The five proportions that make it read as a forklift at 40px — which is
+   the size it is at the top-down map, i.e. most of the time:
+     guard height ~1.37x wheelbase; drive tyre ~1.35x steer tyre with the
+     steer pair visibly inboard; the counterweight a rounded tail mass ~30%
+     of the wheelbase; the cab mass sitting over the REAR axle; and mast and
+     guard as two near-equal vertical masses at either end.
+
+   ONE geometry, merged per material, drawn as InstancedMesh: six trucks
+   cost twelve draw calls, not three hundred. */
+
+/* three's BufferGeometryUtils lives in examples/, which this build does not
+   ship — so a merge is a de-index, a matrix apply, and a concat. Every kit
+   geometry carries position/normal/uv (+uv1 on boxGeo); anything missing
+   uv1 falls back to uv, which is the same guarantee init()'s traverse makes
+   for the rest of the scene. */
+function mergeParts(parts) {
+  let n = 0;
+  const flat = [];
+  for (const p of parts) {
+    const g = p.g.index ? p.g.toNonIndexed() : p.g;
+    flat.push({ g, m: p.m });
+    n += g.attributes.position.count;
+  }
+  const pos = new Float32Array(n * 3), nrm = new Float32Array(n * 3);
+  const uv = new Float32Array(n * 2), uv1 = new Float32Array(n * 2);
+  const nm = new THREE.Matrix3(), v = new THREE.Vector3();
+  let o = 0;
+  for (const p of flat) {
+    const a = p.g.attributes, c = a.position.count;
+    nm.getNormalMatrix(p.m);
+    const au = a.uv, au1 = a.uv1 || a.uv;
+    for (let i = 0; i < c; i++) {
+      const j3 = (o + i) * 3, j2 = (o + i) * 2;
+      v.fromBufferAttribute(a.position, i).applyMatrix4(p.m);
+      pos[j3] = v.x; pos[j3 + 1] = v.y; pos[j3 + 2] = v.z;
+      v.fromBufferAttribute(a.normal, i).applyMatrix3(nm).normalize();
+      nrm[j3] = v.x; nrm[j3 + 1] = v.y; nrm[j3 + 2] = v.z;
+      if (au) { uv[j2] = au.getX(i); uv[j2 + 1] = au.getY(i); }
+      if (au1) { uv1[j2] = au1.getX(i); uv1[j2 + 1] = au1.getY(i); }
+    }
+    o += c;
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  g.setAttribute('normal', new THREE.BufferAttribute(nrm, 3));
+  g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  g.setAttribute('uv1', new THREE.BufferAttribute(uv1, 2));
+  return g;
+}
+/* a bucket of parts destined for one material. pair() mirrors across the
+   centreline; the mirror of a rotation about z is itself, and the mirror of
+   one about x or y is its negation — true for the SINGLE-axis rotations
+   this kit uses, which is all it is asked for. */
+function bucket() {
+  const parts = [];
+  const q = new THREE.Quaternion(), e = new THREE.Euler(), v = new THREE.Vector3();
+  const one = new THREE.Vector3(1, 1, 1);
+  const api = {
+    parts,
+    add(g, x, y, z, rx, ry, rz) {
+      e.set(rx || 0, ry || 0, rz || 0);
+      q.setFromEuler(e);
+      v.set(x || 0, y || 0, z || 0);
+      parts.push({ g, m: new THREE.Matrix4().compose(v, q, one) });
+      return api;
+    },
+    addM(g, m) { parts.push({ g, m }); return api; },
+    pair(g, x, y, z, rx, ry, rz) {
+      api.add(g, x, y, z, rx, ry, rz);
+      api.add(g, x, y, -z, -(rx || 0), -(ry || 0), rz || 0);
+      return api;
+    },
+    geo() { return mergeParts(parts); },
+  };
+  return api;
+}
+/* a cylinder laid along the model z axis (an axle, a wheel, a tank) */
+function zCyl(r, len, seg) {
+  return new THREE.CylinderGeometry(r, r, len, seg || 14).rotateX(Math.PI / 2);
+}
+/* the yellow-black hazard tape that lives on a counterweight tail and on
+   fork heels — the one place a real truck is allowed to be loud */
+let hazTex;
+function makeHazTex() {
+  hazTex = canvasTex(64, 64, (g) => {
+    g.fillStyle = '#0b0b0c'; g.fillRect(0, 0, 64, 64);
+    g.strokeStyle = '#d9a11c'; g.lineWidth = 12;
+    for (let i = -80; i < 128; i += 24) {
+      g.beginPath(); g.moveTo(i, 0); g.lineTo(i + 64, 64); g.stroke();
+    }
+  });
+  hazTex.wrapS = hazTex.wrapT = THREE.RepeatWrapping;
+  hazTex.repeat.set(3, 1);
+}
+
+const FM = {};
+/* The fleet owns its materials rather than borrowing M.*, because it skips
+   patchMat: that patch's soffit term reads a GLOBAL uniform owned by
+   whichever stand is on screen, and a forklift out in the aisle is not
+   under that stand's canopy.
+   They are OPAQUE. An earlier cut made them transparent so the fleet could
+   be dimmed, and dimming a solid does not make it recede — it makes it a
+   ghost. The booth numbers read straight through the mast, and at the
+   doors beat six half-there forklifts hung in the crowd like red spectres.
+   The fleet leaves the floor by DRIVING OFF IT instead (see updateFleet). */
+function makeFleetMats(envTex) {
+  const T = {};
+  /* Toyota Orange (#E4650E) taken down a stop: at full albedo a 3.5ft-wide
+     painted mass under the warm key blows straight past the bloom knee and
+     the truck becomes a glowing lozenge with no form in it */
+  FM.body = new THREE.MeshStandardMaterial({ color: 0xc0560f, roughness: .42,
+    metalness: .18, envMap: envTex, envMapIntensity: 1.0, ...T });
+  /* mast, guard and forks are black on a real truck, but a literal black
+     against a near-black hall is a HOLE, not a machine — the whole front
+     half of the silhouette disappeared. Lifted to a dark graphite that
+     still reads as painted black wherever the key touches it. */
+  FM.steel = new THREE.MeshStandardMaterial({ color: 0x272c33, roughness: .48,
+    metalness: .62, envMap: envTex, envMapIntensity: 1.0, ...T });
+  FM.chrome = new THREE.MeshStandardMaterial({ color: 0x717983, roughness: .24,
+    metalness: .95, envMap: envTex, envMapIntensity: 1.5, ...T });
+  FM.rubber = new THREE.MeshStandardMaterial({ color: 0x0a0b0d, roughness: .95,
+    metalness: 0, ...T });
+  FM.haz = new THREE.MeshStandardMaterial({ map: hazTex, roughness: .6,
+    metalness: .1, ...T });
+  /* unlit near-black, exactly like the aisle crowd: a LIT grey figure takes
+     the warm key and goes terracotta, and MeshBasic cannot be lifted */
+  FM.crew = new THREE.MeshBasicMaterial({ color: 0x0d0e12, fog: true });
+  FM.vest = new THREE.MeshStandardMaterial({ color: 0xb8331d, roughness: .68,
+    metalness: .05, envMap: envTex, envMapIntensity: .5, ...T });
+  /* exhibit-house crates are painted one solid colour and stencilled, not
+     bare ply — slate keeps the mass legible against both the navy hall and
+     the black mast without competing with the orange */
+  FM.crate = new THREE.MeshStandardMaterial({ color: 0x525d6b, roughness: .78,
+    metalness: .06, envMap: envTex, envMapIntensity: .40, ...T });
+  /* the same trick the stands use: a roughness map on uv1 (object-space
+     FEET) so the grain tiles at a constant real size no matter how big the
+     part is. Painted sheet steel that is uniformly rough reads as plastic,
+     and a 3.5ft slab of flat orange was reading exactly that way. */
+  {
+    const S = surfaces();
+    FM.body.roughnessMap = S.at(S.brushed, 2.0);
+    FM.steel.roughnessMap = S.at(S.brushed, 1.6);
+    FM.crate.roughnessMap = S.at(S.wood, 3.0);
+  }
+}
+const glowMat = (color, op) => {
+  const m = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: op,
+    blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
+  m.userData.op0 = op;
+  return m;
+};
+
+/* ---- the truck, part by part, in feet; origin = ground at the DRIVE axle,
+   +x forward. Every number below is off a spec sheet, not eyeballed. ---- */
+const FK = {
+  W: 3.50,        /* overall width */
+  HW: 1.75,
+  WB: 4.90,       /* wheelbase — rear axle at x = -4.90 */
+  TAIL: -6.41,    /* 1.51ft of counterweight past the rear axle */
+  FACE: 1.40,     /* fork face */
+  TIP: 4.90,      /* 42in forks */
+  GUARD: 6.70,    /* top of the overhead guard */
+  MAST: 7.10,     /* mast lowered height */
+  TILT: 0.105,    /* 6deg back — travelling attitude, load on the backrest.
+                     Do not push this much past 6: the mast is 6.3ft tall,
+                     so every degree walks its head 0.11ft toward the cab,
+                     and at 8 the mast top arrived INSIDE the overhead guard
+                     and the whole front mass vanished behind the posts. */
+  RF: 1.05, RR: 0.775,          /* drive / steer tyre radii */
+  TF: 1.45, TR: 1.25,           /* drive / steer half-track */
+  PX: 0.75, PY: 0.85,           /* the mast's tilt pivot */
+};
+/* everything forward of the tilt pivot — channels, carriage, backrest,
+   forks and therefore the LOAD — turns about this one matrix */
+const tiltM = () => new THREE.Matrix4()
+  .makeRotationZ(FK.TILT).setPosition(FK.PX, FK.PY, 0)
+  .multiply(new THREE.Matrix4().makeTranslation(-FK.PX, -FK.PY, 0));
+function buildTruckGeo() {
+  const body = bucket(), steel = bucket(), chrome = bucket(),
+        rubber = bucket(), haz = bucket();
+
+  /* ---- counterweight: a rounded cast tail, full width, ground clearance
+     to 3.7ft where it blends into the seat back. Extruded from a plan
+     outline because the PLAN silhouette is the one the map camera sees. */
+  const cw = new THREE.Shape();
+  const cx0 = FK.TAIL, cx1 = -4.30, cr = 0.56;
+  cw.moveTo(cx1, FK.HW);
+  cw.lineTo(cx0 + cr, FK.HW);
+  cw.absarc(cx0 + cr, FK.HW - cr, cr, Math.PI / 2, Math.PI, false);
+  cw.lineTo(cx0, -FK.HW + cr);
+  cw.absarc(cx0 + cr, -FK.HW + cr, cr, Math.PI, Math.PI * 1.5, false);
+  cw.lineTo(cx1, -FK.HW);
+  cw.closePath();
+  const cwG = new THREE.ExtrudeGeometry(cw, { depth: 3.20, curveSegments: 7,
+    bevelEnabled: true, bevelThickness: 0.09, bevelSize: 0.09, bevelSegments: 2 })
+    .rotateX(-Math.PI / 2);
+  body.add(cwG, 0, 0.36, 0);
+  /* ---- frame, hood, cowl ---- */
+  body.add(boxGeo(5.10, 1.00, 3.34), -2.30, 1.02);        /* lower frame */
+  body.add(boxGeo(2.72, 1.10, 3.30), -2.94, 1.98);        /* engine cover */
+  body.add(boxGeo(0.74, 1.28, 2.55), -1.16, 1.92);        /* dash pod */
+  body.pair(boxGeo(2.40, 0.62, 0.22), -2.10, 1.34, 1.72); /* fender skirt */
+  /* ---- running gear ---- */
+  steel.add(zCyl(0.30, 3.20), 0, FK.RF);                  /* drive axle */
+  steel.add(zCyl(0.20, 2.40), -FK.WB, FK.RR);             /* steer axle */
+  steel.add(boxGeo(0.90, 0.52, 2.70), -FK.WB, 0.90);      /* steer beam */
+  steel.add(boxGeo(1.70, 0.10, 2.90), -1.32, 1.40);       /* floorboard */
+  steel.pair(boxGeo(0.80, 0.10, 0.60), -2.20, 0.88, 1.76);/* step plate */
+  rubber.pair(zCyl(FK.RF, 0.65, 18), 0, FK.RF, FK.TF);
+  rubber.pair(zCyl(FK.RR, 0.50, 16), -FK.WB, FK.RR, FK.TR);
+  chrome.pair(zCyl(0.40, 0.68, 12), 0, FK.RF, FK.TF);
+  chrome.pair(zCyl(0.28, 0.53, 12), -FK.WB, FK.RR, FK.TR);
+  /* ---- operator: seat on the hood, wheel raked 35deg off vertical ---- */
+  steel.add(boxGeo(1.30, 0.16, 1.70), -3.55, 2.60);
+  rubber.add(boxGeo(1.24, 0.34, 1.62), -3.56, 2.79);      /* cushion */
+  rubber.add(boxGeo(0.30, 1.05, 1.58), -4.16, 3.34, 0, 0, 0, -0.16);
+  steel.add(new THREE.CylinderGeometry(0.09, 0.09, 1.15, 8), -1.52, 3.06, 0, 0, 0, 0.55);
+  steel.add(new THREE.TorusGeometry(0.60, 0.062, 6, 18)
+    .rotateY(Math.PI / 2).rotateZ(-0.61), -1.82, 3.52);
+  /* ---- overhead guard: 2in square tube, front posts plumb, rear posts
+     raked 12deg back, roof a run of fore-aft flat bars (gaps under the 6in
+     the standard allows, which is what stops it reading as a solid lid) */
+  steel.pair(boxGeo(0.20, 4.40, 0.20), -0.98, 4.44, 1.60);
+  steel.pair(boxGeo(0.20, 3.40, 0.20), -4.95, 5.10, 1.62, 0, 0, 0.21);
+  steel.add(boxGeo(0.26, 0.16, 3.34), -0.88, 6.60);
+  steel.add(boxGeo(0.26, 0.16, 3.34), -5.28, 6.60);
+  steel.pair(boxGeo(4.46, 0.18, 0.20), -3.08, 6.60, 1.64);
+  /* 2.4in gaps: over the 1-1.5in a real perforated roof runs, well under
+     the 6in the standard caps it at, and the only spacing that still reads
+     as a SLATTED roof rather than a solid lid at hall scale */
+  for (let k = 0; k < 6; k++)
+    steel.add(boxGeo(4.42, 0.12, 0.40), -3.08, 6.66, -1.50 + k * 0.60);
+  /* ---- LPG: an indoor truck runs propane, and the tank lying across the
+     counterweight behind the seat is the single most identifying lump on
+     the machine after the mast ---- */
+  chrome.add(zCyl(0.55, 2.40, 16), -5.30, 4.30);
+  chrome.add(zCyl(0.16, 0.60, 8), -4.60, 4.30, 1.30);
+  /* ---- hazard tape: rear corners of the counterweight ---- */
+  haz.add(boxGeo(0.06, 0.80, 1.70), FK.TAIL + 0.02, 2.55);
+  /* ---- MAST + CARRIAGE. Built about the tilt pivot and added back tilted
+     8deg: everything forward of the pivot — channels, carriage, backrest,
+     forks and therefore the load — leans back together, which is how a
+     loaded truck actually travels. ---- */
+  {
+    /* the mast is mounted AHEAD of the drive axle, not over it, and the
+       guard's front posts sit a clear 0.8ft behind its head — that gap is
+       what makes the two vertical masses read as two masses */
+    const mast = bucket();
+    const R = (x, y) => [x - FK.PX, y - FK.PY];
+    let p;
+    p = R(0.72, 3.95); mast.pair(boxGeo(0.34, 6.30, 0.26), p[0], p[1], 1.36);
+    p = R(0.96, 3.85); mast.pair(boxGeo(0.26, 5.70, 0.20), p[0], p[1], 1.08);
+    p = R(0.78, 7.02); mast.add(boxGeo(0.42, 0.28, 3.00), p[0], p[1]);
+    p = R(0.78, 0.96); mast.add(boxGeo(0.42, 0.30, 3.00), p[0], p[1]);
+    p = R(0.72, 6.98); mast.add(zCyl(0.24, 0.34, 12), p[0], p[1]);
+    p = R(0.84, 4.70); mast.pair(boxGeo(0.06, 4.60, 0.05), p[0], p[1], 0.52);
+    /* carriage, load backrest (4ft of it, slatted) and the forks */
+    p = R(1.32, 1.35); mast.add(boxGeo(0.16, 2.00, 2.60), p[0], p[1]);
+    p = R(1.46, 2.60); mast.pair(boxGeo(0.12, 4.00, 0.22), p[0], p[1], 1.16);
+    for (let k = 0; k < 4; k++) {
+      p = R(1.46, 1.00 + k * 1.05); mast.add(boxGeo(0.11, 0.20, 2.40), p[0], p[1]);
+    }
+    p = R(1.46, 1.35); mast.pair(boxGeo(0.20, 2.00, 0.34), p[0], p[1], 0.90);
+    p = R(3.20, 0.40); mast.pair(boxGeo(3.56, 0.146, 0.33), p[0], p[1], 0.90);
+    steel.addM(mast.geo(), tiltM());
+    /* the single lift cylinder rides behind the channels; the exposed rod
+       is the one bare-steel thing on the machine */
+    const cyl = bucket();
+    p = R(0.46, 3.00); cyl.add(new THREE.CylinderGeometry(0.19, 0.19, 4.00, 10), p[0], p[1]);
+    p = R(0.46, 6.00); cyl.add(new THREE.CylinderGeometry(0.11, 0.11, 2.30, 8), p[0], p[1]);
+    chrome.addM(cyl.geo(), tiltM());
+    /* tilt rams: chassis to mast, the diagonal that says the mast MOVES */
+    steel.pair(new THREE.CylinderGeometry(0.13, 0.13, 1.70, 8), 0.06, 2.45, 1.46, 0, 0, -0.72);
+  }
+  /* ---- THE OPERATOR. The product this page sells is LABOUR, and a hall
+     full of driverless trucks sells automation. Same rules the aisle crowd
+     is built to: near-black so the warm key can never turn it terracotta,
+     one hi-vis band, a hard hat, and a silhouette that reads because the
+     arms come AWAY from the body — here, both hands out on the wheel. */
+  const crew = bucket(), vest = bucket();
+  const SX = -3.30, SY = 2.95;             /* hips, on the seat cushion */
+  crew.add(new THREE.CapsuleGeometry(0.42, 0.55, 3, 7), SX + 0.10, SY + 1.02, 0, 0, 0, 0.10);
+  crew.add(new THREE.CapsuleGeometry(0.36, 0.72, 3, 6), SX + 0.62, SY + 0.30, 0, 0, 0, 1.25);
+  crew.add(new THREE.IcosahedronGeometry(0.40, 1), SX + 0.20, SY + 1.92);
+  crew.pair(new THREE.CapsuleGeometry(0.13, 1.35, 3, 5), SX + 0.86, SY + 1.28, 0.44, 0, 0, 1.02);
+  vest.add(new THREE.CapsuleGeometry(0.44, 0.30, 3, 7), SX + 0.12, SY + 1.02, 0, 0, 0, 0.10);
+  /* hard hat: a shallow dome with a brim, which is the whole silhouette */
+  vest.add(new THREE.SphereGeometry(0.42, 10, 5, 0, 6.283, 0, 1.25), SX + 0.20, SY + 2.02);
+  vest.add(new THREE.CylinderGeometry(0.50, 0.50, 0.07, 10), SX + 0.20, SY + 2.03);
+  return { body: body.geo(), steel: steel.geo(), chrome: chrome.geo(),
+    rubber: rubber.geo(), haz: haz.geo(), crew: crew.geo(), vest: vest.geo() };
+}
+/* the freight: a stencilled exhibit-house crate on 4x4 skids, sitting on
+   the forks against the backrest — so it carries the mast's tilt too */
+function buildLoadGeo() {
+  const paint = bucket(), cap = bucket();
+  /* the deck sits on the TOP OF THE FORK BLADES (y 0.475) with the skids
+     hanging outboard of them — which is how a skidded crate is actually
+     picked, and why the fork tips stay visible past the front face */
+  const CD = 3.00, CH = 3.90, CW = 4.60, CX = 3.05, CY = 0.475 + CH / 2;
+  paint.add(boxGeo(CD, CH, CW), CX, CY);
+  cap.pair(boxGeo(CD, 0.33, 0.36), CX, 0.31, 1.72);            /* skids */
+  const hd = CD / 2, hh = CH / 2, hw = CW / 2, E = 0.13;
+  for (const sy of [1, -1]) for (const sz of [1, -1]) {
+    cap.add(boxGeo(CD, E, E), CX, CY + sy * hh, sz * hw);      /* along x */
+    cap.add(boxGeo(E, CH, E), CX + sy * hd, CY, sz * hw);      /* along y */
+    cap.add(boxGeo(E, E, CW), CX + sy * hd, CY + sz * hh, 0);  /* along z */
+  }
+  for (const sx of [1, -1]) for (const sy of [1, -1]) for (const sz of [1, -1])
+    cap.add(boxGeo(0.30, 0.30, 0.30), CX + sx * hd, CY + sy * hh, sz * hw);
+  cap.add(boxGeo(0.05, 0.90, 2.60), CX + hd + 0.02, CY + 0.60); /* stencil plate */
+  /* the load leans with the forks, so it must turn about the SAME pivot the
+     mast does — off by 0.2ft and the crate floats off the fork blades */
+  const m = tiltM();
+  return { crate: mergeParts([{ g: paint.geo(), m }]),
+    caps: mergeParts([{ g: cap.geo(), m }]) };
+}
+
+/* THE LANES ARE THE STREAKS' LANES — the drawing's own aisle centrelines,
+   same three, same alternating directions. Only the thing moving changed. */
+const FLEET_LANES = [476.1, 775.1, 1124.1];
+const FLEET_X0 = -10, FLEET_X1 = 320;    /* model ft: on and off the drawing */
+function buildFleet(plan) {
+  makeHazTex();
+  makeFleetMats(state.envTex);
+  const T = buildTruckGeo(), L = buildLoadGeo();
+
+  const fleet = new THREE.Group();
+  fleet.matrixAutoUpdate = false;
+  /* model ft -> plan units, y-up -> plan z-up, model z (south) -> +plan y.
+     The same basis swap every booth mount uses, so the parity that makes
+     the lights shade the right side of a surface is the parity here too. */
+  fleet.matrix.set(FT, 0, 0, 0, 0, 0, FT, 0, 0, FT, 0, 0, 0, 0, 0, 1);
+  plan.add(fleet);
+
+  const N = 6;
+  const meshes = [], rig = [];
+  const mk = (geo, mat, order) => {
+    const m = new THREE.InstancedMesh(geo, mat, N);
+    m.frustumCulled = false;
+    m.renderOrder = order == null ? 4 : order;
+    m.userData.noShadow = true;   /* the shadow map is CACHED; a moving
+                                     caster would smear a stale silhouette
+                                     across the floor. Contact blobs below. */
+    fleet.add(m);
+    meshes.push(m);
+    rig.push(m);                  /* every mesh takes the truck's matrix —
+                                     each part's offset is baked into its
+                                     geometry, never into an instance */
+    return m;
+  };
+  const F = {
+    body: mk(T.body, FM.body), steel: mk(T.steel, FM.steel),
+    chrome: mk(T.chrome, FM.chrome), rubber: mk(T.rubber, FM.rubber),
+    haz: mk(T.haz, FM.haz),
+    crew: mk(T.crew, FM.crew), vest: mk(T.vest, FM.vest),
+    crate: mk(L.crate, FM.crate), caps: mk(L.caps, FM.steel),
+  };
+  /* ---- the light on the truck ---- */
+  /* every lamp's offset is baked into its GEOMETRY, so a lamp mesh takes
+     the very same per-truck matrix the body does. The beacon's offset used
+     to live in its instance matrix instead — which updateFleet then never
+     wrote, and six beacons hovered together over the hall origin. */
+  const bead = (r) => new THREE.IcosahedronGeometry(r, 1);
+  const heads = bucket();
+  heads.pair(bead(0.17), -0.92, 5.60, 1.48);      /* on the front guard posts */
+  F.head = mk(heads.geo(), glowMat(0xffe6bc, 0.95), 6);
+  const tails = bucket();
+  /* both rear lamps live on the FLAT of the counterweight tail: past
+     z = +-0.89 that face curves away into the corner radius */
+  tails.pair(bead(0.13), FK.TAIL - 0.02, 2.30, 0.74);
+  F.tail = mk(tails.geo(), glowMat(0xff3320, 0.7), 6);
+  F.beacon = mk(bead(0.26).translate(-4.10, 6.96, 0), glowMat(0xffa317, 1.0), 6);
+  for (let i = 0; i < N; i++) F.beacon.setColorAt(i, new THREE.Color(1, 1, 1));
+  F.beacon.instanceColor.needsUpdate = true;
+  /* WHAT THE TRUCK PUTS ON THE FLOOR — and the honest heir to the streak:
+     a pool of light sliding down the aisle, now with a machine attached.
+     Warm at the nose (headlights), cold at the tail (the blue LED spot
+     modern warehouse trucks project 10-20ft behind them as a pedestrian
+     warning). Split warm/cool because the drawing UNDERNEATH is cyan: a
+     blue pool on a blue floor is a pool nobody can see, and the warm nose
+     is the half that actually reads at the map camera.
+     FLOAT THEM CLEAR OF THE FLOOR STACK. At the drawing's own height these
+     were invisible on desktop and only on desktop — three's ShadowMaterial
+     is transparent but STILL depth-writes, so the hall's shadow-catcher
+     plane at plan z 0.35 was quietly rejecting them. They sit at plan z
+     1.6 now, which is exactly where the light streaks used to live. */
+  const sq = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
+  const PZ = 0.32;                        /* model ft -> plan z 1.6 */
+  const nose = bucket(), tail = bucket();
+  nose.add(sq.clone().scale(11.0, 1, 6.0), 8.0, PZ, 0);
+  tail.add(sq.clone().scale(8.0, 1, 4.2), -15.5, PZ, 0);
+  /* NOT glowTex. That texture is authored with a hot core so booths bleed
+     past their silhouettes at hall zoom, and a hot core stretched 11ft down
+     an aisle and then seen at a hero rake foreshortens into a hard bright
+     LINE — it read as a lens scratch across the drawing. A pool of light on
+     a floor has no core; it has a middle and an edge. */
+  const poolTex = canvasTex(128, 128, (g) => {
+    const gr = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+    gr.addColorStop(0, 'rgba(255,255,255,0.42)');
+    gr.addColorStop(0.45, 'rgba(255,255,255,0.22)');
+    gr.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
+  });
+  const noseM = glowMat(0xffc07a, 0.62); noseM.map = poolTex;
+  const tailM = glowMat(0x7fb4ff, 0.85); tailM.map = poolTex;
+  F.nose = mk(nose.geo(), noseM, 3);
+  F.spot = mk(tail.geo(), tailM, 3);
+  /* THESE fade with rake — and only these. It is the old streaks' own rule,
+     kept for the only part of the fleet it was ever right for: an 11ft pool
+     lying flat on the floor is a pool from above and a hard bright BAND
+     once the camera drops to eye level, because a plane seen edge-on has
+     nowhere to put its area. The trucks stay solid at every rake; their
+     light steps back as the eye reaches the floor. */
+  const pools = [noseM, tailM];
+  /* contact shadow: the key's shadow map cannot follow these, so the thing
+     that actually grounds a truck on the drawing is a soft blob under it */
+  const blobM = new THREE.MeshBasicMaterial({ map: blobTex, color: 0x02040a,
+    transparent: true, opacity: 0.5, depthWrite: false, toneMapped: false });
+  F.blob = mk(sq.clone().scale(13.5, 1, 6.2).translate(-1.0, 0.16, 0), blobM, 2);
+
+  /* two trucks per lane, half a lap apart. The loaded ones run at a show
+     floor's posted 5mph; the empties running back to the dock are quicker,
+     which is the whole reason a hall never looks metronomic. */
+  const trucks = [];
+  for (let i = 0; i < N; i++) {
+    const lane = i % 3, loaded = i !== 1 && i !== 5;
+    trucks.push({
+      z: FLEET_LANES[lane] / FT,
+      dir: lane % 2 ? 1 : -1,
+      loaded,
+      speed: loaded ? 7.4 : 9.6,
+      phase: (i < 3 ? 0 : 0.5) + hash01(i + 17) * 0.09,
+      seed: hash01(i + 53) * 6.28,
+    });
+  }
+  /* the load rides on its own two meshes so an EMPTY truck — one running
+     back to the dock for the next piece — can simply zero-scale them */
+  const load = [F.crate, F.caps];
+  const gone = new THREE.Matrix4().makeScale(0, 0, 0);
+  for (let i = 0; i < N; i++) {
+    if (trucks[i].loaded) continue;
+    for (const m of load) m.setMatrixAt(i, gone);
+  }
+  state.fleet = { F, meshes, rig, load, trucks, pools, on: true, gone,
+    dummy: new THREE.Object3D(), col: new THREE.Color(),
+    span: FLEET_X1 - FLEET_X0 };
+}
+/* Trucks are wall-clock driven, like every other idle-layer thing on this
+   screen — a hall does not stop working because the reader stopped
+   scrolling. Scroll only decides how LOUD they are. */
+function updateFleet(tSec, show, rake) {
+  const S = state.fleet;
+  if (!S) return;
+  const rf = 1 - Math.min(1, Math.max(0, (rake - 26) / 26));
+  for (let i = 0; i < S.pools.length; i++)
+    S.pools[i].opacity = S.pools[i].userData.op0 * rf;
+  /* THE FLEET CLEARS THE FLOOR FOR THE PUBLIC — by driving off it. As the
+     doors beat opens, every truck is pushed toward the end of its lane and
+     out of the drawing, and once past the end it stops being placed at all.
+     It reads as the fleet getting out of the way, it staggers itself for
+     free (a truck near the exit leaves first), and it is a pure function of
+     `show`, so scrubbing back up brings them straight back.
+     The obvious alternative — fading them — was tried and is wrong: a
+     half-transparent solid does not recede, it turns into a ghost with the
+     floor plan's booth numbers legible through its mast. */
+  const on = show < 0.92;
+  if (S.on !== on) {
+    S.on = on;
+    for (let i = 0; i < S.meshes.length; i++) S.meshes[i].visible = on;
+  }
+  if (!on) return;
+
+  const d = S.dummy, F = S.F, rig = S.rig, push = show * S.span * 1.12;
+  for (let i = 0; i < S.trucks.length; i++) {
+    const t = S.trucks[i];
+    const u = (tSec * t.speed + t.phase * S.span) % S.span + push;
+    if (u > S.span) {
+      for (let k = 0; k < rig.length; k++) rig[k].setMatrixAt(i, S.gone);
+      continue;
+    }
+    const x = t.dir > 0 ? FLEET_X0 + u : FLEET_X1 - u;
+    /* suspension bob and a lane-keeping wobble: a rigid truck sliding down
+       a perfect line is the tell that it is a sprite, not a machine */
+    d.position.set(x, Math.sin(tSec * 4.3 + t.seed) * 0.035, t.z);
+    d.rotation.set(
+      Math.sin(tSec * 2.7 + t.seed) * 0.013,
+      (t.dir > 0 ? 0 : Math.PI) + Math.sin(tSec * 0.55 + t.seed) * 0.011,
+      0);
+    d.updateMatrix();
+    for (let k = 0; k < rig.length; k++) rig[k].setMatrixAt(i, d.matrix);
+    if (!t.loaded) for (let k = 0; k < S.load.length; k++) S.load[k].setMatrixAt(i, S.gone);
+    /* rotating amber beacon: a sharp sweep at ~1.3Hz, not a sine — a lamp
+       that merely breathes reads as a glow, a lamp that SWEEPS reads as a
+       machine moving under its own power */
+    const b = 0.16 + 1.5 * Math.pow(0.5 + 0.5 * Math.cos((tSec * 1.3 + t.seed) * 6.283), 4);
+    F.beacon.setColorAt(i, S.col.setRGB(b, b, b));
+  }
+  for (let k = 0; k < rig.length; k++) rig[k].instanceMatrix.needsUpdate = true;
+  F.beacon.instanceColor.needsUpdate = true;
 }
 
 /* THE PLAN GOES INTO GL (mobile). Measured 2026-08-19 on a 390x844 DPR-3
@@ -1993,50 +2512,11 @@ function init() {
      sparkles that are really doing nothing… zero value". The electricity
      lives in the aisle current below instead.) */
   /* ============ THE AISLE CURRENT ============
-     Streaks of light running down the aisles "in a really nice electronic
-     kind of feel". THREE lanes only, ONE slow comet each, and faint —
-     seven lanes of twin comets read as traffic rather than atmosphere
-     (owner 2026-08-20: "only a couple, faint and mystical"). Lanes are
-     the drawing's own aisle centrelines, alternating direction. Loudest
-     at the top-down map; the rake fades them out by the time the eye is
-     on the floor, so they never fight a hero stand. */
-  {
-    state.streakU = { value: 0 };
-    const AY = [476.1, 775.1, 1124.1];
-    const mkStreak = (i) => new THREE.ShaderMaterial({
-      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
-      uniforms: { uOp: state.streakU, uT: state.holoT,
-        uPh: { value: i * 1.618 }, uDir: { value: i % 2 ? 1 : -1 } },
-      vertexShader: `varying vec2 vUv2;
-        void main() { vUv2 = uv;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
-      fragmentShader: `
-        uniform float uOp, uT, uPh, uDir;
-        varying vec2 vUv2;
-        void main() {
-          /* a narrow soft-edged ribbon: the light belongs to the aisle,
-             it does not wash the booth rows either side of it */
-          float wy = smoothstep(0.5, 0.16, abs(vUv2.y - 0.5));
-          float u = uDir > 0.0 ? vUv2.x : 1.0 - vUv2.x;
-          /* ONE slow comet: a long gentle tail with a soft head. The old
-             head was authored at 2.8 — well past the bloom knee — so it
-             flared into a hard white dash. Kept under it now: this reads
-             as a current moving through the drawing, not a light bar. */
-          float head = fract(uT * 0.042 + uPh);
-          float d = fract(head - u);
-          vec3 acc = vec3(0.30, 0.78, 0.92) * 0.42 * exp(-d * 9.0)
-                   + vec3(0.72, 0.93, 1.00) * 0.72 * exp(-d * 70.0);
-          gl_FragColor = vec4(acc * wy, uOp * wy * min(1.0, acc.g));
-        }`,
-    });
-    for (let i = 0; i < AY.length; i++) {
-      const q = new THREE.Mesh(new THREE.PlaneGeometry(1396, 15), mkStreak(i));
-      q.position.set(800, AY[i], 1.6);
-      q.renderOrder = 3;
-      q.frustumCulled = false;
-      plan.add(q);
-    }
-  }
+     Was three shader ribbons — "streaks of light running down the aisles".
+     Now it is six forklifts hauling exhibit freight down the same three
+     lanes, in the same directions, at the same unhurried pace. See THE
+     FREIGHT FLEET above for the machine and why it is built the way it is. */
+  buildFleet(plan);
   /* ================= THE STAND SEAM =================
      Every stand design was removed on 2026-08-20 for a clean restart.
      What survives below is the MOUNT: one group per work order, already
@@ -2581,13 +3061,9 @@ const MIGL = {
         ? 0.05 + 0.10 * target + 0.12 * (isSub ? (cam.lock || 0) : 0) : 0;
       if (bo.fx) bo.fx.visible = bo.live;
     }
-    /* the aisle current fades with rake: full at the map, gone by the
-       time the eye reaches the floor, and quiet once the doors open */
-    if (state.streakU) {
-      const rk = cam.rake || 0;
-      const rf = 1 - Math.min(1, Math.max(0, (rk - 24) / 26));
-      state.streakU.value = 0.40 * rf * (1 - 0.8 * (curShow || 0));
-    }
+    /* the aisle current: six forklifts working the three lanes the light
+       streaks used to run down */
+    updateFleet(tSec, curShow || 0, cam.rake || 0);
     syncWorld(cam);
     /* proximity cull: a fixture whose clip-w collapses is about to project
        enormous (the 05:45 rake put two of them on screen at booth scale —
