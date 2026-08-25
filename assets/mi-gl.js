@@ -1122,7 +1122,72 @@ function buildLoadGeo() {
 /* THE LANES ARE THE STREAKS' LANES — the drawing's own aisle centrelines,
    same three, same alternating directions. Only the thing moving changed. */
 const FLEET_LANES = [476.1, 775.1, 1124.1];
-const FLEET_X0 = -10, FLEET_X1 = 320;    /* model ft: on and off the drawing */
+/* THE LAP IS LONGER THAN THE HALL (owner 2026-08-24: "it feels like there
+   could be too many forklifts too close together"). The truck is only
+   drawn across model x 17..304, so a 470ft lap leaves each one OFF the
+   drawing about 39% of its cycle. That is where the subtlety comes from —
+   not from slowing anything down, but from letting an aisle stand empty
+   for a while before the next machine crosses it.
+
+   The number that matters is trucks x duty = how many are on the floor at
+   once. Six on a 330ft lap gave 5.2 — three lanes permanently occupied,
+   which is a conveyor, not a hall. Four on a 570ft lap gave 1.75 and
+   over-corrected hard: the map camera looked right, but the hero beats
+   frame maybe a third of the floor, so most of them had no forklift in
+   shot at all and the piece lost the life it was built for. Five on 470
+   gives ~3.0 — about one per lane, which is what the light streaks it
+   replaced were, and it holds up at BOTH cameras. */
+const FLEET_X0 = -75, FLEET_X1 = 395;    /* model ft: on and off the drawing */
+/* ...and while it is off it is not DRAWN. The hall shell runs model x
+   10..310; a truck that keeps rolling past that is a forklift parked in
+   the black outside the building, which is what the first long-lap cut
+   looked like at the map camera — half a machine straddling the west wall,
+   sitting on the headline. It cuts out just clear of the shell instead.
+   The cut is a pop, and a pop was the lesser evil here: it lands at the
+   extreme edge of the frame (east is off-frame entirely at the map
+   camera), it happens where the freight doors are, and every alternative
+   is a fade — which on a solid means a ghost. */
+/* Bounds are on the truck's ORIGIN, so they carry its overhang: the tail
+   sits 6.4ft behind it and a crate reaches ~5ft in front, and at a looser
+   6/314 the tail still hung past the west wall into the black with the
+   headline behind it. 17/304 keeps the whole machine inside the shell. */
+const FLEET_IN = 17, FLEET_OUT = 304;
+/* FIVE TRUCKS. `at` is model x at scene start; a reader arrives at an
+   arbitrary phase, so what keeps them apart has to hold at EVERY phase,
+   not just this one. Two rules do it:
+
+   1. WHERE A LANE CARRIES TWO TRUCKS THEY RUN AT AN IDENTICAL SPEED, so
+      their gap is locked forever and one is always near an edge or off it
+      while the other has the aisle to itself. Give a shared lane even
+      slightly different speeds and the gap closes over a few minutes
+      until one truck drives through the other.
+   2. The two shared lanes use DIFFERENT gaps — 235ft in lane 1, 155ft in
+      lane 2. Both at half a lap looked fine in isolation and was quietly
+      wrong: lanes 1 and 2 run opposite ways and cross every 33s, and with
+      equal gaps BOTH pairs aligned on the same frame, so every crossing
+      arrived as two stacked columns at once. Unequal gaps break that.
+   3. Speed varies BETWEEN lanes — 9.2 / 7.4 / 6.9 — so the three aisles
+      drift out of step and the set never settles into a pattern.
+
+   Crossings between opposing lanes are unavoidable and wanted: two
+   forklifts passing in neighbouring aisles is what a hall looks like. The
+   trucks visible at scene start are simply set DIVERGING so the first one
+   cannot happen immediately — an earlier cut had a westbound truck at 232
+   and an eastbound one at 96 meeting dead level eight seconds in.
+
+   Four start on the drawing, spread across it at x 250 / 210 / 120 / 55;
+   the fifth starts out past the east wall and drives in.
+
+   Direction alternates by lane exactly as the streaks did — eastbound
+   runs loaded out of the west freight doors, westbound is deliveries and
+   empty trucks going back for the next piece. */
+const FLEET_PLAN = [
+  { lane: 0, at:  250, loaded: false, speed: 9.2, off:  0.9 },
+  { lane: 1, at:  120, loaded: true,  speed: 7.4, off: -1.0 },
+  { lane: 1, at:  355, loaded: true,  speed: 7.4, off:  1.1 },
+  { lane: 2, at:  210, loaded: true,  speed: 6.9, off:  0.4 },
+  { lane: 2, at:   55, loaded: false, speed: 6.9, off: -0.8 },
+];
 function buildFleet(plan) {
   makeHazTex();
   makeFleetMats(state.envTex);
@@ -1136,7 +1201,7 @@ function buildFleet(plan) {
   fleet.matrix.set(FT, 0, 0, 0, 0, 0, FT, 0, 0, FT, 0, 0, 0, 0, 0, 1);
   plan.add(fleet);
 
-  const N = 6;
+  const N = FLEET_PLAN.length;
   const meshes = [], rig = [];
   const mk = (geo, mat, order) => {
     const m = new THREE.InstancedMesh(geo, mat, N);
@@ -1222,21 +1287,20 @@ function buildFleet(plan) {
     transparent: true, opacity: 0.5, depthWrite: false, toneMapped: false });
   F.blob = mk(sq.clone().scale(13.5, 1, 6.2).translate(-1.0, 0.16, 0), blobM, 2);
 
-  /* two trucks per lane, half a lap apart. The loaded ones run at a show
-     floor's posted 5mph; the empties running back to the dock are quicker,
-     which is the whole reason a hall never looks metronomic. */
-  const trucks = [];
-  for (let i = 0; i < N; i++) {
-    const lane = i % 3, loaded = i !== 1 && i !== 5;
-    trucks.push({
-      z: FLEET_LANES[lane] / FT,
-      dir: lane % 2 ? 1 : -1,
-      loaded,
-      speed: loaded ? 7.4 : 9.6,
-      phase: (i < 3 ? 0 : 0.5) + hash01(i + 17) * 0.09,
+  /* loaded trucks run at a show floor's posted 5mph; an empty one running
+     back to the dock is quicker. `off` walks each truck a foot or so off
+     its aisle centreline — nobody drives the painted line, and dead-centre
+     was the last thing making the set read as being on rails. */
+  const span = FLEET_X1 - FLEET_X0;
+  const trucks = FLEET_PLAN.map((t, i) => {
+    const dir = t.lane % 2 ? 1 : -1;
+    return {
+      z: FLEET_LANES[t.lane] / FT + t.off,
+      dir, loaded: t.loaded, speed: t.speed,
+      phase: (dir > 0 ? t.at - FLEET_X0 : FLEET_X1 - t.at) / span,
       seed: hash01(i + 53) * 6.28,
-    });
-  }
+    };
+  });
   /* the load rides on its own two meshes so an EMPTY truck — one running
      back to the dock for the next piece — can simply zero-scale them */
   const load = [F.crate, F.caps];
@@ -1245,9 +1309,8 @@ function buildFleet(plan) {
     if (trucks[i].loaded) continue;
     for (const m of load) m.setMatrixAt(i, gone);
   }
-  state.fleet = { F, meshes, rig, load, trucks, pools, on: true, gone,
-    dummy: new THREE.Object3D(), col: new THREE.Color(),
-    span: FLEET_X1 - FLEET_X0 };
+  state.fleet = { F, meshes, rig, load, trucks, pools, on: true, gone, span,
+    dummy: new THREE.Object3D(), col: new THREE.Color() };
 }
 /* Trucks are wall-clock driven, like every other idle-layer thing on this
    screen — a hall does not stop working because the reader stopped
@@ -1274,29 +1337,40 @@ function updateFleet(tSec, show, rake) {
   }
   if (!on) return;
 
+  /* Wall clock, deliberately. There is no way to anchor this to the moment
+     the reader arrives: the page paints one isolated frame from snap() on
+     migl-ready, seconds after load and long before the section is near, so
+     any "first paint" hook arms against page load and buys nothing. Which
+     means the phase at arrival is effectively arbitrary — and that is why
+     the spacing in FLEET_PLAN is guaranteed STRUCTURALLY rather than by
+     the opening positions. */
+  const tf = tSec;
+
   const d = S.dummy, F = S.F, rig = S.rig, push = show * S.span * 1.12;
+  const park = (i) => {
+    for (let k = 0; k < rig.length; k++) rig[k].setMatrixAt(i, S.gone);
+  };
   for (let i = 0; i < S.trucks.length; i++) {
     const t = S.trucks[i];
-    const u = (tSec * t.speed + t.phase * S.span) % S.span + push;
-    if (u > S.span) {
-      for (let k = 0; k < rig.length; k++) rig[k].setMatrixAt(i, S.gone);
-      continue;
-    }
+    const u = (tf * t.speed + t.phase * S.span) % S.span + push;
+    if (u > S.span) { park(i); continue; }
     const x = t.dir > 0 ? FLEET_X0 + u : FLEET_X1 - u;
+    if (x < FLEET_IN || x > FLEET_OUT) { park(i); continue; }
     /* suspension bob and a lane-keeping wobble: a rigid truck sliding down
        a perfect line is the tell that it is a sprite, not a machine */
-    d.position.set(x, Math.sin(tSec * 4.3 + t.seed) * 0.035, t.z);
+    d.position.set(x, Math.sin(tf * 4.3 + t.seed) * 0.035, t.z);
     d.rotation.set(
-      Math.sin(tSec * 2.7 + t.seed) * 0.013,
-      (t.dir > 0 ? 0 : Math.PI) + Math.sin(tSec * 0.55 + t.seed) * 0.011,
+      Math.sin(tf * 2.7 + t.seed) * 0.013,
+      (t.dir > 0 ? 0 : Math.PI) + Math.sin(tf * 0.55 + t.seed) * 0.011,
       0);
     d.updateMatrix();
     for (let k = 0; k < rig.length; k++) rig[k].setMatrixAt(i, d.matrix);
     if (!t.loaded) for (let k = 0; k < S.load.length; k++) S.load[k].setMatrixAt(i, S.gone);
+
     /* rotating amber beacon: a sharp sweep at ~1.3Hz, not a sine — a lamp
        that merely breathes reads as a glow, a lamp that SWEEPS reads as a
        machine moving under its own power */
-    const b = 0.16 + 1.5 * Math.pow(0.5 + 0.5 * Math.cos((tSec * 1.3 + t.seed) * 6.283), 4);
+    const b = 0.16 + 1.5 * Math.pow(0.5 + 0.5 * Math.cos((tf * 1.3 + t.seed) * 6.283), 4);
     F.beacon.setColorAt(i, S.col.setRGB(b, b, b));
   }
   for (let k = 0; k < rig.length; k++) rig[k].instanceMatrix.needsUpdate = true;
