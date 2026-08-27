@@ -800,6 +800,11 @@
         
         .mi-stage.is-hud-out .mi-matte-t { transform: translateY(-101%); }
         .mi-stage.is-hud-out .mi-matte-b { transform: translateY(101%); }
+        /* the rail is chrome for navigating the sequence; by the CTA sheet
+           the sequence is over, so it yields at every width (the HUD and
+           skip chip do the same, but only on a phone) */
+        .mi-stage.is-hud-out .mi-nav { opacity: 0; pointer-events: none;
+            transition: opacity .3s ease; }
         .navbar.mi-dim { opacity: 0.28; transition: opacity .4s ease; }
         .navbar.mi-dim:hover, .navbar.mi-dim:focus-within { opacity: 1; }
 
@@ -1087,8 +1092,10 @@
                            visibility: visible; }
 
         .mi-ticket.is-right {
-            left: auto; right: 3%; bottom: auto; top: 88px;
-            max-height: calc(100svh - 88px - 27svh);
+            /* 100px, not 88px: the service rail owns the band below the
+               navbar now and this card shares its horizontal span */
+            left: auto; right: 3%; bottom: auto; top: 100px;
+            max-height: calc(100svh - 100px - 27svh);
             overflow: hidden;
             transform: translateY(12px);
         }
@@ -1156,8 +1163,72 @@
             padding: 10px 14px 12px; min-width: 208px;
             font-variant-numeric: tabular-nums;
         }
+        /* ============ THE SERVICE RAIL (owner 2026-08-26) ============
+           Four segments across the top of the stage, one per service, each
+           filling as its chapter is crossed. It answers the two questions a
+           long scroll-driven sequence never otherwise answers — how far
+           through am I, and how much is left — which is most of what made a
+           hold feel like being stuck rather than being paced. Tapping a
+           segment jumps to that service.
+
+           It lives in the top band ALONE. The skip chip used to own that
+           band and has been pushed below it, because the phone rule here is
+           one column of chrome and never two things sharing a band.
+
+           Hidden until .mi-js, which is only added once the animation is
+           actually running — a reduced-motion or no-JS reader gets the
+           plain .mi-list instead and must never see a progress meter for a
+           sequence that is not playing. */
+        .mi-nav {
+            display: none;
+            /* 74px clears the navbar's 70px bottom edge outright. It used
+               to be 66 and the top 4px of every segment sat under a fixed
+               element that also eats the clicks. */
+            position: absolute; left: 20px; right: 20px; top: 74px; z-index: 8;
+            gap: 10px;
+        }
+        .mi-js .mi-nav { display: flex; }
+        .mi-nav-s {
+            flex: 1 1 0; position: relative; display: block;
+            padding: 0 0 14px; margin: 0; border: 0; background: none;
+            cursor: pointer; -webkit-appearance: none; appearance: none;
+            font: inherit; color: inherit;
+        }
+        /* a 17px-tall strip is not a touch target. The hit area is grown
+           DOWNWARD into the empty band above the skip chip — never upward,
+           where the navbar would take the tap instead. */
+        .mi-nav-s::before {
+            content: ''; position: absolute; left: -3px; right: -3px;
+            top: -8px; bottom: -12px;
+        }
+        .mi-nav-t {
+            display: block; height: 3px; overflow: hidden;
+            background: rgba(125, 195, 228, 0.20);
+        }
+        /* scaleX on a child, not a width — the fill is written every frame
+           and a width write would relayout the whole flat layer */
+        .mi-nav-t i {
+            display: block; height: 100%; transform-origin: left center;
+            background: rgba(150, 214, 245, 0.85);
+        }
+        .mi-nav-s.is-live .mi-nav-t i {
+            background: var(--gold-l);
+            box-shadow: 0 0 10px rgba(212, 188, 125, 0.55);
+        }
+        .mi-nav-n {
+            position: absolute; left: 0; top: 7px;
+            font-size: 0.5rem; font-weight: 800; letter-spacing: .18em;
+            color: rgba(160, 200, 225, 0.4);
+            transition: color .25s ease;
+        }
+        .mi-nav-s.is-done .mi-nav-n { color: rgba(160, 200, 225, 0.66); }
+        .mi-nav-s.is-live .mi-nav-n { color: var(--gold-l); }
+        .mi-nav-s:hover .mi-nav-t { background: rgba(125, 195, 228, 0.42); }
+        .mi-nav-s:hover .mi-nav-n { color: var(--gold-l); }
+        .mi-nav-s:focus-visible { outline: 2px solid var(--accent-teal); outline-offset: 4px; }
+
         .mi-skip {
-            position: absolute; left: 20px; top: 74px; z-index: 6;
+            position: absolute; left: 20px; top: 104px; z-index: 6;
             font-size: 0.56rem; font-weight: 800; letter-spacing: .18em;
             color: rgba(200, 220, 235, 0.55); text-decoration: none;
             border: 1px solid rgba(125, 195, 228, 0.22);
@@ -1341,7 +1412,7 @@
                clock now share a single 30px rail; everything below the
                rail belongs to the picture and the headline alone. */
             .mi-tb {
-                left: 178px; right: 10px; top: 58px; bottom: auto;
+                left: 178px; right: 10px; top: 94px; bottom: auto;
                 min-width: 0; padding: 5px 10px 6px;
                 display: flex; align-items: baseline; justify-content: space-between;
                 gap: 10px; border-top-width: 1px;
@@ -1364,7 +1435,15 @@
                now runs edge to edge and the hall is framed to fill it;
                the caption keeps its own top since --matte is gone. */
             .mi-stage { --matte: 0px; }
-            .mi-skip { top: 58px; left: 10px; padding: 5px 8px; }
+            /* the rail takes the top band OUTRIGHT and everything else
+               drops one band. It has to run the full width to be a
+               progress bar at all, so it cannot share with the HUD the way
+               the skip chip does — at top:58px it ran straight under the
+               clock panel and segments 03/04 were invisible. */
+            .mi-nav { top: 74px; left: 10px; right: 10px; gap: 6px; }
+            .mi-nav-s { padding-bottom: 12px; }
+            .mi-nav-n { font-size: 0.46rem; letter-spacing: .14em; }
+            .mi-skip { top: 96px; left: 10px; padding: 5px 8px; }
             /* THE CAPTION OWNS THE DEAD BAND (owner 2026-08-21). Pinned at
                104px it sat hard against the chrome rail with most of a
                screen of black between it and the hall, which on a tall
@@ -1378,7 +1457,7 @@
                turn each text run into its own anonymous item and drop the
                line breaks. */
             .mi-say {
-                top: max(104px, 28%) !important; left: 5%; right: 5%;
+                top: max(144px, 28%) !important; left: 5%; right: 5%;
                 font-size: clamp(1.9rem, 8.6vw, 2.9rem);
                 line-height: 1.06;
             }
@@ -2257,6 +2336,7 @@
                 <div class="mi-matte mi-matte-t" aria-hidden="true"></div>
                 <div class="mi-matte mi-matte-b" aria-hidden="true"></div>
                 <div class="mi-flat">
+                    <nav class="mi-nav" aria-label="Services in this sequence"></nav>
                     <a class="mi-skip" href="#labor-stats">SKIP TO BOOKING &darr;</a>
                     <p class="mi-say"></p>
 
@@ -2719,7 +2799,11 @@
                the aisle carries you from one footprint to the next and is
                the only thing that makes the hall feel walked. */
             function transitCam(fromI, toI) {
-                var A = camOf(fromI), B = camOf(toI);
+                /* A is where the hero creep LEFT the camera (woCam runs to
+                   cp 1), not the chapter's base framing — starting from
+                   camOf(fromI) would open the transit by snapping back out
+                   of the push the chapter had just finished making. */
+                var A = woCam(fromI)(1), B = camOf(toI);
                 return function (cp) {
                     var t = ss(0, 1, cp);
                     return {
@@ -2743,21 +2827,70 @@
                 };
             }
 
+            /* THE HERO NEVER PARKS (owner 2026-08-26). Every `wo` chapter
+               used to be ONE fixed frame — `cam: camOf(i)`, no camFn — so
+               from the moment the build landed (cp .52) the picture stopped
+               answering the scroll entirely. That is what made the old
+               dwell read as a stall rather than as a pause: you were still
+               scrolling and nothing on screen was moving.
+
+               It is a PUSH ONLY — no orbit. The stands are holograms that
+               turn on their own axis (the turntable in mi-gl.js), and a
+               camera that orbits at the same time reads as drift rather
+               than as a move; that lesson is already written down above and
+               it still holds. The push is weighted to the tail so the build
+               itself plays against a near-steady frame and the creep takes
+               over once the stand is up and the card is being read. */
+            function woCam(i) {
+                var B = camOf(i);
+                return function (cp) {
+                    var tail = ss(.34, 1, cp);
+                    return {
+                        s: B.s * (1 + 0.09 * tail),
+                        cx: B.cx,
+                        /* a few plan units of drift so it is not a pure
+                           zoom, which reads as mechanical */
+                        cy: B.cy - 5 * tail,
+                        /* rake UP = the eye sinks toward floor level and
+                           the stand grows over you (see RAKE SENSE above) */
+                        rake: B.rake + 2.6 * tail,
+                        yaw: B.yaw,
+                        D: B.D, poy: B.poy
+                    };
+                };
+            }
+
             /* tempo follows the work orders: the 52h double-deck is slow and
                establishes the grammar, the 17h coordination job is short and
                high, the LED canyon is the loud set piece, a timelapse eats
                the empty afternoon honestly, and the 3h rescue SNAPS. */
+            /* WIDTHS REBALANCED (owner 2026-08-26: "the first animation
+               seems to have a slight delay but every one after feels like
+               it gets faster"). The four service chapters were .195 / .105
+               / .135 / .048 — a 4:1 spread. The dwell used to hide it: a
+               dwell adds a FIXED width (DW_W) no matter how long the
+               chapter is, so it padded the SHORT chapters hardest and partly
+               evened them out. Remove the dwells and the raw spread is
+               exposed as a hard accelerando — by service 04 you are moving
+               four times faster than you were at service 01.
+
+               Now .150 / .120 / .128 / .085. The total is unchanged (.483)
+               so every boundary downstream of the last service still falls
+               where it did, but the spread is 1.8:1. Service 04 stays the
+               quickest because it is the rush job and its internal beats
+               are timed to SNAP (see `fast` in paint) — it just is not a
+               blur any more. */
             var CH = [
                 { a:0,    b:.055, t0:300, cam:WIDE, kind:'cold' },
                 { a:.055, b:.135, t0:330, cam:{ s:1.14, cx:VBW/2, cy:VBH/2, rake:RAKE, yaw:0, D:650, poy:0.62 }, kind:'rise' },
-                { a:.135, b:.330, t0:360, cam:camOf(0), kind:'wo', i:0 },
-                { a:.330, b:.365, t0:440, cam:camOf(1), camFn:transitCam(0, 1), kind:'transit' },
-                { a:.365, b:.470, t0:450, cam:camOf(1), kind:'wo', i:1 },
-                { a:.470, b:.505, t0:530, cam:camOf(2), camFn:transitCam(1, 2), kind:'transit' },
-                { a:.505, b:.640, t0:540, cam:camOf(2), kind:'wo', i:2 },
-                { a:.640, b:.678, t0:760, cam:{ s:1.85, cx:800, cy:860, rake:58, yaw:-12, D:950, poy:0.50 }, kind:'lapse' },
-                { a:.678, b:.712, t0:860, cam:camOf(3), camFn:transitCam(2, 3), kind:'transit' },
-                { a:.712, b:.760, t0:887, cam:camOf(3), kind:'wo', i:3 },
+                { a:.135, b:.285, t0:360, cam:camOf(0), camFn:woCam(0), kind:'wo', i:0 },
+                { a:.285, b:.320, t0:440, cam:camOf(1), camFn:transitCam(0, 1), kind:'transit' },
+                { a:.320, b:.440, t0:450, cam:camOf(1), camFn:woCam(1), kind:'wo', i:1 },
+                { a:.440, b:.475, t0:530, cam:camOf(2), camFn:transitCam(1, 2), kind:'transit' },
+                { a:.475, b:.603, t0:540, cam:camOf(2), camFn:woCam(2), kind:'wo', i:2 },
+                { a:.603, b:.641, t0:760, cam:{ s:1.85, cx:800, cy:860, rake:58, yaw:-12, D:950, poy:0.50 }, kind:'lapse' },
+                { a:.641, b:.675, t0:860, cam:camOf(3), camFn:transitCam(2, 3), kind:'transit' },
+                { a:.675, b:.760, t0:887, cam:camOf(3), camFn:woCam(3), kind:'wo', i:3 },
                 { a:.760, b:.925, t0:960, cam:DOORS_B, camFn:doorsCam, kind:'doors' },
                 { a:.925, b:1,    t0:960, cam:{ s:1.4, cx:940, cy:800, rake:52, yaw:-24, D:1600, poy:0.50 }, kind:'sheet' }
             ];
@@ -2849,6 +2982,14 @@
                 var d = WARP[hi] - WARP[lo];
                 return (lo + (d > 0 ? (u - WARP[lo]) / d : 0)) / N;
             }
+            /* story progress -> scroll fraction: warp() run forwards. The
+               service rail needs this — it thinks in STORY progress (a
+               chapter is .150 of the story) but has to scroll the page in
+               WARPED scroll, and the two only agree where no caption hold
+               is in play. */
+            function unwarp(p) {
+                return WARP[Math.round(clamp01(p) * (WARP.length - 1))];
+            }
             function chCam(ci, cp) {
                 var c = CH[ci];
                 return c.camFn ? c.camFn(cp) : c.cam;
@@ -2931,6 +3072,53 @@
                        '<strong>' + w.name + '</strong>' +
                        '<span>' + w.scope + ' &middot; Book &rarr;</span></a>';
             }).join('');
+
+            /* THE SERVICE RAIL. Four segments, built from WO so the labels
+               can never drift out of sync with the cards. Buttons, not
+               anchors: the page-wide a[href^="#"] smooth-scroll handler
+               binds once at load and would swallow these, and there is no
+               URL worth putting in history for a scrub. */
+            var navWrap = sec.querySelector('.mi-nav');
+            var navSegs = [];
+            if (navWrap) {
+                navWrap.innerHTML = WO.map(function (w, i) {
+                    var plain = w.name.replace(/&amp;/g, 'and').replace(/&mdash;/g, '-');
+                    return '<button type="button" class="mi-nav-s" data-i="' + i + '"' +
+                           ' aria-label="Jump to service ' + w.n + ', ' + plain + '">' +
+                           '<span class="mi-nav-t"><i></i></span>' +
+                           '<span class="mi-nav-n">' + w.n + '</span>' +
+                           '</button>';
+                }).join('');
+                navSegs = Array.prototype.slice.call(navWrap.querySelectorAll('.mi-nav-s'));
+                navSegs.forEach(function (b) { b.__fill = b.querySelector('.mi-nav-t i'); });
+
+                navWrap.addEventListener('click', function (e) {
+                    var b = e.target && e.target.closest && e.target.closest('.mi-nav-s');
+                    if (!b) return;
+                    var ch = CH[WOCH[+b.getAttribute('data-i')]];
+                    /* land at cp .55 — build finished, card fully in, and
+                       still short of the creep's push so there is somewhere
+                       left to go when the reader resumes scrolling */
+                    var u = unwarp(ch.a + (ch.b - ch.a) * 0.55);
+                    window.scrollTo({ top: Math.round(trackTop + u * span),
+                                      behavior: 'smooth' });
+                });
+            }
+            function paintNav(p) {
+                for (var i = 0; i < navSegs.length; i++) {
+                    var ch = CH[WOCH[i]], b = navSegs[i];
+                    var f = clamp01((p - ch.a) / (ch.b - ch.a));
+                    wStyle(b.__fill, 'nvf' + i, 'transform',
+                        'scaleX(' + f.toFixed(3) + ')');
+                    var st = f >= 1 ? 2 : f > 0 ? 1 : 0;
+                    if (b.__st === st) continue;
+                    b.__st = st;
+                    b.classList.toggle('is-live', st === 1);
+                    b.classList.toggle('is-done', st === 2);
+                    if (st === 1) b.setAttribute('aria-current', 'true');
+                    else b.removeAttribute('aria-current');
+                }
+            }
 
             var rectW = 1, rectH = 1, fit = 1, trackTop = 0, span = 1, vhCache = 1;
             function measure() {
@@ -3384,6 +3572,10 @@
 
                 wProp(world, 'pd', '--plandim', pdim.toFixed(3));
 
+                /* the rail tracks STORY progress, not the camera spring —
+                   it is a position readout and must agree with the ticket */
+                paintNav(p);
+
                 var dq = Math.round(clamp01((mins - 300) / 660) * 24) / 24;
                 var dsh = Math.round(showT * 12) / 12;
                 wProp(stage, 'dbg', '--daybg', 'rgb(' +
@@ -3451,8 +3643,7 @@
             window.addEventListener('scroll', function () {
                 if (raf || !isNear) return;
                 if (applyExit() > 0) return;
-                snap();                 /* park the springs on the true position */
-                setLive(true);
+                setLive(true);          /* setLive parks the springs itself */
             }, { passive: true });
 
             window.addEventListener('migl-ready', function () {
@@ -3647,10 +3838,34 @@
             })();
 
             /* one gate for the render loop: near the track, tab visible,
-               and the picture has not dissolved out yet */
+               and the picture has not dissolved out yet.
+
+               THE SPRINGS ARE PARKED HERE, NOT BY THE CALLER (owner
+               2026-08-26: "it glitches and rewinds through the animation
+               real fast then sends you back to where you were, or sends
+               you to the top"). sp/spCam keep their last x while the loop
+               is cut. Three paths restart the loop — the scroll handler,
+               visibilitychange and the IntersectionObserver — and the
+               observer was the one that restarted WITHOUT snapping first.
+               So after scrolling away and back, frame() resumed springing
+               from a stale position toward the real one and animated
+               through every value in between: the whole sequence replayed
+               at spring speed and then settled on where you actually were.
+               When the stale value was the initial 0 it replayed from the
+               cold open, which is the "sent me to the top" version of the
+               same bug — the page never moved, the picture did.
+
+               snap() is idempotent (it reads the true scroll position and
+               parks both springs on it), so doing it here on every restart
+               costs one paint and makes the class of bug impossible. */
             function setLive(on) {
                 liveOn = on && !document.hidden && exitT <= 0;
-                if (liveOn && !raf) { last = 0; measure(); raf = requestAnimationFrame(frame); }
+                if (liveOn && !raf) {
+                    last = 0;
+                    measure();
+                    snap();
+                    raf = requestAnimationFrame(frame);
+                }
             }
 
             if ('IntersectionObserver' in window) {
@@ -3666,7 +3881,7 @@
             }
             document.addEventListener('visibilitychange', function () {
                 if (document.hidden) { liveOn = false; }
-                else if (!raf && isNear && applyExit() <= 0) { snap(); setLive(true); }
+                else if (!raf && isNear && applyExit() <= 0) { setLive(true); }
             });
         })();
 
