@@ -803,8 +803,26 @@
         /* the rail is chrome for navigating the sequence; by the CTA sheet
            the sequence is over, so it yields at every width (the HUD and
            skip chip do the same, but only on a phone) */
-        .mi-stage.is-hud-out .mi-nav { opacity: 0; pointer-events: none;
-            transition: opacity .3s ease; }
+        .mi-stage.is-hud-out .mi-nav { opacity: 0; transition: opacity .3s ease; }
+
+        /* HIDDEN CHROME MUST NOT STILL TAKE THE TAP (owner 2026-08-26: "I
+           was sent to the top of the page once I got to the end").
+           `.mi-flat a, .mi-flat button { pointer-events: auto }` is what
+           makes any of this chrome clickable at all, and it OVERRIDES a
+           `pointer-events: none` set on an ancestor — so putting none on
+           .mi-nav above, or on .mi-stage from applyExit(), disabled the
+           container and left the controls inside it live. At the end of the
+           track that leaves four invisible rail buttons lying across the
+           top of the viewport; tapping the strip jumped you back to service
+           01, which is near the START of the track and reads exactly like
+           being thrown to the top of the page.
+
+           So the controls are disabled BY NAME, at a specificity that beats
+           that rule. is-gone is set by applyExit() the moment the picture
+           starts dissolving. */
+        .mi-stage.is-hud-out .mi-nav-s { pointer-events: none; }
+        .mi-stage.is-gone .mi-flat a,
+        .mi-stage.is-gone .mi-flat button { pointer-events: none; }
         .navbar.mi-dim { opacity: 0.28; transition: opacity .4s ease; }
         .navbar.mi-dim:hover, .navbar.mi-dim:focus-within { opacity: 1; }
 
@@ -1190,41 +1208,56 @@
         .mi-js .mi-nav { display: flex; }
         .mi-nav-s {
             flex: 1 1 0; position: relative; display: block;
-            padding: 0 0 14px; margin: 0; border: 0; background: none;
+            padding: 0 0 17px; margin: 0; border: 0; background: none;
             cursor: pointer; -webkit-appearance: none; appearance: none;
-            font: inherit; color: inherit;
+            font: inherit; color: inherit; text-align: left;
         }
-        /* a 17px-tall strip is not a touch target. The hit area is grown
+        /* a thin strip is not a touch target. The hit area is grown
            DOWNWARD into the empty band above the skip chip — never upward,
            where the navbar would take the tap instead. */
         .mi-nav-s::before {
             content: ''; position: absolute; left: -3px; right: -3px;
-            top: -8px; bottom: -12px;
+            top: -9px; bottom: -13px;
         }
+        /* WEIGHT PASS (owner 2026-08-26: "the progress bar still feels a
+           little hard to view, it can be missed"). At 3px with a 20%-alpha
+           empty track and a 0.5rem numeral it was reading as a hairline
+           rule rather than as a control. The empty track is now visible in
+           its own right — that is what tells you there is more to come —
+           the bar is 5px, and on a wide screen each segment says what it
+           IS rather than making you decode a number. */
         .mi-nav-t {
-            display: block; height: 3px; overflow: hidden;
-            background: rgba(125, 195, 228, 0.20);
+            display: block; height: 5px; overflow: hidden;
+            background: rgba(120, 178, 210, 0.34);
+            box-shadow: inset 0 0 0 1px rgba(8, 14, 20, 0.55);
         }
         /* scaleX on a child, not a width — the fill is written every frame
            and a width write would relayout the whole flat layer */
         .mi-nav-t i {
             display: block; height: 100%; transform-origin: left center;
-            background: rgba(150, 214, 245, 0.85);
+            background: rgba(160, 220, 248, 0.95);
         }
         .mi-nav-s.is-live .mi-nav-t i {
             background: var(--gold-l);
-            box-shadow: 0 0 10px rgba(212, 188, 125, 0.55);
+            box-shadow: 0 0 12px rgba(212, 188, 125, 0.75);
         }
-        .mi-nav-n {
-            position: absolute; left: 0; top: 7px;
-            font-size: 0.5rem; font-weight: 800; letter-spacing: .18em;
-            color: rgba(160, 200, 225, 0.4);
+        .mi-nav-l {
+            position: absolute; left: 0; right: 8px; top: 9px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            font-size: 0.56rem; font-weight: 800; letter-spacing: .15em;
+            text-transform: uppercase;
+            color: rgba(178, 210, 232, 0.62);
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
             transition: color .25s ease;
         }
-        .mi-nav-s.is-done .mi-nav-n { color: rgba(160, 200, 225, 0.66); }
-        .mi-nav-s.is-live .mi-nav-n { color: var(--gold-l); }
-        .mi-nav-s:hover .mi-nav-t { background: rgba(125, 195, 228, 0.42); }
-        .mi-nav-s:hover .mi-nav-n { color: var(--gold-l); }
+        .mi-nav-l em { font-style: normal; letter-spacing: .1em; }
+        /* the name is a wide-screen luxury; under 1180px there is not
+           enough segment left for it to survive the ellipsis */
+        @media (max-width: 1180px) { .mi-nav-l em { display: none; } }
+        .mi-nav-s.is-done .mi-nav-l { color: rgba(178, 210, 232, 0.8); }
+        .mi-nav-s.is-live .mi-nav-l { color: var(--gold-l); }
+        .mi-nav-s:hover .mi-nav-t { background: rgba(150, 214, 245, 0.55); }
+        .mi-nav-s:hover .mi-nav-l { color: var(--gold-l); }
         .mi-nav-s:focus-visible { outline: 2px solid var(--accent-teal); outline-offset: 4px; }
 
         .mi-skip {
@@ -1441,8 +1474,8 @@
                the skip chip does — at top:58px it ran straight under the
                clock panel and segments 03/04 were invisible. */
             .mi-nav { top: 74px; left: 10px; right: 10px; gap: 6px; }
-            .mi-nav-s { padding-bottom: 12px; }
-            .mi-nav-n { font-size: 0.46rem; letter-spacing: .14em; }
+            .mi-nav-s { padding-bottom: 15px; }
+            .mi-nav-l { font-size: 0.5rem; letter-spacing: .12em; top: 8px; }
             .mi-skip { top: 96px; left: 10px; padding: 5px 8px; }
             /* THE CAPTION OWNS THE DEAD BAND (owner 2026-08-21). Pinned at
                104px it sat hard against the chrome rail with most of a
@@ -3086,7 +3119,8 @@
                     return '<button type="button" class="mi-nav-s" data-i="' + i + '"' +
                            ' aria-label="Jump to service ' + w.n + ', ' + plain + '">' +
                            '<span class="mi-nav-t"><i></i></span>' +
-                           '<span class="mi-nav-n">' + w.n + '</span>' +
+                           '<span class="mi-nav-l">' + w.n +
+                           ' <em>' + w.name + '</em></span>' +
                            '</button>';
                 }).join('');
                 navSegs = Array.prototype.slice.call(navWrap.querySelectorAll('.mi-nav-s'));
@@ -3161,9 +3195,14 @@
                     stage.style.opacity = '';
                     stage.style.visibility = '';
                     stage.style.pointerEvents = '';
+                    stage.classList.remove('is-gone');
                 } else {
                     stage.style.opacity = (1 - t).toFixed(3);
                     stage.style.pointerEvents = 'none';
+                    /* the inline none above only disables the stage itself;
+                       is-gone is what reaches the links and buttons inside
+                       it (see HIDDEN CHROME MUST NOT STILL TAKE THE TAP) */
+                    stage.classList.add('is-gone');
                     /* fully clear: drop the compositor layer as well, so the
                        GL canvas stops being composited on every scroll frame */
                     stage.style.visibility = t >= 1 ? 'hidden' : '';
