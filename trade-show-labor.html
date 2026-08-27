@@ -751,12 +751,15 @@
             --teal-h: #96d6f5;
         }
 
-        /* 560vh + the ~27% the eight dwell holds cost (see WARP in the JS) —
-           they are paid for with new scroll, so every other beat keeps the
-           pace it was tuned at. RECOMPUTE BOTH HEIGHTS when DW_K/DW_W
-           change: added = sum(K) * DW_W * 16/15, currently 10.4 * .026 *
-           16/15 = 0.288. */
-        .mi-track { position: relative; height: 722vh; }
+        /* 560vh + the ~12% the four CAPTION dwell holds cost (see WARP in
+           the JS) — they are paid for with new scroll, so every other beat
+           keeps the pace it was tuned at. RECOMPUTE BOTH HEIGHTS when
+           DW_K/DW_W change: added = sum(K) * DW_W * 16/15, currently 4.4 *
+           .026 * 16/15 = 0.122.
+           (Was 722vh when the four service stops each carried a K 1.5 hold
+           as well; those are gone — owner 2026-08-26 — and the 94vh they
+           cost went with them.) */
+        .mi-track { position: relative; height: 628vh; }
         /* (the CSS scroll-snap dwell that used to live here is gone with
            its .mi-lock targets — 1px proximity snaps on a track this tall
            have a catchment of half a viewport each, so every position in a
@@ -1319,7 +1322,8 @@
                           overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
         @media (max-width: 760px) {
-            .mi-track { height: 541vh; }
+            /* 420vh base * 1.122 — same recompute as the desktop height */
+            .mi-track { height: 471vh; }
             /* one column of chrome, never two: HUD top-right, skip chip
                top-left, captions BELOW both, tickets pinned to the bottom —
                on a phone nothing may ever share a band */
@@ -2758,10 +2762,6 @@
                 { a:.925, b:1,    t0:960, cam:{ s:1.4, cx:940, cy:800, rake:52, yaw:-24, D:1600, poy:0.50 }, kind:'sheet' }
             ];
             var WOCH = [2, 4, 6, 9];   /* chapter index of each work order */
-            /* one lock per stand, parked where the build has finished and
-               the hero camera has settled (cp .62), plus one on the 16:00
-               payoff — a fast flick catches and holds just long enough to
-               read the work order and see the stand */
             /* THE DWELL (owner 2026-08-21: hold longer on each service so a
                fast scroll cannot skip the card).
 
@@ -2780,18 +2780,29 @@
                parks there; because it is a pure function of scroll offset
                it reverses exactly, never desyncs, and needs no state.
                DW_K is how much extra scroll a lock costs (1.5 = 2.5x), and
-               the track height below is grown by the total added cost so
+               the track height above is grown by the total added cost so
                the locks are paid for with NEW scroll rather than stolen
-               from the transits. */
+               from the transits.
+
+               THE FOUR SERVICE HOLDS ARE GONE (owner 2026-08-26: "it feels
+               like you are stuck"). They sat at cp .68 of each `wo`
+               chapter — AFTER the laser lap (.24), the build (.52), all
+               three card notes (.48) and the ticket fade-in (.54) had
+               finished. So they bought ~400px of desktop scroll in which
+               the only scroll-driven change left on screen was the stamp's
+               6% slam, on a chapter whose camera is a fixed frame. A hold
+               that responds to nothing does not read as a pause; it reads
+               as the page having stopped listening.
+
+               ONLY THE CAPTION HOLDS REMAIN. Those are load-bearing for a
+               different reason — they buy the word-by-word typing its time
+               (see the note below) — and the typing is itself driven by
+               scroll, so that extra scroll visibly does something. If a
+               fast scroll now outruns a service card, the fix is to retime
+               the card's own beats later into its chapter, NOT to put this
+               back. */
             var DW_W = 0.026;                     /* half-width, track fractions */
             var DWELL = [], DWELL_K = [];
-            for (var q = 0; q < WOCH.length; q++) {
-                var chq = CH[WOCH[q]];
-                /* .68 — build finished (holoB ends .52), ticket fully in
-                   (.54) and the booking stamp has landed (.70) */
-                DWELL.push(chq.a + (chq.b - chq.a) * 0.68);
-                DWELL_K.push(1.5);
-            }
             DWELL.push(CH[10].a + (CH[10].b - CH[10].a) * 0.30);
             DWELL_K.push(0.9);                    /* the 16:00 payoff, lighter */
             /* AND ONE ON EVERY CAPTION, so each has room to TYPE (owner
